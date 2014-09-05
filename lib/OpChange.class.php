@@ -396,6 +396,8 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			public $FltTypeChange ;
 			public $FltLibDevise ;
 			public $FltTauxTransact ;
+			public $FltMttSoumis ;
+			public $FltTauxSoumis ;
 			public $CritrEcheanceInvalide ;
 			public $TypeOpChange = 1 ;
 			public $PourReponse = 0 ;
