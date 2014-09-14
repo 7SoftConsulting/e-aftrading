@@ -64,6 +64,7 @@
 			public $ScriptAjoutDevise ;
 			public $ScriptModifDevise ;
 			public $ScriptSupprDevise ;
+			public $ScriptSoumissAchatDevise ;
 			public $ScriptListeAchatsDevise ;
 			public $ScriptAjoutAchatDevise ;
 			public $ScriptModifAchatDevise ;
@@ -71,7 +72,10 @@
 			public $ScriptReservAchatsDevise ;
 			public $ScriptRepsAchatDevise ;
 			public $ScriptReponseAchatDevise ;
+			public $ScriptAjustAchatDevise ;
+			public $ScriptNegocAchatDevise ;
 			public $ScriptSupprAchatDevise ;
+			public $ScriptSoumissVenteDevise ;
 			public $ScriptListeVentesDevise ;
 			public $ScriptAjoutVenteDevise ;
 			public $ScriptModifVenteDevise ;
@@ -79,8 +83,12 @@
 			public $ScriptReservVentesDevise ;
 			public $ScriptPostulsVenteDevise ;
 			public $ScriptReponseVenteDevise ;
+			public $ScriptNegocVenteDevise ;
+			public $ScriptAjustVenteDevise ;
 			public $ScriptSupprVenteDevise ;
 			public $ScriptValPostulVenteDevise ;
+			public $ScriptSoumissOpChange ;
+			public $ScriptModifOpChangeSoumis ;
 			public $MenuBanqEtabFinanc ;
 			public $MenuAutresEntites ;
 			public $MenuCiesAssurance ;
@@ -101,6 +109,7 @@
 			public $ScriptAjoutPlacement ;
 			public $ScriptModifPlacement ;
 			public $ScriptEditPlacements ;
+			public $ScriptNegocPlacement ;
 			public $ScriptReservPlacements ;
 			public $ScriptRepsPlacement ;
 			public $ScriptReponsePlacement ;
@@ -110,6 +119,7 @@
 			public $ScriptModifEmprunt ;
 			public $ScriptEditEmprunts ;
 			public $ScriptReservEmprunts ;
+			public $ScriptNegocEmprunt ;
 			public $ScriptPostulsEmprunt ;
 			public $ScriptReponseEmprunt ;
 			public $ScriptSupprEmprunt ;
@@ -179,6 +189,8 @@ Financier UEMOA" ;
 				$this->MenuListeAchatsDevise->Titre = "Achat de devise" ;
 				$this->MenuListeVentesDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("listeVentesDevise") ;
 				$this->MenuListeVentesDevise->Titre = "Vente de devise" ;
+				$this->MenuSoumissOpChange = $this->MenuOpChangeDevise->InscritSousMenuScript("soumissOpChange") ;
+				$this->MenuSoumissOpChange->Titre = "Negociations" ;
 				$this->MenuOpInterbancaire = $this->MenuListeTransacts->InscritSousMenuScript("listeEmprunts") ;
 				$this->MenuOpInterbancaire->Titre = "Op&eacute;ration interbancaire" ;
 				$this->MenuListePlacements = $this->MenuOpInterbancaire->InscritSousMenuScript("listePlacements") ;
@@ -305,6 +317,10 @@ Financier UEMOA" ;
 				$this->InscritScript("postulsAchatDevise", $this->ScriptPostulsAchatDevise) ;
 				$this->ScriptReponseAchatDevise = new ScriptReponseAchatDeviseTradPlatf() ;
 				$this->InscritScript("reponseAchatDevise", $this->ScriptReponseAchatDevise) ;
+				$this->ScriptNegocAchatDevise = new ScriptNegocAchatDeviseTradPlatf() ;
+				$this->InscritScript("negocAchatDevise", $this->ScriptNegocAchatDevise) ;
+				$this->ScriptAjustAchatDevise = new ScriptAjustAchatDeviseTradPlatf() ;
+				$this->InscritScript("ajustAchatDevise", $this->ScriptAjustAchatDevise) ;
 				$this->ScriptModifAchatDevise = new ScriptModifAchatDeviseTradPlatf() ;
 				$this->InscritScript("modifAchatDevise", $this->ScriptModifAchatDevise) ;
 				$this->ScriptSupprAchatDevise = new ScriptSupprAchatDeviseTradPlatf() ;
@@ -323,6 +339,10 @@ Financier UEMOA" ;
 				$this->InscritScript("reservVentesDevise", $this->ScriptReservVentesDevise) ;
 				$this->ScriptReponseVenteDevise = new ScriptReponseVenteDeviseTradPlatf() ;
 				$this->InscritScript("reponseVenteDevise", $this->ScriptReponseVenteDevise) ;
+				$this->ScriptNegocVenteDevise = new ScriptNegocVenteDeviseTradPlatf() ;
+				$this->InscritScript("negocVenteDevise", $this->ScriptNegocVenteDevise) ;
+				$this->ScriptAjustVenteDevise = new ScriptAjustVenteDeviseTradPlatf() ;
+				$this->InscritScript("ajustVenteDevise", $this->ScriptAjustVenteDevise) ;
 				$this->ScriptPostulsVenteDevise = new ScriptPostulsVenteDeviseTradPlatf() ;
 				$this->InscritScript("postulsVenteDevise", $this->ScriptPostulsVenteDevise) ;
 				$this->ScriptValPostulVenteDevise = new ScriptValPostulVenteDeviseTradPlatf() ;
@@ -339,6 +359,8 @@ Financier UEMOA" ;
 				$this->InscritScript("postulsPlacement", $this->ScriptPostulsPlacement) ;
 				$this->ScriptReponsePlacement = new ScriptReponsePlacementTradPlatf() ;
 				$this->InscritScript("reponsePlacement", $this->ScriptReponsePlacement) ;
+				$this->ScriptNegocPlacement = new ScriptNegocPlacementTradPlatf() ;
+				$this->InscritScript("negocPlacement", $this->ScriptNegocPlacement) ;
 				$this->ScriptModifPlacement = new ScriptModifPlacementTradPlatf() ;
 				$this->InscritScript("modifPlacement", $this->ScriptModifPlacement) ;
 				$this->ScriptSupprPlacement = new ScriptSupprPlacementTradPlatf() ;
@@ -358,10 +380,18 @@ Financier UEMOA" ;
 				$this->InscritScript("reservEmprunts", $this->ScriptReservEmprunts) ;
 				$this->ScriptReponseEmprunt = new ScriptReponseEmpruntTradPlatf() ;
 				$this->InscritScript("reponseEmprunt", $this->ScriptReponseEmprunt) ;
+				$this->ScriptNegocEmprunt = new ScriptNegocEmpruntTradPlatf() ;
+				$this->InscritScript("negocEmprunt", $this->ScriptNegocEmprunt) ;
 				$this->ScriptPostulsEmprunt = new ScriptPostulsEmpruntTradPlatf() ;
 				$this->InscritScript("postulsEmprunt", $this->ScriptPostulsEmprunt) ;
 				$this->ScriptValPostulEmprunt = new ScriptValPostulEmpruntTradPlatf() ;
 				$this->InscritScript("valPostulEmprunt", $this->ScriptValPostulEmprunt) ;
+				$this->ScriptSoumissAchatDevise = new ScriptSoumissAchatDeviseTradPlatf() ;
+				$this->InscritScript("soumissAchatDevise", $this->ScriptSoumissAchatDevise) ;
+				$this->ScriptSoumissVenteDevise = new ScriptSoumissVenteDeviseTradPlatf() ;
+				$this->InscritScript("soumissVenteDevise", $this->ScriptSoumissVenteDevise) ;
+				$this->ScriptModifOpChangeSoumis = new ScriptModifOpChangeSoumisTradPlatf() ;
+				$this->InscritScript("modifOpChangeSoumis", $this->ScriptModifOpChangeSoumis) ;
 				// $this->ScriptBienvenue->Titre = "Trading Platform" ;
 				$this->ScriptAccueil->TitreDocument = "Trading Platform" ;
 				// $this->ChargeScriptsMembershipSuppl() ;
@@ -419,6 +449,56 @@ Financier UEMOA" ;
 					$id = $lig['idtype_entite'] ;
 				}
 				return $id ;
+			}
+			public function ObtientTypeTaux($ligne)
+			{
+				$typeTaux = ($ligne["commiss_ou_taux"] == 0) ? 0 : (($ligne["type_taux"] == 0) ? 1 : 2) ;
+				return $typeTaux ;
+			}
+			public function ObtientValeurTaux($ligne)
+			{
+				$valTaux = ($ligne["commiss_ou_taux"] == 0) ? $ligne["mtt_commiss"] : (($ligne["type_taux"] == 0) ? $ligne["taux_change"] : $ligne["ecran_taux"]) ;
+				return $valTaux ;
+			}
+			public function AppliqueCompComissOuTaux(& $filtre, $ligne=array(), $renseigneDefaut=1, $changeParam=0)
+			{
+				$typeTaux = $this->ObtientTypeTaux($ligne) ;
+				if($renseigneDefaut)
+				{
+					$valTaux = $this->ObtientTypeTaux($ligne) ;
+					$filtre->ValeurParDefaut = $valTaux ;
+				}
+				switch($typeTaux)
+				{
+					case 0 : { $this->AppliqueCompMttComiss($filtre) ; if($changeParam) { $filtre->DefinitColLiee('mtt_commiss') ; } } break ;
+					case 1 : { $this->AppliqueCompValeurTaux($filtre) ;if($changeParam) { $filtre->DefinitColLiee('taux_change') ; } } break ;
+					case 2 : { $this->AppliqueCompEcranTaux($filtre) ; if($changeParam) { $filtre->DefinitColLiee('ecran_taux') ; } } break ;
+				}
+			}
+			public function AppliqueCompMttComiss(& $filtre)
+			{
+			}
+			public function AppliqueCompValeurTaux(& $filtre)
+			{
+				$filtre->DeclareComposant("PvZoneTexteHtml") ;
+				$filtre->Composant->Largeur = "24px" ;
+			}
+			public function AppliqueCompEcranTaux(& $filtre)
+			{
+				$valBase = 5 ;
+				if($filtre->ValeurParDefaut == '')
+					$filtre->ValeurParDefaut = 5 ;
+				$filtre->DeclareComposant("PvZoneBoiteSelectHtml") ;
+				$comp1 = & $filtre->Composant ;
+				$comp1->NomColonneLibelle = "val" ;
+				$comp1->NomColonneValeur = "val" ;
+				$comp1->FournisseurDonnees = new PvFournisseurDonneesDirect() ;
+				$comp1->FournisseurDonnees->Valeurs["req"] = array() ;
+				for($i=-$valBase; $i<= $valBase; $i++)
+				{
+					$comp1->FournisseurDonnees->Valeurs["req"][] = array('val' => $i) ;
+				}
+				
 			}
 			public function AppliqueFormTypeEntite(& $form)
 			{

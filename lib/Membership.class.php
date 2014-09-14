@@ -101,6 +101,11 @@
 				$form->FiltresEdition[] = & $this->FiltreEntiteOp ;
 				$form->DessinateurFiltresEdition = new PvDessinateurRenduHtmlFiltresDonnees() ;
 				$form->DessinateurFiltresEdition->MaxFiltresParLigne = 2 ;
+				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
+				$form->CommandeAnnuler->Libelle = "Fermer" ;
+				$critrTemp = new PvCritereNonVide() ;
+				$form->CommandeExecuter->InscritCritere($critrTemp) ;
+				$critrTemp->FiltresCibles = array(&$this->FiltreFonctionOp, &$this->FiltreTelBureauOp)  ;
 			}
 			public function SqlTousLesMembres(& $table)
 			{
@@ -200,16 +205,6 @@
 			{
 				parent::InitFormulaireProfil($form) ;
 				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
-			}
-			public function InitFormulaireMembre(& $form)
-			{
-				parent::InitFormulaireMembre($form) ;
-				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
-				$form->CommandeAnnuler->Libelle = "Fermer" ;
-				$critrTemp = new PvCritereNonVide() ;
-				$form->CommandeExecuter->InscritCritere($critrTemp) ;
-				$critrTemp->FiltresCibles = array(&$this->FiltreFonctionOp, &$this->FiltreTelBureauOp)  ;
-				// print count($form->CommandeExecuter->Criteres[0]->FiltresCibles) ;
 			}
 		}
 		

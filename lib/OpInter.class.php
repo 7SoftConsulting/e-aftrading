@@ -741,6 +741,12 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			public $InclureTotalElements = 1 ;
 			public $PourReponse = 1 ;
 		}
+		class FormNegocEmpruntTradPlatf extends FormAjoutEmpruntTradPlatf
+		{
+			public $InclureElementEnCours = 1 ;
+			public $InclureTotalElements = 1 ;
+			public $PourReponse = 1 ;
+		}
 		class FormModifEmpruntTradPlatf extends FormAjoutEmpruntTradPlatf
 		{
 			public $InclureElementEnCours = 1 ;
@@ -885,6 +891,15 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				return new FormReponsePlacementTradPlatf() ;
 			}
 		}
+		class ScriptNegocPlacementTradPlatf extends ScriptAjoutPlacementTradPlatf
+		{
+			public $TitreDocument = "Negociation placement" ;
+			public $Titre = "Negociation placement" ;
+			protected function CreeFormOpInter()
+			{
+				return new FormReponsePlacementTradPlatf() ;
+			}
+		}
 		class ScriptSupprPlacementTradPlatf extends ScriptAjoutPlacementTradPlatf
 		{
 			public $TitreDocument = "Suppr. placement" ;
@@ -966,6 +981,15 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		{
 			public $TitreDocument = "Reponse emprunt" ;
 			public $Titre = "Reponse emprunt" ;
+			protected function CreeFormOpInter()
+			{
+				return new FormReponseEmpruntTradPlatf() ;
+			}
+		}
+		class ScriptNegocEmpruntTradPlatf extends ScriptAjoutEmpruntTradPlatf
+		{
+			public $TitreDocument = "Negociation emprunt" ;
+			public $Titre = "Negociation emprunt" ;
 			protected function CreeFormOpInter()
 			{
 				return new FormReponseEmpruntTradPlatf() ;
