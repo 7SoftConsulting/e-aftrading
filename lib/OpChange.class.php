@@ -49,7 +49,7 @@
 				$smReserv = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpChange == 1) ? "reservAchatsDevise" : "reservVentesDevise") ;
 				$smReserv->CheminMiniature = "images/miniatures/reserv_opchange.png" ;
 				$smReserv->Titre = "R&eacute;servation" ;
-				$smSoumiss = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpChange == 1) ? "soumissAchatDevise" : "soumissAchatDevise") ;
+				$smSoumiss = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpChange == 1) ? "soumissAchatDevise" : "soumissVenteDevise") ;
 				$smSoumiss->CheminMiniature = "images/miniatures/soumiss_opchange.png" ;
 				$smSoumiss->Titre = "Negociations" ;
 			}
@@ -304,7 +304,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 					$this->CmdAjout = new PvCommandeOuvreFenetreAdminDirecte() ;
 					$this->CmdAjout->Libelle = "Ajouter" ;
 					$this->CmdAjout->NomScript = ($this->ScriptParent->TypeOpChange == 1) ? "ajoutAchatDevise" : "ajoutVenteDevise" ;
-					$this->CmdAjout->OptionsOnglet = array("Largeur" => "670", "Hauteur" => "545", "Modal" => 1, "BoutonFermer" => 0, "BoutonExecuter" => 0) ;
+					$this->CmdAjout->OptionsOnglet = array("Largeur" => "670", "Hauteur" => "545", "Modal" => 1, "BoutonFermer" => 0, "LibelleFermer" => "Fermer") ;
 					$this->InscritCommande("cmdAjoutDevise", $this->CmdAjout) ;
 				}
 				$bd = $this->ApplicationParent->BDPrincipale ;
@@ -343,6 +343,8 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 		class TablEditOpChangeTradPlatf extends TablConsultOpChangeTradPlatf
 		{
 			public $RestrOps = 0 ;
+			public $CacherNegocs = 1 ;
+			public $FltCacherNegocs ;
 			public function ChargeConfig()
 			{
 				parent::ChargeConfig() ;
@@ -355,6 +357,9 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltAcquis->ExpressionDonnees = 'numop = <self>' ;
 				$this->FltAcquis->ValeurParDefaut = $this->ZoneParent->Membership->MemberLogged->Id ;
 				$this->FltAuteurTransact->ValeurParDefaut = 1 ;
+				$this->FmtPostuls->Visible = 0 ;
+				$this->FltCacherNegocs = $this->InsereFltSelectFixe("cacherNegoc", 0) ;
+				$this->FltCacherNegocs->ExpressionDonnees = ($this->CacherNegocs) ? "num_op_change_dem = 0" : "num_op_change_dem <> 0" ;
 			}
 		}
 		class TablReservOpChangeTradPlatf extends TablEditOpChangeTradPlatf
@@ -384,6 +389,8 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			{
 				parent::ChargeConfig() ;
 				$this->CmdAjout->Visible = 0 ;
+				$this->FmtModif->Visible = 0 ;
+				$this->FmtPostuls->Visible = 1 ;
 			}
 		}
 		
@@ -432,8 +439,8 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->DefColActions = $this->InsereDefColActions('Actions') ;
 				$this->LienModif = $this->InsereLienOuvreFenetreAction(
 					$this->DefColActions,'?appelleScript=modifOpChangeSoumis&idEnCours=${num_op_change}',
-					'Modifier', 'modif_op_change_soumis_${num_op_change}',
-					'Modifier operation de change', 
+					'N&eacute;gocier', 'modif_op_change_soumis_${num_op_change}',
+					'Negocier operation de change', 
 					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 240)
 				) ;
 			}
@@ -842,29 +849,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Date valeur</td>'.PHP_EOL ;
 				$ctn .= '<td>'.$composant->FltDateValeur->Rendu().'</td>'.PHP_EOL ;
-				$ctn .= '</tr>'.PHP_EOL ;
-				$ctn .= '<tr><th colspan="2" align="left">Preciser taux / commission</th></tr>'.PHP_EOL ;
-				$ctn .= '<tr><td colspan="2">'.PHP_EOL ;
-				$ctn .= '<div class="commissOuTaux">'.PHP_EOL ;
-				$ctn .= '<div><input onchange="affichCommissOuTaux'.$composant->IDInstanceCalc.'()" type="radio" name="commiss_ou_taux" value="0" id="pourComission"'.(($composant->FltCommissOuTaux->Lie() == 0) ? ' checked' : '').' /><label for="pourComission"> Commission</label> &nbsp;&nbsp; <input onchange="affichCommissOuTaux'.$composant->IDInstanceCalc.'()" type="radio" name="commiss_ou_taux" value="1" id="pourTaux"'.(($composant->FltCommissOuTaux->Lie() == 1) ? ' checked' : '').' /><label for="pourTaux"> Taux</label></div>'.PHP_EOL ;
-				$ctn .= '<div class="frm">
-<table cellspacing="0" cellpadding="4">
-<tr>
-<td>Montant commission</td><td>'.$composant->FltMttComiss->Rendu().'</td>
-</tr>
-<tr>
-<td>Date expiration</td><td>'.$composant->FltDateComiss->Rendu().'</td>
-</tr>
-</table>
-</div>'.PHP_EOL ;
-				$ctn .= '<div class="frm">
-<table cellspacing="0" cellpadding="4">
-<tr>
-<td>Taux</td><td><select name="type_taux" id="type_taux" onchange="evtCommissOuTaux'.$composant->IDInstanceCalc.'[1]() ;"><option value="0">N/A</option><option value="1"'.(($composant->FltTypeTaux->Lie() == 1) ? ' selected' : '').'>Ecran</option></select></td>
-</tr>
-<tr>
-<td>Valeur</td><td class="grpValTaux"><span>'.$composant->FltMttTaux->Rendu().'</span><span>'.$composant->FltEcranTaux->Rendu().'</span></td>
-</tr>
+				$ctn .= '</tr>
 </table>
 </div>'.PHP_EOL ;
 				$ctn .= '<div id="infosSupplTransact">
@@ -1330,7 +1315,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$colActions = $this->TablPostuls->InsereDefColActions("Actions") ;
 				$colActions->Largeur = "*" ;
 				// $lienAjuster = $this->TablPostuls->InsereLienAction($colActions, $this->ZoneParent->ScriptAjustVenteDevise->ObtientUrl().'&idEnCours=${idEnCours}', 'Ajuster') ;
-				$lienAjuster = $this->TablPostuls->InsereLienOuvreFenetreAction($colActions, $this->ZoneParent->ScriptAjustVenteDevise->ObtientUrl().'&idEnCours=${idEnCours}', 'Ajuster', 'ajuster_${idEnCours}', 'Ajuster', array('Modal' => 1, 'Largeur' => '450', 'Hauteur' => 300, 'BoutonFermer' => 0)) ;
+				$lienAjuster = $this->TablPostuls->InsereLienOuvreFenetreAction($colActions, $this->ZoneParent->ScriptAjustVenteDevise->ObtientUrl().'&idEnCours=${idEnCours}', 'N&eacute;gocier', 'ajuster_${idEnCours}', 'N&eacute;gocier', array('Modal' => 1, 'Largeur' => '450', 'Hauteur' => 300, 'BoutonFermer' => 0)) ;
 				$lienAjuster->NomDonneesValid = "peut_ajuster" ;
 				$lienConfirm = $this->TablPostuls->InsereLienAction($colActions, $this->ZoneParent->ScriptValPostulVenteDevise->ObtientUrl().'&id=${idEnCours}', 'Confimer') ;
 				$lienConfirm->Visible = ! $this->EstConfirme() ;
@@ -1557,6 +1542,7 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 			public $FormatMessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre inferieure &agrave; la date de valeur' ;
 			public function EstRespecte()
 			{
+				return 1 ;
 				$estSelect = $this->FormulaireDonneesParent->FltCommissOuTaux->Lie() ;
 				$valDateEcheance = $this->FormulaireDonneesParent->FltDateComiss->Lie() ;
 				$valDateValeur = $this->FormulaireDonneesParent->FltDateValeur->Lie() ;
