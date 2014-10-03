@@ -23,6 +23,7 @@
 			include dirname(__FILE__)."/ZonePubl.class.php" ;
 		}
 		define('APPLICATION_TRAD_PLATF', 1) ;
+		define('ID_EURO_TRAD_PLATF', 3) ;
 		
 		class BDPrincipaleTradPlatf extends MysqlDB
 		{

@@ -266,6 +266,7 @@
 			public $EnableRoleColumn = "AUTH_PRIVILEGE_ENABLED" ;
 			public $EnableRoleTrueValue = "1" ;
 			public $MemberClassName = "MembreTradTradf" ;
+			public $SessionTimeout = 2 ;
 			protected function InitConfig(& $parent)
 			{
 				parent::InitConfig($parent) ;

@@ -494,7 +494,7 @@ Financier UEMOA" ;
 				$comp1->NomColonneValeur = "val" ;
 				$comp1->FournisseurDonnees = new PvFournisseurDonneesDirect() ;
 				$comp1->FournisseurDonnees->Valeurs["req"] = array() ;
-				for($i=-$valBase; $i<= $valBase; $i++)
+				for($i=1; $i<= 10; $i++)
 				{
 					$comp1->FournisseurDonnees->Valeurs["req"][] = array('val' => $i) ;
 				}
