@@ -2,9 +2,13 @@
 	
 	if(! defined('OP_INTER_TRAD_PLATF'))
 	{
+		if(! defined('MDL_TRANSACT_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/MdlTransact.class.php" ;
+		}
 		define('OP_INTER_TRAD_PLATF', 1) ;
 		
-		class ScriptListBaseOpInter extends PvScriptWebSimple
+		class ScriptListBaseOpInter extends ScriptListTransactBaseTradPlatf
 		{
 			public $Tableau ;
 			public $BarreMenu ;
@@ -791,7 +795,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				return new TablReservOpInterTradPlatf() ;
 			}
 		}
-		class ScriptAjoutPlacementTradPlatf extends PvScriptWebSimple
+		class ScriptAjoutPlacementTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
 			public $TitreDocument = "Nouveau placement" ;
 			public $Titre = "Nouveau placement" ;
@@ -938,7 +942,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				return new TablReservOpInterTradPlatf() ;
 			}
 		}
-		class ScriptAjoutEmpruntTradPlatf extends PvScriptWebSimple
+		class ScriptAjoutEmpruntTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
 			public $TitreDocument = "Nouvel emprunt" ;
 			public $Titre = "Nouvel emprunt" ;
@@ -1004,7 +1008,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				return new FormSupprEmpruntTradPlatf() ;
 			}
 		}
-		class ScriptValPostulEmpruntTradPlatf extends PvScriptWebSimple
+		class ScriptValPostulEmpruntTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
 			public $MsgSucces = 'La postulation a ete accept&eacute;e' ;
 			public $MsgErreur = 'Impossible de confirmer la transaction actuelle.' ;

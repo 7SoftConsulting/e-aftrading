@@ -6,9 +6,21 @@
 		{
 			include dirname(__FILE__)."/Membership.class.php" ;
 		}
+		if(! defined('FOURN_EXPRS_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/FournExprs.class.php" ;
+		}
 		if(! defined('SCRIPT_PUBL_TRAD_PLATF'))
 		{
 			include dirname(__FILE__)."/ScriptPubl.class.php" ;
+		}
+		if(! defined('OP_CHANGE_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/OpChange.class.php" ;
+		}
+		if(! defined('OP_INTER_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/OpInter.class.php" ;
 		}
 		define('ZONE_PUBL_TRAD_PLATF', 1) ;
 		
@@ -65,6 +77,7 @@
 			public $ScriptModifDevise ;
 			public $ScriptSupprDevise ;
 			public $ScriptSoumissAchatDevise ;
+			public $ScriptInteretAchatDevise ;
 			public $ScriptListeAchatsDevise ;
 			public $ScriptAjoutAchatDevise ;
 			public $ScriptModifAchatDevise ;
@@ -84,6 +97,7 @@
 			public $ScriptPostulsVenteDevise ;
 			public $ScriptReponseVenteDevise ;
 			public $ScriptNegocVenteDevise ;
+			public $ScriptInteretVenteDevise ;
 			public $ScriptAjustVenteDevise ;
 			public $ScriptSupprVenteDevise ;
 			public $ScriptValPostulVenteDevise ;
@@ -128,8 +142,14 @@
 			public $MenuLiaisonOpInter ;
 			public $RemplisseurConfig ;
 			public $DetectIconeCorresp = 1 ;
+			public $FournExprs ;
 			public $PrivilegesMenuMembership = array("admin_operator", "admin_members") ;
 			public $PrivilegesPassePartout = array("admin_members") ;
+			protected function InitConfig()
+			{
+				parent::InitConfig() ;
+				$this->FournExprs = new FournExprsPublTradPlatf() ;
+			}
 			protected function ChargeBarreMenuSuperfish()
 			{
 				if(! $this->PossedeMembreConnecte())
@@ -319,6 +339,8 @@ Financier UEMOA" ;
 				$this->InscritScript("reponseAchatDevise", $this->ScriptReponseAchatDevise) ;
 				$this->ScriptNegocAchatDevise = new ScriptNegocAchatDeviseTradPlatf() ;
 				$this->InscritScript("negocAchatDevise", $this->ScriptNegocAchatDevise) ;
+				$this->ScriptInteretAchatDevise = new ScriptInteretAchatDeviseTradPlatf() ;
+				$this->InscritScript("interetAchatDevise", $this->ScriptInteretAchatDevise) ;
 				$this->ScriptAjustAchatDevise = new ScriptAjustAchatDeviseTradPlatf() ;
 				$this->InscritScript("ajustAchatDevise", $this->ScriptAjustAchatDevise) ;
 				$this->ScriptModifAchatDevise = new ScriptModifAchatDeviseTradPlatf() ;
@@ -339,6 +361,8 @@ Financier UEMOA" ;
 				$this->InscritScript("reservVentesDevise", $this->ScriptReservVentesDevise) ;
 				$this->ScriptReponseVenteDevise = new ScriptReponseVenteDeviseTradPlatf() ;
 				$this->InscritScript("reponseVenteDevise", $this->ScriptReponseVenteDevise) ;
+				$this->ScriptInteretVenteDevise = new ScriptInteretVenteDeviseTradPlatf() ;
+				$this->InscritScript("interetVenteDevise", $this->ScriptInteretVenteDevise) ;
 				$this->ScriptNegocVenteDevise = new ScriptNegocVenteDeviseTradPlatf() ;
 				$this->InscritScript("negocVenteDevise", $this->ScriptNegocVenteDevise) ;
 				$this->ScriptAjustVenteDevise = new ScriptAjustVenteDeviseTradPlatf() ;
