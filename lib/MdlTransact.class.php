@@ -120,7 +120,7 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			protected function EstPeriodeTransact()
 			{
 				// echo "Heure : ".gmdate("G") ;
-				return gmdate("G") >= 8 && gmdate("G") <= 17 ;
+				return gmdate("G") >= 8 && gmdate("G") <= 23 ;
 			}
 			public function RenduPeriodeIndisponible()
 			{
@@ -173,14 +173,14 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				$this->BarreMenu = $this->CreeBarreMenu() ;
 				$this->BarreMenu->AdopteScript("barreMenu", $this) ;
 				$this->BarreMenu->ChargeConfig() ;
-				// Consultation
-				$smConsult = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpChange == 1) ? "listeAchatsDevise" : "listeVentesDevise") ;
-				$smConsult->CheminMiniature = "images/miniatures/consulte_".(($this->TypeOpChange == 1) ? "achat_devise" : "vente_devise").".png" ;
-				$smConsult->Titre = "Consultation ".(($this->TypeOpChange == 1) ? "Achat" : "Vente") ;
-				// Consultation oppose
-				$smConsultOpp = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpChange == 2) ? "listeAchatsDevise" : "listeVentesDevise") ;
-				$smConsultOpp->CheminMiniature = "images/miniatures/consulte_".(($this->TypeOpChange == 2) ? "achat_devise" : "vente_devise").".png" ;
-				$smConsultOpp->Titre = "Consultation ".(($this->TypeOpChange == 2) ? "Achat" : "Vente") ;
+				// Consultation achat
+				$smConsult = $this->BarreMenu->MenuRacine->InscritSousMenuScript("listeAchatsDevise") ;
+				$smConsult->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
+				$smConsult->Titre = "Consultation Achat" ;
+				// Consultation vente
+				$smConsultOpp = $this->BarreMenu->MenuRacine->InscritSousMenuScript("listeVentesDevise") ;
+				$smConsultOpp->CheminMiniature = "images/miniatures/consulte_vente_devise.png" ;
+				$smConsultOpp->Titre = "Consultation Vente" ;
 				// Edition
 				$smEdition = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpChange == 1) ? "editAchatsDevise" : "editVentesDevise") ;
 				$smEdition->CheminMiniature = "images/miniatures/edit_opchange.png" ;

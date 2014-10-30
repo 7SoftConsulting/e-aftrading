@@ -99,7 +99,7 @@
 				$this->DefColMontant = new PvDefinitionColonneDonnees() ;
 				$this->DefColMontant->Libelle = "Montant" ;
 				$this->DefColMontant->NomDonnees = "montant_change" ;
-				$this->DefColMontant->AliasDonnees = $bd->SqlToInt("montant_change") ;
+				$this->DefColMontant->AliasDonnees = $bd->SqlToDouble("montant_change") ;
 				$this->DefColMontant->Largeur = "6%" ;
 				$this->DefColMontant->Formatteur = new PvFormatteurColonneMonnaie() ;
 				$this->DefColMontant->AlignElement = "right" ;
@@ -113,7 +113,7 @@
 				$this->DefColTaux = new PvDefinitionColonneDonnees() ;
 				$this->DefColTaux->Libelle = "Taux" ;
 				$this->DefColTaux->NomDonnees = "taux_transact" ;
-				$this->DefColTaux->AliasDonnees = $bd->SqlToInt("taux_transact") ;
+				$this->DefColTaux->AliasDonnees = $bd->SqlToDouble("taux_transact") ;
 				$this->DefColTaux->Largeur = "12%" ;
 				$this->DefColTaux->Visible = "0" ;
 				$this->DefColTaux->AlignElement = "center" ;
@@ -809,7 +809,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Montant Demand&eacute;</td>'.PHP_EOL ;
-				$ctn .= '<td>'.format_money($composant->FltMontant->Etiquette(), 0, 1).'</td>'.PHP_EOL ;
+				$ctn .= '<td>'.format_money($composant->FltMontant->Etiquette(), 3, 1).'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				return $ctn ;
 			}
@@ -971,7 +971,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn = '' ;
 				if($filtre->EstEtiquette)
 				{
-					$ctn .= format_money($filtre->Rendu(), 0, 2) ;
+					$ctn .= format_money($filtre->Rendu(), 3, 2) ;
 				}
 				else
 				{
