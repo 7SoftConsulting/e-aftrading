@@ -13,6 +13,7 @@
 			public $DefColPeutModif ;
 			public $DefColPeutRep ;
 			public $DefColId ;
+			public $DefColRefChange ;
 			public $DefColEmetteur ;
 			public $DefColBanque ;
 			public $DefColMontant ;
@@ -63,6 +64,8 @@
 				$this->DefColId->Visible = 0 ;
 				$this->DefColId->NomDonnees = "num_op_change" ;
 				$this->DefinitionsColonnes[] = & $this->DefColId ;
+				$this->DefColRefChange = $this->InsereDefCol("ref_change", "No Ref.") ;
+				$this->DefColRefChange->AlignElement = "center" ;
 				$this->DefColEmetteur = new PvDefinitionColonneDonnees() ;
 				$this->DefColEmetteur->Libelle = "Auteur" ;
 				$this->DefColEmetteur->NomDonnees = "loginop" ;
@@ -100,7 +103,7 @@
 				$this->DefColMontant->Libelle = "Montant" ;
 				$this->DefColMontant->NomDonnees = "montant_change" ;
 				$this->DefColMontant->AliasDonnees = $bd->SqlToDouble("montant_change") ;
-				$this->DefColMontant->Largeur = "6%" ;
+				$this->DefColMontant->Largeur = "12%" ;
 				$this->DefColMontant->Formatteur = new PvFormatteurColonneMonnaie() ;
 				$this->DefColMontant->AlignElement = "right" ;
 				$this->DefinitionsColonnes[] = & $this->DefColMontant ;
@@ -150,13 +153,13 @@
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtSuppr ;
 				$this->FmtPostuls = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtPostuls->NomDonneesValid = "peut_modif" ;
-				$this->FmtPostuls->FormatLibelle = "R&eacute;servations" ;
+				$this->FmtPostuls->FormatLibelle = "Negociations" ;
 				$this->FmtPostuls->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtPostuls->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtPostuls->OptionsOnglet["Hauteur"] = 600 ;
 				$this->FmtPostuls->OptionsOnglet["Largeur"] = 750 ;
 				$this->FmtPostuls->FormatIdOnglet = 'postuls_op_change_${num_op_change}' ;
-				$this->FmtPostuls->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'R&eacute;servations achat de devise' : 'R&eacute;servations vente de devise' ;
+				$this->FmtPostuls->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Negociations achat de devise' : 'Negociations vente de devise' ;
 				$this->FmtPostuls->FormatCheminIcone = 'images/icones/postulations.png' ;
 				$this->FmtPostuls->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpChange == 1) ? 'postulsAchatDevise' : 'postulsVenteDevise').'&idEnCours=${num_op_change}' ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtPostuls ;
@@ -278,6 +281,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 					$ctn .= parent::RenduDispositifBrut() ;
 					// print_r($this->FournisseurDonnees->BaseDonnees) ;
 				}
+				// print_r($this->FournisseurDonnees->BaseDonnees) ;
 				return $ctn ;
 			}
 		}
@@ -303,7 +307,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltCacherNegocs->ExpressionDonnees = ($this->CacherNegocs) ? "num_op_change_dem = 0" : "num_op_change_dem <> 0" ;
 			}
 		}
-		class TablReservOpChangeTradPlatf extends TablEditOpChangeTradPlatf
+		class TablSoumissOpChangeTradPlatf extends TablEditOpChangeTradPlatf
 		{
 			protected function ObtientRequeteSelection(& $bd)
 			{
@@ -348,7 +352,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			}
 		}
 		
-		class TablSoumissOpChangeTradPlatf extends TableauDonneesBaseTradPlatf
+		class TablReservOpChangeTradPlatf extends TableauDonneesBaseTradPlatf
 		{
 			public $FltNumOpSoumis ;
 			public $FltTypeChange ;
@@ -366,6 +370,8 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			public $DefColConfirm ;
 			public $DefColActions ;
 			public $LienModif ;
+			public $FltEstConfirme ;
+			public $ValeurConfirme = 1 ;
 			public function ChargeConfig()
 			{
 				parent::ChargeConfig() ;
@@ -387,7 +393,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->DefColMontantSoumis = $this->InsereDefColMoney("montant_soumis", 'Montant possible') ;
 				$this->DefColTauxSoumis = $this->InsereDefCol("taux_soumis", 'Taux possible') ;
 				// $this->DefColTauxDem = $this->InsereDefCol("taux_dem", 'Taux', 'case when commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end') ;
-				$this->DefColConfirm = $this->InsereDefColBool("bool_confirme", 'Confirme') ;
+				// $this->DefColConfirm = $this->InsereDefColBool("bool_confirme", 'Confirme') ;
 			}
 			protected function ChargeDefColActions()
 			{
@@ -399,11 +405,16 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 525)
 				) ;
 				$this->LienModif->NomDonneesValid = "peut_ajuster" ;
+				if($this->ValeurConfirme == 1)
+				{
+					$this->DefColActions->Visible = 0 ;
+				}
 			}
 			protected function ChargeFlts()
 			{
 				$this->FltNumOpSoumis = $this->InsereFltSelectFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop = <self>') ;
 				$this->FltEstSoumis = $this->InsereFltSelectFixe('num_op_change_dem', 0, 'num_op_change_dem <> <self>') ;
+				$this->FltEstConfirme = $this->InsereFltSelectFixe('bool_confirme', $this->ValeurConfirme, 'bool_confirme = <self>') ;
 				$this->FltTypeChange = $this->InsereFltSelectFixe('type_change_dem', $this->ScriptParent->TypeOpChangeOppose(), 'type_change = <self>') ;
 			}
 			protected function ChargeFournDonnees()
@@ -414,6 +425,10 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FournisseurDonnees->RequeteSelection = '(select t1.*, case when t1.bool_confirme = 0 then 1 else 0 end peut_ajuster, t3.login login_dem, t4.name nom_entite_dem from op_change t1 inner join op_change t2 on t1.num_op_change_dem = t2.num_op_change left join operateur t3 on t2.numop = t3.numop left join entite t4 on t3.id_entite = t4.id_entite where t1.bool_valide=1)' ;
 			}
 		}
+		class TablNegocEnvoyOpChangeTradPlatf extends TablReservOpChangeTradPlatf
+		{
+			public $ValeurConfirme = 0 ;
+		}
 		
 		class FormOpChangeBaseTradPlatf extends FormulaireDonneesBaseTradPlatf
 		{
@@ -422,6 +437,8 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			public $InclureTotalElements = 0 ;
 			public $MaxFiltresEditionParLigne = 1 ;
 			public $FltMontant ;
+			public $FltIdCtrl ;
+			public $FltRefChange ;
 			public $FltDateValeur ;
 			public $FltDateOper ;
 			public $FltDevise1 ;
@@ -444,7 +461,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			public $PourReponse = 0 ;
 			public $PourNegoc = 0 ;
 			public $PourAjust = 0 ;
-			public $NomClasseCommandeExecuter = "PvCommandeAjoutElement" ;
+			public $NomClasseCommandeExecuter = "CmdAjoutOpChangeTradPlatf" ;
 			public $NomClasseCommandeAnnuler = "PvCmdFermeFenetreActiveAdminDirecte" ;
 			public $MsgReponseInterdit = '<div class="ui-state-error">Vous avez d&eacute;j&agrave; r&eacute;pondu &agrave; cette offre.</div>' ;
 			protected function ReponsePossible()
@@ -474,6 +491,11 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			protected function ChargeFiltresEdition()
 			{
 				parent::ChargeFiltresEdition() ;
+				// ID de control
+				$this->FltIdCtrl = $this->InsereFltEditFixe("idCtrl", uniqid(), "id_ctrl") ;
+				// Ref Change
+				$this->FltRefChange = $this->InsereFltEditHttpPost("refChange", "ref_change") ;
+				$this->FltRefChange->Libelle = "Ref." ;
 				// Lib Devise
 				$this->FltLibDevise = $this->ScriptParent->CreeFiltreHttpPost("lib_devise") ;
 				$this->FltLibDevise->NomParametreDonnees = 'devise_change' ;
@@ -547,6 +569,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltDateOper = $this->ScriptParent->CreeFiltreHttpPost("date_operation") ;
 				$this->FltDateOper->DefinitColLiee("date_operation") ;
 				$this->FltDateOper->Libelle = "Date operation" ;
+				$this->FltDateOper->ValeurParDefaut = date("Y-m-d") ;
 				$this->FltDateOper->DeclareComposant("PvCalendarDateInput") ;
 				$this->FiltresEdition[] = & $this->FltDateOper ;
 				// Date Valeur
@@ -677,6 +700,24 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			}
 		}
 		
+		class CmdAjoutOpChangeTradPlatf extends PvCommandeAjoutElement
+		{
+			public function ExecuteInstructions()
+			{
+				parent::ExecuteInstructions() ;
+				if($this->StatutExecution == 0)
+					return ;
+				$bd = & $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
+				$idCtrl = $this->FormulaireDonneesParent->FltIdCtrl->Lie() ;
+				$lgn = $bd->FetchSqlRow('select * from op_change where id_ctrl='.$bd->ParamPrefix.'idCtrl', array('idCtrl' => $idCtrl)) ;
+				if(! is_array($lgn))
+					return ;
+				$refChange = (($this->FormulaireDonneesParent->TypeOpChange == 1) ? 'A' : 'V').date('dmy').str_repeat('0', 4 - strlen(strval($lgn["num_op_change"]))).$lgn["num_op_change"] ;
+				$sql = 'update op_change set ref_change = '.$bd->ParamPrefix.'refChange where id_ctrl='.$bd->ParamPrefix.'idCtrl' ;
+				$ok = $bd->RunSql($sql, array('refChange' => $refChange, 'idCtrl' => $idCtrl)) ;
+			}
+		}
+		
 		class CmdEnvoiRepOpChangeTradPlatf extends PvCommandeEditionElementBase
 		{
 			public function ExecuteInstructions()
@@ -796,8 +837,12 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn = '' ;
 				$ctn .= '<table width="100%" cellspacing="0" cellpadding="2">'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td width="40%">'.(($composant->FltTypeChange ->Lie() == 1) ? 'Achat devise' : 'Vente devise').'</td>'.PHP_EOL ;
-				$ctn .= '<td width="*">'.htmlentities($composant->FltLibDevise->Etiquette()).'</td>'.PHP_EOL ;
+				$ctn .= '<td width="40%">Ref.</td>'.PHP_EOL ;
+				$ctn .= '<td width="*">'.htmlentities($composant->FltRefChange->Etiquette()).'</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td>'.(($composant->FltTypeChange ->Lie() == 1) ? 'Achat devise' : 'Vente devise').'</td>'.PHP_EOL ;
+				$ctn .= '<td>'.htmlentities($composant->FltLibDevise->Etiquette()).'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Date operation</td>'.PHP_EOL ;
@@ -863,7 +908,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Date operation</td>'.PHP_EOL ;
-				$ctn .= '<td>'.$composant->FltDateOper->Rendu().'</td>'.PHP_EOL ;
+				$ctn .= '<td>'.date("d/m/Y").'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Date valeur</td>'.PHP_EOL ;
@@ -936,6 +981,10 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn .= '<table width="100%" cellspacing="0" cellpadding="2">'.PHP_EOL ;
 				$ctn .= '<colgroup><col width="40%" /><col width="*" /></colgroup>'.PHP_EOL ;
 				$ctn .= '<tr><th class="ui-widget ui-widget-header" colspan="2">Emetteur</th></tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltRefChange->ObtientIDElementHtmlComposant().'">Reference :</label></td>' ;
+				$ctn .= '<td>'.$composant->FltRefChange->Etiquette().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>' ;
 				$ctn .= '<td><label for="'.$composant->FltLoginDem->ObtientIDElementHtmlComposant().'">Login</label></td>' ;
 				$ctn .= '<td>'.$composant->FltLoginDem->Rendu().'</td>' ;
@@ -1025,6 +1074,10 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn .= '<colgroup><col width="40%" /><col width="*" /></colgroup>'.PHP_EOL ;
 				$ctn .= '<tr><th class="ui-widget ui-widget-header" colspan="2">Emetteur</th></tr>'.PHP_EOL ;
 				$ctn .= '<tr>' ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltRefChange->ObtientIDElementHtmlComposant().'">Reference :</label></td>' ;
+				$ctn .= '<td>'.$composant->FltRefChange->Etiquette().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<td><label for="'.$composant->FltLoginDem->ObtientIDElementHtmlComposant().'">Login</label></td>' ;
 				$ctn .= '<td>'.$composant->FltLoginDem->Rendu().'</td>' ;
 				$ctn .= '</tr>'.PHP_EOL ;
@@ -1098,6 +1151,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			public $NomClasseCommandeAnnuler = "PvCmdFermeFenetreActiveAdminDirecte" ;
 			public $NomClasseCommandeExecuter = "CmdAjustOpChangeTradPlatf" ;
 			public $FltIdEnCours ;
+			public $FltRefChange ;
 			public $FltLimitOpChange ;
 			public $FltTypeChange ;
 			public $FltLoginDem ;
@@ -1266,6 +1320,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 						$this->FltTauxDem->ValeurParDefaut = $this->ZoneParent->RemplisseurConfig->ObtientValeurTaux($ligne) ;
 						$this->FltMontantSoumis->ValeurParDefaut = $this->FltMontantDem->ValeurParDefaut ;
 						$this->FltTauxSoumis->ValeurParDefaut = $this->FltTauxDem->ValeurParDefaut ;
+						$this->FltRefChange->ValeurParDefaut = $ligne["ref_change"] ;
 						$this->ReinitParametres() ;
 					}
 				}
@@ -1301,6 +1356,9 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$this->FltMontantSoumis->Libelle = "Montant possible" ;
 				$this->FltTauxSoumis = $this->InsereFltEditHttpPost("taux_soumis", "taux_soumis") ;
 				$this->FltTauxSoumis->Libelle = "Taux possible" ;
+				$this->FltRefChange = $this->InsereFltEditHttpPost("refChange", "ref_change") ;
+				$this->FltRefChange->Libelle = "Ref. Change" ;
+				$this->FltRefChange->NePasLierColonne = 1 ;
 				$this->ChargeOpChangeDem() ;
 				if($this->InclureElementEnCours)
 				{
@@ -1419,14 +1477,25 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			public $NomClasseCommandeExecuter = "CmdSupprOpChangeTradPlatf" ;
 			public $LibelleCommandeExecuter = "Confirmer" ;
 		}
-
+		
 		class TablAchatsDeviseBaseTradPlatf extends TablConsultOpChangeTradPlatf
+		{
+			public $FltTypeMessage ;
+			public function ChargeConfig()
+			{
+				parent::ChargeConfig() ;
+				$this->FltTypeMessage = $this->InsereFltSelectFixe('typeMessage', 'demande') ;
+				$this->FltTypeMessage->ExpressionDonnees = 'type_message = <self>' ;
+			}
+		}
+		class TablVentesDeviseBaseTradPlatf extends TablAchatsDeviseBaseTradPlatf
 		{
 		}
 		
 		class ScriptSoumissAchatDeviseTradPlatf extends ScriptListBaseOpChange
 		{
 			public $TablPrinc ;
+			public $TablSecond ;
 			public $TypeOpChange = 1 ;
 			protected function DetermineTablPrinc()
 			{
@@ -1434,16 +1503,35 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$this->TablPrinc->AdopteScript("tablPrinc", $this) ;
 				$this->TablPrinc->ChargeConfig() ;
 			}
+			protected function DetermineTablSecond()
+			{
+				$this->TablSecond = new TablNegocEnvoyOpChangeTradPlatf() ;
+				$this->TablSecond->AdopteScript("tablSecond", $this) ;
+				$this->TablSecond->ChargeConfig() ;
+			}
 			public function DetermineEnvironnement()
 			{
 				parent::DetermineEnvironnement() ;
 				$this->DetermineTablPrinc() ;
+				$this->DetermineTablSecond() ;
 			}
 			public function RenduSpecifique()
 			{
 				$ctn = '' ;
 				$ctn .= $this->BarreMenu->RenduDispositif() ;
+				$ctn .= '<div id="tabs-'.$this->IDInstanceCalc.'">'.PHP_EOL ;
+				$ctn .= '<ul>' ;
+				$ctn .= '<li><a href="#tab-1-'.$this->IDInstanceCalc.'">Publications</a></li>' ;
+				$ctn .= '<li><a href="#tab-2-'.$this->IDInstanceCalc.'">Consultations</a></li>' ;
+				$ctn .= '</ul>' ;
+				$ctn .= '<div id="tab-1-'.$this->IDInstanceCalc.'">' ;
 				$ctn .= $this->TablPrinc->RenduDispositif() ;
+				$ctn .= '</div>' ;
+				$ctn .= '<div id="tab-2-'.$this->IDInstanceCalc.'">' ;
+				$ctn .= $this->TablSecond->RenduDispositif() ;
+				$ctn .= '</div>' ;
+				$ctn .= '</div>' ;
+				$ctn .= $this->ZoneParent->RenduContenuJsInclus('jQuery(function() { jQuery("#tabs-'.$this->IDInstanceCalc.'").tabs() ; } ) ;') ;
 				return $ctn ;
 			}
 		}
@@ -1477,6 +1565,12 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			{
 				return new TablAchatsDeviseBaseTradPlatf() ;
 			}
+		}
+		class ScriptConsultAchatsDeviseTradPlatf extends ScriptListeAchatsDeviseTradPlatf
+		{
+			public $NomScriptEdit = "editVentesDevise" ;
+			public $NomScriptReserv = "reservVentesDevise" ;
+			public $NomScriptSoumiss = "soumissVenteDevise" ;
 		}
 		class ScriptEditAchatsDeviseTradPlatf extends ScriptListeAchatsDeviseTradPlatf
 		{
@@ -1533,8 +1627,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptPostulsAchatDeviseTradPlatf extends ScriptModifAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "R&eacute;servations achat de devise" ;
-			public $Titre = "R&eacute;servations achat de devise" ;
+			public $TitreDocument = "Negociations achat de devise" ;
+			public $Titre = "Negociations achat de devise" ;
 			public $FltIdEnCours ;
 			protected function EstConfirme()
 			{
@@ -1655,16 +1749,25 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		class ScriptSoumissVenteDeviseTradPlatf extends ScriptSoumissAchatDeviseTradPlatf
 		{
 			public $TypeOpChange = 2 ;
+			public $NomScriptEdit = "editVentesDevise" ;
+			public $NomScriptReserv = "reservVentesDevise" ;
+			public $NomScriptSoumiss = "soumissVenteDevise" ;
 		}
-		class ScriptListeVentesDeviseTradPlatf extends ScriptListBaseOpChange
+		class ScriptListeVentesDeviseTradPlatf extends ScriptListBaseVenteDevise
 		{
 			public $TypeOpChange = 2 ;
 			public $Titre = "Liste ventes de devise" ;
 			public $TitreDocument = "Liste ventes de devise" ;
 			protected function CreeTableau()
 			{
-				return new TablConsultOpChangeTradPlatf() ;
+				return new TablVentesDeviseBaseTradPlatf() ;
 			}
+		}
+		class ScriptConsultVentesDeviseTradPlatf extends ScriptListeVentesDeviseTradPlatf
+		{
+			public $NomScriptEdit = "editAchatsDevise" ;
+			public $NomScriptReserv = "reservAchatsDevise" ;
+			public $NomScriptSoumiss = "soumissAchatDevise" ;
 		}
 		class ScriptEditVentesDeviseTradPlatf extends ScriptListeVentesDeviseTradPlatf
 		{
@@ -1721,9 +1824,9 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptPostulsVenteDeviseTradPlatf extends ScriptPostulsAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "R&eacute;servations vente de devise" ;
+			public $TitreDocument = "Negociations vente de devise" ;
 			public $TypeOpChange = 2 ;
-			public $Titre = "R&eacute;servations vente de devise" ;
+			public $Titre = "Negociations vente de devise" ;
 		}
 		class ScriptReponseVenteDeviseTradPlatf extends ScriptAjoutVenteDeviseTradPlatf
 		{
@@ -1845,10 +1948,10 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 				$id_devise1 = $this->FormulaireDonneesParent->FltDevise1->Lie() ;
 				$id_devise2 = $this->FormulaireDonneesParent->FltDevise2->Lie() ;
 				$montant = $this->FormulaireDonneesParent->FltMontant->Lie() ;
-				$nomOp = $this->ZoneParent->Membership->MemberLogged->Id ;
+				$numOp = $this->ZoneParent->Membership->MemberLogged->Id ;
 				$bd = & $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
-				$sql = 'select * from op_change where montant_change='.$bd->ParamPrefix.'montant and '.$bd->SqlDatePart($bd->SqlNow()).' = '.$bd->SqlDatePart('date_change').' and id_devise1 = '.$bd->ParamPrefix.'id_devise1 and id_devise2 = '.$bd->ParamPrefix.'id_devise2' ;
-				$lgn = $bd->FetchSqlRow($sql, array('montant' => $montant, 'id_devise1' => $id_devise1, 'id_devise2' => $id_devise2)) ;
+				$sql = 'select * from op_change where numop='.$bd->ParamPrefix.'numOp and montant_change='.$bd->ParamPrefix.'montant and '.$bd->SqlDatePart($bd->SqlNow()).' = '.$bd->SqlDatePart('date_change').' and id_devise1 = '.$bd->ParamPrefix.'id_devise1 and id_devise2 = '.$bd->ParamPrefix.'id_devise2' ;
+				$lgn = $bd->FetchSqlRow($sql, array('montant' => $montant, 'id_devise1' => $id_devise1, 'id_devise2' => $id_devise2, 'numOp' => $numOp)) ;
 				if(! is_array($lgn) || count($lgn) > 0)
 				{
 					$this->MessageErreur = $this->FormatMessageErreur ;

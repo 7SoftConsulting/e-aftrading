@@ -79,6 +79,7 @@
 			public $ScriptSoumissAchatDevise ;
 			public $ScriptInteretAchatDevise ;
 			public $ScriptListeAchatsDevise ;
+			public $ScriptConsultAchatsDevise ;
 			public $ScriptAjoutAchatDevise ;
 			public $ScriptModifAchatDevise ;
 			public $ScriptEditAchatsDevise ;
@@ -90,6 +91,7 @@
 			public $ScriptSupprAchatDevise ;
 			public $ScriptSoumissVenteDevise ;
 			public $ScriptListeVentesDevise ;
+			public $ScriptConsultVentesDevise ;
 			public $ScriptAjoutVenteDevise ;
 			public $ScriptModifVenteDevise ;
 			public $ScriptEditVentesDevise ;
@@ -327,6 +329,8 @@ Financier UEMOA" ;
 				$this->InscritScript("supprZonePays", $this->ScriptSupprZonePays) ;
 				$this->ScriptListeAchatsDevise = new ScriptListeAchatsDeviseTradPlatf() ;
 				$this->InscritScript("listeAchatsDevise", $this->ScriptListeAchatsDevise) ;
+				$this->ScriptConsultAchatsDevise = new ScriptConsultAchatsDeviseTradPlatf() ;
+				$this->InscritScript("consultAchatsDevise", $this->ScriptConsultAchatsDevise) ;
 				$this->ScriptEditAchatsDevise = new ScriptEditAchatsDeviseTradPlatf() ;
 				$this->InscritScript("editAchatsDevise", $this->ScriptEditAchatsDevise) ;
 				$this->ScriptReservAchatsDevise = new ScriptReservAchatsDeviseTradPlatf() ;
@@ -349,6 +353,8 @@ Financier UEMOA" ;
 				$this->InscritScript("supprAchatDevise", $this->ScriptSupprAchatDevise) ;
 				$this->ScriptListeVentesDevise = new ScriptListeVentesDeviseTradPlatf() ;
 				$this->InscritScript("listeVentesDevise", $this->ScriptListeVentesDevise) ;
+				$this->ScriptConsultVentesDevise = new ScriptConsultVentesDeviseTradPlatf() ;
+				$this->InscritScript("consultVentesDevise", $this->ScriptConsultVentesDevise) ;
 				$this->ScriptAjoutVenteDevise = new ScriptAjoutVenteDeviseTradPlatf() ;
 				$this->InscritScript("ajoutVenteDevise", $this->ScriptAjoutVenteDevise) ;
 				$this->ScriptModifVenteDevise = new ScriptModifVenteDeviseTradPlatf() ;
@@ -505,7 +511,6 @@ Financier UEMOA" ;
 			public function AppliqueCompValeurTaux(& $filtre)
 			{
 				$filtre->DeclareComposant("PvZoneTexteHtml") ;
-				$filtre->Composant->Largeur = "24px" ;
 			}
 			public function AppliqueCompEcranTaux(& $filtre)
 			{
@@ -884,7 +889,7 @@ Financier UEMOA" ;
 				$ctn .= '<div id="'.$this->IDInstanceCalc.'" class="ui-wigdet ui-widget-content ui-state-focus" style="margin:2px">'.PHP_EOL ;
 				$ctn .= '<table width="100%" cellspacing="0" cellpadding=4>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td width="50%">Utilisateur : '.htmlentities($membreConnecte->FirstName.' '.$membreConnecte->LastName).' / '.htmlentities($membreConnecte->Profile->Title).PHP_EOL ;
+				$ctn .= '<td width="50%">Utilisateur : '.htmlentities($membreConnecte->FirstName.' '.$membreConnecte->LastName).' ('.htmlentities($membreConnecte->Login).') / '.htmlentities($membreConnecte->Profile->Title).PHP_EOL ;
 				$ctn .= '</td>'.PHP_EOL ;
 				$ctn .= '<td width="*" align="right" rowspan="2">'.PHP_EOL ;
 				$ctn .= '<div align="center" style="float:right"><a href="'.$this->ZoneParent->ObtientUrlScript($this->ZoneParent->NomScriptDeconnexion).'">' ;
