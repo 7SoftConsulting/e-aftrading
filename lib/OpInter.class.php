@@ -8,88 +8,22 @@
 		}
 		define('OP_INTER_TRAD_PLATF', 1) ;
 		
-		class ScriptListBaseOpInter extends ScriptListTransactBaseTradPlatf
-		{
-			public $Tableau ;
-			public $BarreMenu ;
-			public $TypeOpInter = 1 ;
-			public $Privileges = array('post_op_change') ;
-			public $NecessiteMembreConnecte = 1 ;
-			protected function CreeBarreMenu()
-			{
-				$barreMenu = new PvTablMenuHoriz() ;
-				$barreMenu->NomClasseCSSCellSelect = "ui-widget ui-widget-header ui-state-focus" ;
-				return $barreMenu ;
-			}
-			public function TypeOpInterOppose()
-			{
-				return ($this->TypeOpInter == 1) ? 2 : 1 ;
-			}
-			protected function CreeTableau()
-			{
-				return new TableauDonneesBaseTradPlatf() ;
-			}
-			protected function DetermineBarreMenu()
-			{
-				$this->BarreMenu = $this->CreeBarreMenu() ;
-				$this->BarreMenu->AdopteScript("barreMenu", $this) ;
-				$this->BarreMenu->ChargeConfig() ;
-				$smConsult = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpInter == 1) ? "listePlacements" : "listeEmprunts") ;
-				$smConsult->CheminMiniature = "images/miniatures/consulte_opchange.png" ;
-				$smConsult->Titre = "Consultation" ;
-				$smEdition = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpInter == 1) ? "editPlacements" : "editEmprunts") ;
-				$smEdition->CheminMiniature = "images/miniatures/edit_opchange.png" ;
-				$smEdition->Titre = "Publication" ;
-				$smReserv = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpInter == 1) ? "reservPlacements" : "reservEmprunts") ;
-				$smReserv->CheminMiniature = "images/miniatures/reserv_opchange.png" ;
-				$smReserv->Titre = "Reservation" ;
-			}
-			protected function DetermineTableau()
-			{
-				$this->Tableau = $this->CreeTableau() ;
-				$this->Tableau->AdopteScript("tableau", $this) ;
-				$this->Tableau->ChargeConfig() ;
-			}
-			public function DetermineEnvironnement()
-			{
-				$this->DetermineBarreMenu() ;
-				$this->DetermineTableau() ;
-			}
-			public function RenduSpecifique()
-			{
-				$ctn = '' ;
-				$ctn .= '<div class="Titre">'.$this->Titre.'</div>'.PHP_EOL ;
-				if($this->ZoneParent->InclureJQueryUi)
-				{
-					$ctn .= '<script language="javascript">
-	jQuery(function() {
-		jQuery(".Titre")
-			.addClass("ui-widget ui-widget-header ui-state-active") ;
-	}) ;
-</script>' ;
-				}
-				$ctn .= $this->BarreMenu->RenduDispositif() ;
-				$ctn .= $this->Tableau->RenduDispositif() ;
-				// print_r($this->Tableau->FournisseurDonnees->BaseDonnees) ;
-				return $ctn ;
-			}
-		}
-		
 		class TablConsultOpInterTradPlatf extends TableauDonneesBaseTradPlatf
 		{
 			public $DefColPeutModif ;
 			public $DefColPeutRep ;
 			public $DefColId ;
+			public $DefColRefChange ;
 			public $DefColEmetteur ;
 			public $DefColBanque ;
 			public $DefColMontant ;
 			public $DefColLibDevise ;
 			public $DefColDatePublic ;
-			public $DefColDateValeur ;
 			public $DefColDateOp ;
 			public $DefColTaux ;
 			public $DefColActions ;
 			public $FmtModif ;
+			public $FmtSuppr ;
 			public $FmtPostuls ;
 			public $FltDateDebut ;
 			public $FltDateFin ;
@@ -103,25 +37,6 @@
 			public $CmdAjout ;
 			public $RestrOps = 1 ;
 			public $MsgConsultInterdit = '<div class="ui-state-error">Vous ne pouvez pas voir les demandes en cours. Veuillez poster <b>${nomOffre}</b> avant.</div>' ;
-			protected function ObtientRequeteSelection(& $bd)
-			{
-				return "(select t1.*, case when t1.commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end taux_transact, ".$bd->SqlConcat(array('t2.code_devise', "' / '", 't3.code_devise'))." devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
-case when t1.num_op_inter_dem = 0 then 'demande' else 'reponse' end type_message
-from op_inter t1
-left join devise t2
-on t1.id_devise1 = t2.id_devise
-left join devise t3
-on t1.id_devise2 = t3.id_devise
-left join operateur t4
-on t1.numop = t4.numop
-left join oper_b_change t5
-on t5.id_entite_source=t4.id_entite
-left join entite t7
-on t5.id_entite_source=t7.id_entite
-left join operateur t6
-on t5.id_entite_dest=t6.id_entite
-where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is not null and t4.active_op = 1)" ;
-			}
 			protected function PeutVoirOps()
 			{
 				if($this->ZoneParent->PossedePrivilege('admin_members'))
@@ -131,6 +46,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$bd = & $this->ApplicationParent->BDPrincipale ;
 				$sql = 'select * from ('.TXT_SQL_SELECT_PLACEMENT_SOUMIS.') t1 where numop='.$bd->ParamPrefix.'numOp and type_change='.$bd->ParamPrefix.'typeChange' ;
 				$row = $bd->FetchSqlRow($sql, array('numOp' => $this->ZoneParent->IdMembreConnecte(), "typeChange" => $this->ScriptParent->TypeOpInterOppose())) ;
+				// print_r($bd) ;
 				return (count($row) > 0) ;
 			}
 			public function ChargeConfig()
@@ -148,6 +64,8 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->DefColId->Visible = 0 ;
 				$this->DefColId->NomDonnees = "num_op_inter" ;
 				$this->DefinitionsColonnes[] = & $this->DefColId ;
+				$this->DefColRefChange = $this->InsereDefCol("ref_change", "No Ref.") ;
+				$this->DefColRefChange->AlignElement = "center" ;
 				$this->DefColEmetteur = new PvDefinitionColonneDonnees() ;
 				$this->DefColEmetteur->Libelle = "Auteur" ;
 				$this->DefColEmetteur->NomDonnees = "loginop" ;
@@ -164,21 +82,22 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->DefColDatePublic->Libelle = "Publi&eacute; le" ;
 				$this->DefColDatePublic->NomDonnees = "date_change" ;
 				$this->DefColDatePublic->AliasDonnees = $bd->SqlDateToStrFr("date_change", 1) ;
-				$this->DefColDatePublic->Largeur = "16%" ;
+				$this->DefColDatePublic->Largeur = "12%" ;
 				$this->DefColDatePublic->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColDatePublic ;
 				$this->DefColDateOp = new PvDefinitionColonneDonnees() ;
 				$this->DefColDateOp->Libelle = "Date Op." ;
 				$this->DefColDateOp->NomDonnees = "date_operation" ;
 				$this->DefColDateOp->AliasDonnees = $bd->SqlDateToStrFr("date_operation") ;
-				$this->DefColDateOp->Largeur = "16%" ;
+				$this->DefColDateOp->Largeur = "12%" ;
 				$this->DefColDateOp->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColDateOp ;
 				$this->DefColMontant = new PvDefinitionColonneDonnees() ;
 				$this->DefColMontant->Libelle = "Montant" ;
 				$this->DefColMontant->NomDonnees = "montant_change" ;
-				$this->DefColMontant->AliasDonnees = $bd->SqlToInt("montant_change") ;
-				$this->DefColMontant->Largeur = "16%" ;
+				$this->DefColMontant->AliasDonnees = $bd->SqlToDouble("montant_change") ;
+				$this->DefColMontant->Largeur = "15%" ;
+				$this->DefColMontant->Formatteur = new PvFormatteurColonneMonnaie() ;
 				$this->DefColMontant->AlignElement = "right" ;
 				$this->DefinitionsColonnes[] = & $this->DefColMontant ;
 				$this->DefColLibDevise = new PvDefinitionColonneDonnees() ;
@@ -190,10 +109,10 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->DefColTaux = new PvDefinitionColonneDonnees() ;
 				$this->DefColTaux->Libelle = "Taux" ;
 				$this->DefColTaux->NomDonnees = "taux_transact" ;
-				$this->DefColTaux->AliasDonnees = $bd->SqlToInt("taux_transact") ;
-				$this->DefColTaux->Largeur = "0%" ;
+				$this->DefColTaux->AliasDonnees = $bd->SqlToDouble("taux_transact") ;
+				$this->DefColTaux->Largeur = "12%" ;
+				$this->DefColTaux->Visible = "0" ;
 				$this->DefColTaux->AlignElement = "center" ;
-				$this->DefColTaux->Visible = 0 ;
 				$this->DefinitionsColonnes[] = & $this->DefColTaux ;
 				$this->DefColActions = new PvDefinitionColonneDonnees() ;
 				$this->DefColActions->Libelle = "Actions" ;
@@ -205,34 +124,52 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FmtModif->NomDonneesValid = "peut_modif" ;
 				$this->FmtModif->FormatLibelle = "Modifier" ;
 				$this->FmtModif->OptionsOnglet["Modal"] = 1 ;
+				$this->FmtModif->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtModif->OptionsOnglet["Largeur"] = 600 ;
 				$this->FmtModif->OptionsOnglet["Hauteur"] = 535 ;
+				$this->FmtSuppr->FormatIdOnglet = 'modif_op_inter_${num_op_inter}' ;
 				$this->FmtModif->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Modifier placement' : 'Modifier emprunt' ;
 				$this->FmtModif->FormatCheminIcone = 'images/icones/modif.png' ;
 				$this->FmtModif->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'modifPlacement' : 'modifEmprunt').'&idEnCours=${num_op_inter}' ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtModif ;
+				$this->FmtSuppr = new PvConfigFormatteurColonneOuvreFenetre() ;
+				$this->FmtSuppr->NomDonneesValid = "peut_modif" ;
+				$this->FmtSuppr->FormatLibelle = "Supprimer" ;
+				$this->FmtSuppr->OptionsOnglet["Modal"] = 1 ;
+				$this->FmtSuppr->OptionsOnglet["BoutonFermer"] = 0 ;
+				$this->FmtSuppr->OptionsOnglet["Largeur"] = 600 ;
+				$this->FmtSuppr->OptionsOnglet["Hauteur"] = 535 ;
+				$this->FmtSuppr->FormatIdOnglet = 'suppr_op_inter_${num_op_inter}' ;
+				$this->FmtSuppr->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Supprimer placement' : 'Supprimer emprunt' ;
+				$this->FmtSuppr->FormatCheminIcone = 'images/icones/suppr.png' ;
+				$this->FmtSuppr->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'supprPlacement' : 'supprEmprunt').'&idEnCours=${num_op_inter}' ;
+				$this->DefColActions->Formatteur->Liens[] = & $this->FmtSuppr ;
 				$this->FmtPostuls = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtPostuls->NomDonneesValid = "peut_modif" ;
-				$this->FmtPostuls->FormatLibelle = "R&eacute;servatiions" ;
+				$this->FmtPostuls->FormatLibelle = "Negociations" ;
 				$this->FmtPostuls->OptionsOnglet["Modal"] = 1 ;
+				$this->FmtPostuls->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtPostuls->OptionsOnglet["Hauteur"] = 600 ;
 				$this->FmtPostuls->OptionsOnglet["Largeur"] = 750 ;
-				$this->FmtPostuls->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'R&eacute;servatiions placement' : 'R&eacute;servatiions emprunt' ;
+				$this->FmtPostuls->FormatIdOnglet = 'postuls_op_inter_${num_op_inter}' ;
+				$this->FmtPostuls->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Negociations placement' : 'Negociations emprunt' ;
 				$this->FmtPostuls->FormatCheminIcone = 'images/icones/postulations.png' ;
 				$this->FmtPostuls->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'postulsPlacement' : 'postulsEmprunt').'&idEnCours=${num_op_inter}' ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtPostuls ;
 				$this->FmtRepondre = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtRepondre->NomDonneesValid = "peut_repondre" ;
-				$this->FmtRepondre->FormatLibelle = "R&eacute;server" ;
+				$this->FmtRepondre->FormatLibelle = $this->ZoneParent->FournExprs->LibLienDemarrNegoc ;
 				$this->FmtRepondre->OptionsOnglet["Modal"] = 1 ;
-				$this->FmtRepondre->OptionsOnglet["Hauteur"] = 300 ;
-				$this->FmtRepondre->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Repondre a l\'placement' : 'Repondre a la emprunt' ;
+				$this->FmtRepondre->OptionsOnglet["BoutonFermer"] = 0 ;
+				$this->FmtRepondre->OptionsOnglet["Hauteur"] = 525 ;
+				$this->FmtRepondre->FormatIdOnglet = 'negoc_op_inter_${num_op_inter}' ;
+				$this->FmtRepondre->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? $this->ZoneParent->FournExprs->TitrFenDemarrNegocPlacement : $this->ZoneParent->FournExprs->TitrFenDemarrNegocEmprunt ;
 				$this->FmtRepondre->FormatCheminIcone = 'images/icones/repondre.png' ;
-				$this->FmtRepondre->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'reponsePlacement' : 'reponseEmprunt').'&idEnCours=${num_op_inter}' ;
+				$this->FmtRepondre->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'interetPlacement' : 'interetEmprunt').'&idEnCours=${num_op_inter}' ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtRepondre ;
 				$this->DefinitionsColonnes[] = & $this->DefColActions ;
 			}
-			protected function ChargeConfigBase()
+			public function ChargeConfigBase()
 			{
 				$this->ChargeDefCols() ;
 			}
@@ -278,15 +215,34 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 					$this->FiltresSelection[] = & $this->FltAcquis ;
 				}
 			}
-			protected function ChargeConfigSuppl()
+			protected function ObtientRequeteSelection(& $bd)
+			{
+				return "(select t1.*, case when t1.commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end taux_transact, ".$bd->SqlConcat(array('t2.code_devise', "' / '", 't3.code_devise'))." devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
+case when t1.num_op_inter_dem = 0 then 'demande' else 'reponse' end type_message
+from op_inter t1
+left join devise t2
+on t1.id_devise1 = t2.id_devise
+left join devise t3
+on t1.id_devise2 = t3.id_devise
+left join operateur t4
+on t1.numop = t4.numop
+left join oper_b_change t5
+on t5.id_entite_source=t4.id_entite
+left join entite t7
+on t5.id_entite_source=t7.id_entite
+left join operateur t6
+on t5.id_entite_dest=t6.id_entite
+where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is not null and t4.active_op = 1)" ;
+			}
+			public function ChargeConfigSuppl()
 			{
 				if(! $this->RestrOps)
 				{
 					$this->CmdAjout = new PvCommandeOuvreFenetreAdminDirecte() ;
 					$this->CmdAjout->Libelle = "Ajouter" ;
 					$this->CmdAjout->NomScript = ($this->ScriptParent->TypeOpInter == 1) ? "ajoutPlacement" : "ajoutEmprunt" ;
-					$this->CmdAjout->OptionsOnglet = array("Largeur" => "670", "Hauteur" => "545", "Modal" => 1, "BoutonFermer" => 0, "BoutonExecuter" => 0) ;
-					$this->InscritCommande("cmdAjoutDevise", $this->CmdAjout) ;
+					$this->CmdAjout->OptionsOnglet = array("Largeur" => "670", "Hauteur" => "545", "Modal" => 1, "BoutonFermer" => 0, "LibelleFermer" => "Fermer") ;
+					$this->InscritCommande("cmdAjout", $this->CmdAjout) ;
 				}
 				$bd = $this->ApplicationParent->BDPrincipale ;
 				$this->FournisseurDonnees = new PvFournisseurDonneesSql() ;
@@ -318,12 +274,15 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 					$ctn .= parent::RenduDispositifBrut() ;
 					// print_r($this->FournisseurDonnees->BaseDonnees) ;
 				}
+				// print_r($this->FournisseurDonnees->BaseDonnees) ;
 				return $ctn ;
 			}
 		}
 		class TablEditOpInterTradPlatf extends TablConsultOpInterTradPlatf
 		{
 			public $RestrOps = 0 ;
+			public $CacherNegocs = 1 ;
+			public $FltCacherNegocs ;
 			public function ChargeConfig()
 			{
 				parent::ChargeConfig() ;
@@ -336,9 +295,12 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltAcquis->ExpressionDonnees = 'numop = <self>' ;
 				$this->FltAcquis->ValeurParDefaut = $this->ZoneParent->Membership->MemberLogged->Id ;
 				$this->FltAuteurTransact->ValeurParDefaut = 1 ;
+				$this->FmtPostuls->Visible = 0 ;
+				$this->FltCacherNegocs = $this->InsereFltSelectFixe("cacherNegoc", 0) ;
+				$this->FltCacherNegocs->ExpressionDonnees = ($this->CacherNegocs) ? "num_op_inter_dem = 0" : "num_op_inter_dem <> 0" ;
 			}
 		}
-		class TablReservOpInterTradPlatf extends TablEditOpInterTradPlatf
+		class TablSoumissOpInterTradPlatf extends TablEditOpInterTradPlatf
 		{
 			protected function ObtientRequeteSelection(& $bd)
 			{
@@ -359,17 +321,117 @@ left join operateur t6
 on t5.id_entite_dest=t6.id_entite
 left join (select num_op_inter_dem, count(0) total_dem from op_inter where num_op_inter_dem is not null and num_op_inter_dem <> 0 group by num_op_inter_dem) t8
 on t8.num_op_inter_dem = t1.num_op_inter
-where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is not null and t4.active_op = 1 and t8.num_op_inter_dem > 0)" ;
+where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is not null and t4.active_op = 1 and t8.total_dem > 0)" ;
 			}
+			public function ChargeConfig()
+			{
+				parent::ChargeConfig() ;
+				$this->CmdAjout->Visible = 0 ;
+				$this->FmtModif->Visible = 0 ;
+				$this->FmtSuppr->Visible = 0 ;
+				$this->FmtPostuls->Visible = 1 ;
+			}
+		}
+		class TablPostulsOpInterTradPlatf extends TableauDonneesBaseTradPlatf
+		{
+			protected function ObtientNomClsCSSElem($index, & $elem)
+			{
+				$nomClsCSS = parent::ObtientNomClsCSSElem($index, $elem) ;
+				if($elem["bool_confirme"] == 1)
+				{
+					$nomClsCSS .= ' ui-state-disabled' ;
+				}
+				return $nomClsCSS ;
+			}
+		}
+		
+		class TablReservOpInterTradPlatf extends TableauDonneesBaseTradPlatf
+		{
+			public $FltNumOpSoumis ;
+			public $FltTypeChange ;
+			public $FltDatePubl ;
+			public $FltMontant ;
+			public $DefColTri ;
+			public $DefColId ;
+			public $DefColLoginDem ;
+			public $DefColBanqueDem ;
+			public $DefColDatePubl ;
+			public $DefColTypeChange ;
+			public $DefColMontantDem ;
+			public $DefColMontantSoumis ;
+			public $DefColTauxSoumis ;
+			public $DefColConfirm ;
+			public $DefColActions ;
+			public $LienModif ;
+			public $FltEstConfirme ;
+			public $ValeurConfirme = 1 ;
+			public function ChargeConfig()
+			{
+				parent::ChargeConfig() ;
+				$this->ChargeDefCols() ;
+				$this->ChargeDefColActions() ;
+				$this->ChargeFlts() ;
+				$this->ChargeFournDonnees() ;
+			}
+			protected function ChargeDefCols()
+			{
+				$bd = & $this->ApplicationParent->BDPrincipale ;
+				$this->DefColTri = $this->InsereDefColCachee("date_change") ;
+				$this->DefColId = $this->InsereDefColCachee("num_op_inter") ;
+				$this->DefColPeutAjust = $this->InsereDefColCachee("peut_ajuster") ;
+				$this->DefColDatePubl = $this->InsereDefCol("date_change", 'Date publication', $bd->SqlDateToStrFr('date_change')) ;
+				$this->DefColLoginDem = $this->InsereDefCol("login_dem", 'Demandeur') ;
+				$this->DefColBanqueDem = $this->InsereDefCol("nom_entite_dem", 'Banque') ;
+				$this->DefColMontantDem = $this->InsereDefColMoney("montant_change", 'Montant') ;
+				$this->DefColMontantSoumis = $this->InsereDefColMoney("montant_soumis", 'Montant possible') ;
+				$this->DefColTauxSoumis = $this->InsereDefCol("taux_soumis", 'Taux possible') ;
+				// $this->DefColTauxDem = $this->InsereDefCol("taux_dem", 'Taux', 'case when commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end') ;
+				// $this->DefColConfirm = $this->InsereDefColBool("bool_confirme", 'Confirme') ;
+			}
+			protected function ChargeDefColActions()
+			{
+				$this->DefColActions = $this->InsereDefColActions('Actions') ;
+				$this->LienModif = $this->InsereLienOuvreFenetreAction(
+					$this->DefColActions,'?appelleScript=modifOpInterSoumis&idEnCours=${num_op_inter}',
+					$this->ZoneParent->FournExprs->LibLienAjustNegoc, 'modif_op_inter_soumis_${num_op_inter}',
+					$this->ZoneParent->FournExprs->TitrFenAjustNegoc, 
+					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 525)
+				) ;
+				$this->LienModif->NomDonneesValid = "peut_ajuster" ;
+				if($this->ValeurConfirme == 1)
+				{
+					$this->DefColActions->Visible = 0 ;
+				}
+			}
+			protected function ChargeFlts()
+			{
+				$this->FltNumOpSoumis = $this->InsereFltSelectFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop = <self>') ;
+				$this->FltEstSoumis = $this->InsereFltSelectFixe('num_op_inter_dem', 0, 'num_op_inter_dem <> <self>') ;
+				$this->FltEstConfirme = $this->InsereFltSelectFixe('bool_confirme', $this->ValeurConfirme, 'bool_confirme = <self>') ;
+				$this->FltTypeChange = $this->InsereFltSelectFixe('type_change_dem', $this->ScriptParent->TypeOpInterOppose(), 'type_change = <self>') ;
+			}
+			protected function ChargeFournDonnees()
+			{
+				$bd = & $this->ApplicationParent->BDPrincipale ;
+				$this->FournisseurDonnees = new PvFournisseurDonneesSql() ;
+				$this->FournisseurDonnees->BaseDonnees = & $bd ;
+				$this->FournisseurDonnees->RequeteSelection = '(select t1.*, case when t1.bool_confirme = 0 then 1 else 0 end peut_ajuster, t3.login login_dem, t4.name nom_entite_dem from op_inter t1 inner join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter left join operateur t3 on t2.numop = t3.numop left join entite t4 on t3.id_entite = t4.id_entite where t1.bool_valide=1)' ;
+			}
+		}
+		class TablNegocEnvoyOpInterTradPlatf extends TablReservOpInterTradPlatf
+		{
+			public $ValeurConfirme = 0 ;
 		}
 		
 		class FormOpInterBaseTradPlatf extends FormulaireDonneesBaseTradPlatf
 		{
+			public $Largeur = "100%" ;
 			public $InclureElementEnCours = 0 ;
 			public $InclureTotalElements = 0 ;
 			public $MaxFiltresEditionParLigne = 1 ;
 			public $FltMontant ;
-			public $FltDateValeur ;
+			public $FltIdCtrl ;
+			public $FltRefChange ;
 			public $FltDateOper ;
 			public $FltDevise1 ;
 			public $FltDevise2 ;
@@ -384,9 +446,14 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			public $FltTypeChange ;
 			public $FltLibDevise ;
 			public $FltTauxTransact ;
-			public $TypeOpInter = 1 ;
+			public $FltMttSoumis ;
+			public $FltTauxSoumis ;
+			public $CritrEcheanceInvalide ;
+			public $CritrDejaPostee ;
 			public $PourReponse = 0 ;
-			public $NomClasseCommandeExecuter = "PvCommandeAjoutElement" ;
+			public $PourNegoc = 0 ;
+			public $PourAjust = 0 ;
+			public $NomClasseCommandeExecuter = "CmdAjoutOpInterTradPlatf" ;
 			public $NomClasseCommandeAnnuler = "PvCmdFermeFenetreActiveAdminDirecte" ;
 			public $MsgReponseInterdit = '<div class="ui-state-error">Vous avez d&eacute;j&agrave; r&eacute;pondu &agrave; cette offre.</div>' ;
 			protected function ReponsePossible()
@@ -416,6 +483,11 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			protected function ChargeFiltresEdition()
 			{
 				parent::ChargeFiltresEdition() ;
+				// ID de control
+				$this->FltIdCtrl = $this->InsereFltEditFixe("idCtrl", uniqid(), "id_ctrl") ;
+				// Ref Change
+				$this->FltRefChange = $this->InsereFltEditHttpPost("refChange", "ref_change") ;
+				$this->FltRefChange->Libelle = "Ref." ;
 				// Lib Devise
 				$this->FltLibDevise = $this->ScriptParent->CreeFiltreHttpPost("lib_devise") ;
 				$this->FltLibDevise->NomParametreDonnees = 'devise_change' ;
@@ -457,9 +529,10 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				// Montant commission
 				$this->FltMttComiss = $this->ScriptParent->CreeFiltreHttpPost("mtt_commiss") ;
 				$this->FltMttComiss->DefinitColLiee("mtt_commiss") ;
+				$this->ZoneParent->RemplisseurConfig->AppliqueCompMttComiss($this->FltMttComiss) ;
 				$this->FiltresEdition[] = & $this->FltMttComiss ;
-				// Montant commission
-				$this->FltTypeTaux = $this->ScriptParent->CreeFiltreHttpPost("mtt_commiss") ;
+				// Type taux ou commission ?
+				$this->FltTypeTaux = $this->ScriptParent->CreeFiltreHttpPost("type_taux") ;
 				$this->FltTypeTaux->DefinitColLiee("type_taux") ;
 				$this->FiltresEdition[] = & $this->FltTypeTaux ;
 				// Date commission
@@ -477,37 +550,20 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltMttTaux->DefinitColLiee("taux_change") ;
 				$this->FltMttTaux->Libelle = "Taux / Commission" ;
 				$this->FltMttTaux->ValeurParDefaut = 0 ;
-				$this->FltMttTaux->DeclareComposant("PvZoneTexteHtml") ;
-				$this->FltMttTaux->Composant->Largeur = "24px" ;
+				$this->ZoneParent->RemplisseurConfig->AppliqueCompValeurTaux($this->FltMttTaux) ;
 				$this->FiltresEdition[] = & $this->FltMttTaux ;
 				// Ecran Taux
-				$valBase = 5 ;
 				$this->FltEcranTaux = $this->ScriptParent->CreeFiltreHttpPost("ecran_taux") ;
 				$this->FltEcranTaux->DefinitColLiee("ecran_taux") ;
-				$this->FltEcranTaux->ValeurParDefaut = 5 ;
-				$this->FltEcranTaux->DeclareComposant("PvZoneBoiteSelectHtml") ;
-				$comp = & $this->FltEcranTaux->Composant ;
-				$comp->NomColonneLibelle = "val" ;
-				$comp->NomColonneValeur = "val" ;
-				$comp->FournisseurDonnees = new PvFournisseurDonneesDirect() ;
-				$comp->FournisseurDonnees->Valeurs["req"] = array() ;
-				for($i=$valBase - 5; $i<= $valBase + 5; $i++)
-				{
-					$comp->FournisseurDonnees->Valeurs["req"][] = array('val' => $i) ;
-				}
+				$this->ZoneParent->RemplisseurConfig->AppliqueCompEcranTaux($this->FltEcranTaux) ;
 				$this->FiltresEdition[] = & $this->FltEcranTaux ;
 				// Date operation
 				$this->FltDateOper = $this->ScriptParent->CreeFiltreHttpPost("date_operation") ;
 				$this->FltDateOper->DefinitColLiee("date_operation") ;
 				$this->FltDateOper->Libelle = "Date operation" ;
+				$this->FltDateOper->ValeurParDefaut = date("Y-m-d") ;
 				$this->FltDateOper->DeclareComposant("PvCalendarDateInput") ;
 				$this->FiltresEdition[] = & $this->FltDateOper ;
-				// Date Valeur
-				$this->FltDateValeur = $this->ScriptParent->CreeFiltreHttpPost("date_valeur") ;
-				$this->FltDateValeur->DefinitColLiee("date_valeur") ;
-				$this->FltDateValeur->Libelle = "Date valeur" ;
-				$this->FltDateValeur->DeclareComposant("PvCalendarDateInput") ;
-				$this->FiltresEdition[] = & $this->FltDateValeur ;
 				// Type de change
 				$this->FltTypeChange = $this->ScriptParent->CreeFiltreFixe("typeChange", $this->TypeOpInter) ;
 				$this->FltTypeChange->DefinitColLiee("type_change") ;
@@ -516,13 +572,20 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltNumOp = $this->ScriptParent->CreeFiltreMembreConnecte('numop', 'MEMBER_ID') ;
 				$this->FltNumOp->DefinitColLiee("numop") ;
 				$this->FiltresEdition[] = & $this->FltNumOp ;
+				// Montant soumis
+				$this->FltMttSoumis = $this->InsereFltEditHttpPost('montant_soumis', 'montant_soumis') ;
+				$this->FltMttSoumis->NePasIntegrerParametre = 1 ;
+				// Taux soumis
+				$this->FltTauxSoumis = $this->InsereFltEditHttpPost('taux_soumis', 'taux_soumis') ;
+				$this->FltTauxSoumis->NePasIntegrerParametre = 1 ;
+				// Commentaire
 				$this->FltCommentaire = $this->ScriptParent->CreeFiltreHttpPost("commentaire") ;
+				$comp0 = $this->FltCommentaire->DeclareComposant("PvZoneMultiligneHtml") ;
+				$comp0->TotalLignes = 11 ;
+				$comp0->TotalColonnes = 92 ;
 				$this->FltCommentaire->DefinitColLiee("commentaire") ;
-				$comp = $this->FltCommentaire->DeclareComposant("PvZoneMultiligneHtml") ;
-				$comp->TotalLignes = 11 ;
-				$comp->TotalColonnes = 92 ;
 				$this->FiltresEdition[] = & $this->FltCommentaire ;
-				if($this->PourReponse)
+				if($this->PourReponse || $this->PourNegoc)
 				{
 					$this->Editable = 0 ;
 					$this->FltNumOpInterRep = $this->ScriptParent->CreeFiltreRef("numOpInterDem", $this->FltNumOpInter) ;
@@ -534,29 +597,88 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			}
 			public function ChargeConfig()
 			{
-				if($this->PourReponse)
+				if($this->PourReponse || $this->PourNegoc)
 				{
-					$this->NomClasseCommandeExecuter = 'CmdEnvoiRepOpInter' ;
+					$this->NomClasseCommandeExecuter = 'CmdEnvoiRepOpInterTradPlatf' ;
 				}
 				parent::ChargeConfig() ;
 				$this->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$this->FournisseurDonnees->RequeteSelection = '(select t1.*, t2.code_devise lib_devise1, t3.code_devise lib_devise2, '.$this->ApplicationParent->BDPrincipale->SqlConcat(array('t2.code_devise', "' / '", 't3.code_devise')).' devise_change, case when t1.commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end taux_transact from op_inter t1 left join devise t2 on t1.id_devise1 = t2.id_devise left join devise t3 on t1.id_devise2 = t3.id_devise)' ;
+				if($this->PourNegoc == 1 && $this->PourAjust == 1)
+				{
+					$this->FournisseurDonnees->RequeteSelection = '(select t1.*, t4.num_op_inter num_op_inter_soumis, t4.montant_soumis montant_change_soumis, t4.taux_soumis taux_change_soumis, t2.code_devise lib_devise1, t3.code_devise lib_devise2, '.$this->ApplicationParent->BDPrincipale->SqlConcat(array('t2.code_devise', "' / '", 't3.code_devise')).' devise_change, case when t1.commiss_ou_taux = 0 then t1.mtt_commiss when t1.type_taux = 0 then t1.taux_change else t1.ecran_taux end taux_transact from op_inter t4 inner join op_inter t1 on t4.num_op_inter_dem=t1.num_op_inter left join devise t2 on t1.id_devise1 = t2.id_devise left join devise t3 on t1.id_devise2 = t3.id_devise)' ;
+					// echo $this->FournisseurDonnees->RequeteSelection ;
+				}
 				// print 				$this->FournisseurDonnees->RequeteSelection ;
 				$this->FournisseurDonnees->TableEdition = "op_inter" ;
 				$this->FournisseurDonnees->BaseDonnees = $this->ApplicationParent->BDPrincipale ;
+				if(! $this->PourReponse && ! $this->PourNegoc && $this->Editable)
+				{
+					$this->CritrEcheanceInvalide = $this->CommandeExecuter->InsereNouvCritere(new CritereEcheanceInvalideOpInter()) ;
+					$this->CritrDejaPostee = $this->CommandeExecuter->InsereNouvCritere(new CritrOpInterDejaPostee()) ;
+				}
+				if($this->PourNegoc && $this->PourAjust)
+				{
+					$this->FltNumOpInter->ExpressionDonnees = 'num_op_inter_soumis = <self>' ;
+				}
 			}
-			public function RenduDispositifBrut()
+			public function CalculeElementsRendu()
 			{
-				$ctn = '' ;
-				if($this->PourReponse && ! $this->ReponsePossible())
+				parent::CalculeElementsRendu() ;
+				// print_r($this->ApplicationParent->BDPrincipale) ;
+				if(! count($this->ElementEnCours))
 				{
-					$ctn .= $this->MsgReponseInterdit ;
+					return ;
 				}
-				else
+				if($this->PourNegoc == 1)
 				{
-					$ctn .= parent::RenduDispositifBrut() ;
+					$typeTaux = $this->ZoneParent->RemplisseurConfig->ObtientTypeTaux($this->ElementEnCours) ;
+					$valTaux = $this->ZoneParent->RemplisseurConfig->ObtientValeurTaux($this->ElementEnCours) ;
+					if($this->PourAjust == 0)
+					{
+						$this->ZoneParent->RemplisseurConfig->AppliqueCompComissOuTaux($this->FltTauxSoumis, $this->ElementEnCours) ;
+						$this->FltMttSoumis->ValeurParDefaut = $this->ElementEnCours["montant_change"] ;
+						$this->FltTauxSoumis->ValeurParDefaut = $valTaux ;
+						// print_r($this->ElementEnCours) ;
+						$this->FltMttSoumis->NePasIntegrerParametre = 0 ;
+						$this->FltTauxSoumis->NePasIntegrerParametre = 0 ;
+					}
+					else
+					{
+						$this->FltMontant->NePasIntegrerParametre = 0 ;
+						$this->FltMttSoumis->DefinitColLiee("montant_change_soumis") ;
+						$this->FltTauxSoumis->DefinitColLiee("taux_change_soumis") ;
+					}
 				}
-				return $ctn ;
+			}
+			protected function EditionPossible()
+			{
+				if($this->InclureElementEnCours == 0 || ($this->Editable == 0 && $this->CacherBlocCommandes))
+				{
+					return 1 ;
+				}
+				$numOpInter = $this->FltNumOpInter->Lie() ;
+				$bd = & $this->FournisseurDonnees->BaseDonnees ;
+				$total = $bd->FetchSqlValue('select count(0) total from op_inter where num_op_inter_dem = '.$bd->ParamPrefix.'numOpInter', array('numOpInter' => $numOpInter), 'total') ;
+				if($total === null || $total > 0)
+				{
+					return 0 ;
+				}
+				return 1 ;
+			}
+			protected function RenduBloque()
+			{
+				$ctn = parent::RenduBloque() ;
+				if($ctn != '')
+				{
+					return $ctn ;
+				}
+				if(! $this->EditionPossible())
+				{
+					$this->Bloque = 1 ;
+					return 'Vous ne pouvez plus modifier ou supprimer cette op&eacute;ration' ;
+				}
+				return '' ;
 			}
 			protected function InitDessinateurFiltresEdition()
 			{
@@ -564,7 +686,25 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			}
 		}
 		
-		class CmdEnvoiRepOpInter extends PvCommandeEditionElementBase
+		class CmdAjoutOpInterTradPlatf extends PvCommandeAjoutElement
+		{
+			public function ExecuteInstructions()
+			{
+				parent::ExecuteInstructions() ;
+				if($this->StatutExecution == 0)
+					return ;
+				$bd = & $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
+				$idCtrl = $this->FormulaireDonneesParent->FltIdCtrl->Lie() ;
+				$lgn = $bd->FetchSqlRow('select * from op_inter where id_ctrl='.$bd->ParamPrefix.'idCtrl', array('idCtrl' => $idCtrl)) ;
+				if(! is_array($lgn))
+					return ;
+				$refChange = (($this->FormulaireDonneesParent->TypeOpInter == 1) ? 'P' : 'E').date('dmy').str_repeat('0', 4 - strlen(strval($lgn["num_op_inter"]))).$lgn["num_op_inter"] ;
+				$sql = 'update op_inter set ref_change = '.$bd->ParamPrefix.'refChange where id_ctrl='.$bd->ParamPrefix.'idCtrl' ;
+				$ok = $bd->RunSql($sql, array('refChange' => $refChange, 'idCtrl' => $idCtrl)) ;
+			}
+		}
+		
+		class CmdEnvoiRepOpInterTradPlatf extends PvCommandeEditionElementBase
 		{
 			public function ExecuteInstructions()
 			{
@@ -593,6 +733,69 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			}
 		}
 		
+		class CmdAjustOpInterTradPlatf extends PvCommandeEditionElementBase
+		{
+			public $Mode = 2 ;
+			public $MessageSuccesExecution = "Votre demande a &eacute;t&eacute; enregistr&eacute;e" ;
+			public function ExecuteInstructions()
+			{
+				parent::ExecuteInstructions() ;
+				// print_r($this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees) ;
+				if($this->StatutExecution == 1)
+				{
+					$this->FormulaireDonneesParent->CacherFormulaireFiltres = 1 ;
+				}
+			}
+		}
+		class CmdNegocOpInterTradPlatf extends CmdAjustOpInterTradPlatf
+		{
+			public $Mode = 1 ;
+			protected function FixeTauxSoumis()
+			{
+				if($this->FormulaireDonneesParent->InclureElementEnCours || $this->FormulaireDonneesParent->CommissOuTaux == 0)
+				{
+					return ;
+				}
+				$form = & $this->FormulaireDonneesParent ;
+				$typeTaux = $form->FltTypeTaux->Lie() ;
+				if($typeTaux == 0)
+				{
+					$form->FltTauxSoumis->ValeurParDefaut = intval($form->FltValeurTaux->Lie()) ;
+				}
+				else
+				{
+					$form->FltTauxSoumis->ValeurParDefaut = intval($form->FltEcranTaux->Lie()) ;
+				}
+				$form->FltTauxSoumis->DejaLie = 0 ;
+				$form->FltTauxSoumis->Lie() ;
+			}
+			public function ExecuteInstructions()
+			{
+				$this->FixeTauxSoumis() ;
+				parent::ExecuteInstructions() ;
+				// print_r($this->FormulaireDonneesParent->FournisseurDonnees) ;
+			}
+		}
+		class CmdSupprOpInterTradPlatf extends PvCommandeSupprElement
+		{
+			public $CacherFormulaireFiltresSiSucces = 1 ;
+			public $MessageSuccesExecution = "L'op&eacute;ration a &eacute;t&eacute; supprim&eacute;e." ;
+			public function ExecuteInstructions2()
+			{
+				$bd = & $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
+				$numOpInter = $this->FormulaireDonneesParent->FltNumOpInter->Lie() ;
+				$ok = $bd->RunSql('update op_inter set bool_valide = 0 where num_op_inter='.$bd->ParamPrefix.'numOpInter', array('numOpInter' => $numOpInter)) ;
+				if(! $ok)
+				{
+					$this->RenseigneErreur("Erreur SQL : ".$bd->ConnectionException) ;
+				}
+				else
+				{
+					$this->ConfirmeSucces() ;
+				}
+			}
+		}
+		
 		class DessinFiltresFormOpInter extends PvDessinateurRenduHtmlFiltresDonnees
 		{
 			public function Execute(& $script, & $composant, $parametres)
@@ -603,6 +806,12 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				{
 					$ctn .= $this->ExecuteForm($script, $composant, $parametres) ;
 				}
+				/*
+				elseif($composant->PourNegoc == 1)
+				{
+					$ctn .= $this->ExecuteNegoc($script, $composant, $parametres) ;
+				}
+				*/
 				else
 				{
 					$ctn .= $this->ExecuteSommaire($script, $composant, $parametres) ;
@@ -614,7 +823,34 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn = '' ;
 				$ctn .= '<table width="100%" cellspacing="0" cellpadding="2">'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td width="40%">'.(($composant->FltTypeChange ->Lie() == 1) ? 'Placement' : 'Emprunt').'</td>'.PHP_EOL ;
+				$ctn .= '<td width="40%">Ref.</td>'.PHP_EOL ;
+				$ctn .= '<td width="*">'.htmlentities($composant->FltRefChange->Etiquette()).'</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td>'.(($composant->FltTypeChange ->Lie() == 1) ? 'Achat devise' : 'Vente devise').'</td>'.PHP_EOL ;
+				$ctn .= '<td>'.htmlentities($composant->FltLibDevise->Etiquette()).'</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td>Date operation</td>'.PHP_EOL ;
+				$ctn .= '<td>'.htmlentities($composant->FltDateOper->Etiquette()).'</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td>Montant Demand&eacute;</td>'.PHP_EOL ;
+				$ctn .= '<td>'.format_money($composant->FltMontant->Etiquette(), 3, 1).'</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				return $ctn ;
+			}
+			protected function ExecuteNegoc(& $script, & $composant, $parametres)
+			{
+				// $auteurDem = ($this->FltIdEnCours->Lie() == $composant->)
+				$renduMttTransact = ($composant->PourAjust == 0) ? $composant->FltMontant->Etiquette() : $composant->FltMontant->Rendu() ;
+				$renduTauxTransact = ($composant->PourAjust == 0) ? $composant->FltTauxTransact->Etiquette() : $composant->FltTauxTransact->Rendu() ;
+				$renduMttSoumis = ($composant->PourAjust == 0) ? $composant->FltMttSoumis->Rendu() : $composant->FltMttSoumis->Etiquette() ;
+				$renduTauxSoumis = ($composant->PourAjust == 0) ? $composant->FltTauxSoumis->Rendu() : $composant->FltTauxSoumis->Etiquette() ;
+				$ctn = '' ;
+				$ctn .= '<table width="100%" cellspacing="0" cellpadding="2">'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td width="60%">'.(($composant->FltTypeChange ->Lie() == 1) ? 'Achat devise' : 'Vente devise').'</td>'.PHP_EOL ;
 				$ctn .= '<td width="*">'.htmlentities($composant->FltLibDevise->Etiquette()).'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
@@ -622,12 +858,20 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn .= '<td>'.htmlentities($composant->FltDateOper->Etiquette()).'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td>Montant</td>'.PHP_EOL ;
-				$ctn .= '<td>'.htmlentities($composant->FltMontant->Etiquette()).'</td>'.PHP_EOL ;
+				$ctn .= '<td>Montant Demand&eacute;</td>'.PHP_EOL ;
+				$ctn .= '<td>'.$renduMttTransact.'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td>Taux/Commission</td>'.PHP_EOL ;
-				$ctn .= '<td>'.htmlentities($composant->FltTauxTransact->Etiquette()).'</td>'.PHP_EOL ;
+				$ctn .= '<td>Taux/Commission demand&eacute;</td>'.PHP_EOL ;
+				$ctn .= '<td>'.$renduTauxTransact.'</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td>Montant possible</td>'.PHP_EOL ;
+				$ctn .= '<td>'.$renduMttSoumis.'</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td>Taux/Commission possible</td>'.PHP_EOL ;
+				$ctn .= '<td>'.$renduTauxSoumis.'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '</table>'.PHP_EOL ;
 				return $ctn ;
@@ -638,7 +882,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn .= '<table width="100%" cellspacing=0 cellpadding="2">'.PHP_EOL ;
 				$ctn .= '<tr><th colspan="2" align="left">Transaction</th></tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td width="35%">Devise transaction</td><td width="*"><table cellspacing="0" cellpadding="0"><tr><td>'.$composant->FltDevise1->Rendu().'</td><td>&nbsp;&nbsp;Contre&nbsp;&nbsp;</td><td>'.$composant->FltDevise2->Rendu().'</td></tr></table></td>'.PHP_EOL ;
+				$ctn .= '<td width="25%">Devise :</td><td width="*"><table cellspacing="0" cellpadding="0"><tr><td>'.$composant->FltDevise1->Rendu().'</td><td>&nbsp;&nbsp;Contre&nbsp;&nbsp;</td><td>'.$composant->FltDevise2->Rendu().'</td></tr></table></td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Montant</td>'.PHP_EOL ;
@@ -646,22 +890,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Date operation</td>'.PHP_EOL ;
-				$ctn .= '<td>'.$composant->FltDateOper->Rendu().'</td>'.PHP_EOL ;
-				$ctn .= '</tr>'.PHP_EOL ;
-				$ctn .= '<tr><td colspan="2">'.PHP_EOL ;
-				$ctn .= '<div class="commissOuTaux">'.PHP_EOL ;
-				$ctn .= '<div><input onchange="affichCommissOuTaux'.$composant->IDInstanceCalc.'()" type="radio" name="commiss_ou_taux" value="0" id="pourComission"'.(($composant->FltCommissOuTaux->Lie() == 0) ? ' checked' : '').' /><label for="pourComission"> Date &eacute;ch&eacute;ance</label> &nbsp;&nbsp; <input onchange="affichCommissOuTaux'.$composant->IDInstanceCalc.'()" type="radio" name="commiss_ou_taux" value="1" id="pourTaux"'.(($composant->FltCommissOuTaux->Lie() == 1) ? ' checked' : '').' /><label for="pourTaux"> Nombre de jours</label></div>'.PHP_EOL ;
-				$ctn .= '<div class="frm">
-<table cellspacing="0" cellpadding="4">
-<td>Date ech&eacute;ance</td><td>'.$composant->FltDateComiss->Rendu().'</td>
-</tr>
-</table>
-</div>'.PHP_EOL ;
-				$ctn .= '<div class="frm">
-<table cellspacing="0" cellpadding="4">
-<tr>
-<td>Valeur</td><td><span>'.$composant->FltMttTaux->Rendu().'</span></td>
-</tr>
+				$ctn .= '<td>'.date("d/m/Y").'</td>'.PHP_EOL ;
+				$ctn .= '</tr>
 </table>
 </div>'.PHP_EOL ;
 				$ctn .= '<div id="infosSupplTransact">
@@ -689,7 +919,14 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn .= '<script type="text/javascript">
 	var evtCommissOuTaux'.$composant->IDInstanceCalc.' = [
 		function () {},
-		function () {}
+		function () {
+			var val = jQuery("#type_taux :checked").val() ;
+			jQuery(".grpValTaux span").hide()
+			.each(function (index, elem) {
+				if(val == index)
+					jQuery(this).show() ;
+			}) ;
+		}
 	] ;
 	function affichCommissOuTaux'.$composant->IDInstanceCalc.'()
 	{
@@ -713,16 +950,466 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			}
 		}
 		
+		class DessinFiltresAjustOpInter extends PvDessinateurRenduHtmlFiltresDonnees
+		{
+			public function Execute(& $script, & $composant, $parametres)
+			{
+				$composant->LieTousLesFiltres() ;
+				$ctn = '' ;
+				$ctn .= '<table width="100%" cellspacing="0" cellpadding="2">'.PHP_EOL ;
+				$ctn .= '<colgroup><col width="40%" /><col width="*" /></colgroup>'.PHP_EOL ;
+				$ctn .= '<tr><th class="ui-widget ui-widget-header" colspan="2">Emetteur</th></tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltRefChange->ObtientIDElementHtmlComposant().'">Reference :</label></td>' ;
+				$ctn .= '<td>'.$composant->FltRefChange->Etiquette().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltLoginDem->ObtientIDElementHtmlComposant().'">Login</label></td>' ;
+				$ctn .= '<td>'.$composant->FltLoginDem->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltCodeEntiteDem->ObtientIDElementHtmlComposant().'">Code Banque</label></td>' ;
+				$ctn .= '<td>'.$composant->FltCodeEntiteDem->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltNomEntiteDem->ObtientIDElementHtmlComposant().'">Nom Banque</label></td>' ;
+				$ctn .= '<td>'.$composant->FltNomEntiteDem->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= $this->SectionDemandeur($script, $composant, $parametres).PHP_EOL ;	
+				$ctn .= '<tr><th colspan="2" class="ui-widget ui-widget-header">N&eacute;gociateur</th></tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltLoginSoumis->ObtientIDElementHtmlComposant().'">Login</label></td>' ;
+				$ctn .= '<td>'.$composant->FltLoginSoumis->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltCodeEntiteSoumis->ObtientIDElementHtmlComposant().'">Code Banque</label></td>' ;
+				$ctn .= '<td>'.$composant->FltCodeEntiteSoumis->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltNomEntiteSoumis->ObtientIDElementHtmlComposant().'">Nom Banque</label></td>' ;
+				$ctn .= '<td>'.$composant->FltNomEntiteSoumis->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= $this->SectionRepondeur($script, $composant, $parametres).PHP_EOL ;
+				$ctn .= '</table>' ;
+				return $ctn ;
+			}
+			protected function RenduFiltreMonnaie(& $filtre)
+			{
+				$ctn = '' ;
+				if($filtre->EstEtiquette)
+				{
+					$ctn .= format_money($filtre->Rendu(), 3, 2) ;
+				}
+				else
+				{
+					$ctn .= $filtre->Rendu() ;
+				}
+				return $ctn ;
+			}
+			protected function SectionDemandeur(& $script, & $composant, $parametres)
+			{
+				$ctn = '' ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltDevise->ObtientIDElementHtmlComposant().'">'.$composant->FltDevise->ObtientLibelle().'</label></td>' ;
+				$ctn .= '<td>'.$composant->FltDevise->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltMontantDem->ObtientIDElementHtmlComposant().'">'.$composant->FltMontantDem->ObtientLibelle().'</label></td>' ;
+				$ctn .= '<td>'.$this->RenduFiltreMonnaie($composant->FltMontantDem).'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltTauxDem->ObtientIDElementHtmlComposant().'">'.$composant->FltTauxDem->ObtientLibelle().'</label></td>' ;
+				$ctn .= '<td>'.$composant->FltTauxDem->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				return $ctn ;
+			}
+			protected function SectionRepondeur(& $script, & $composant, $parametres)
+			{
+				$ctn = '' ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltMontantSoumis->ObtientIDElementHtmlComposant().'">'.$composant->FltMontantSoumis->ObtientLibelle().'</label></td>' ;
+				$ctn .= '<td>'.$this->RenduFiltreMonnaie($composant->FltMontantSoumis).'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltTauxSoumis->ObtientIDElementHtmlComposant().'">'.$composant->FltTauxSoumis->ObtientLibelle().'</label></td>' ;
+				$ctn .= '<td>'.$composant->FltTauxSoumis->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				return $ctn ;
+			}
+		}
+		class DessinFiltresInteretOpInter extends DessinFiltresAjustOpInter
+		{
+			public function Execute(& $script, & $composant, $parametres)
+			{
+				$ctn = '' ;
+				$ctn .= '<p>' ;
+				if($script->TypeOpInter == 1)
+					$ctn .= $script->ZoneParent->FournExprs->MsgInteretPlacement ;
+				else
+					$ctn .= $script->ZoneParent->FournExprs->MsgInteretEmprunt ;
+				$ctn .= '</p>' ;
+				$ctn .= '<table width="100%" cellspacing="0" cellpadding="2">'.PHP_EOL ;
+				$ctn .= '<colgroup><col width="40%" /><col width="*" /></colgroup>'.PHP_EOL ;
+				$ctn .= '<tr><th class="ui-widget ui-widget-header" colspan="2">Emetteur</th></tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltRefChange->ObtientIDElementHtmlComposant().'">Reference :</label></td>' ;
+				$ctn .= '<td>'.$composant->FltRefChange->Etiquette().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<td><label for="'.$composant->FltLoginDem->ObtientIDElementHtmlComposant().'">Login</label></td>' ;
+				$ctn .= '<td>'.$composant->FltLoginDem->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltCodeEntiteDem->ObtientIDElementHtmlComposant().'">Code Banque</label></td>' ;
+				$ctn .= '<td>'.$composant->FltCodeEntiteDem->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltNomEntiteDem->ObtientIDElementHtmlComposant().'">Nom Banque</label></td>' ;
+				$ctn .= '<td>'.$composant->FltNomEntiteDem->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= $this->SectionDemandeur($script, $composant, $parametres) ;
+				$ctn .= '</table>' ;
+				return $ctn ;
+			}
+		}
+		class DessinFiltresNegocOpInter extends DessinFiltresAjustOpInter
+		{
+			protected function SectionRepondeur(& $script, & $composant, & $parametres)
+			{
+				$ctn = '' ;
+				if($composant->CommissOuTaux == 0)
+				{
+					return parent::SectionRepondeur($script, $composant, $parametres) ;
+				}
+				$ctn .= '<tr>' ;
+				$ctn .= '<td><label for="'.$composant->FltMontantSoumis->ObtientIDElementHtmlComposant().'">'.$composant->FltMontantSoumis->ObtientLibelle().'</label></td>' ;
+				$ctn .= '<td>'.$composant->FltMontantSoumis->Rendu().'</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+				<td valign="top">Taux :</td>
+				<td>
+<table cellspacing="0" cellpadding="4">
+<tr>
+<td>Type</td><td><select name="type_taux" id="type_taux" onchange="selectEditeurTauxChange(this.value)" ;"><option value="0">N/A</option><option value="1"'.(($composant->FltTypeTaux->Lie() == 1) ? ' selected' : '').'>Ecran</option></select></td>
+</tr>
+<tr>
+<td>Valeur</td><td class="grpValTaux"><span>'.$composant->FltValeurTaux->Rendu().'</span><span>'.$composant->FltEcranTaux->Rendu().'</span></td>
+</tr>
+</table>
+</td>
+</tr>' ;
+				$ctn .= '<script type="text/javascript">
+	function selectEditeurTauxChange(val)
+	{
+		jQuery(".grpValTaux span").each(function(index, elem) {
+			if(index == val)
+				jQuery(elem).show() ;
+			else
+				jQuery(elem).hide() ;
+		}) ;
+	}
+	jQuery(function() {
+		selectEditeurTauxChange('.json_encode($composant->FltTypeTaux->Lie()).') ;
+	}) ;
+</script>' ;
+				return $ctn ;
+			}
+		}
+		
 		class FormAjoutPlacementTradPlatf extends FormOpInterBaseTradPlatf
 		{
 			public $TypeOpInter = 1 ;
 		}
-		class FormReponsePlacementTradPlatf extends FormAjoutPlacementTradPlatf
+		
+		class FormAjustPlacementTradPlatf extends FormulaireDonneesBaseTradPlatf
 		{
+			public $Largeur = "100%" ;
 			public $InclureElementEnCours = 1 ;
 			public $InclureTotalElements = 1 ;
-			public $PourReponse = 1 ;
+			public $NomClasseCommandeAnnuler = "PvCmdFermeFenetreActiveAdminDirecte" ;
+			public $NomClasseCommandeExecuter = "CmdAjustOpInterTradPlatf" ;
+			public $FltIdEnCours ;
+			public $FltRefChange ;
+			public $FltLimitOpInter ;
+			public $FltTypeChange ;
+			public $FltLoginDem ;
+			public $FltNomEntiteDem ;
+			public $FltCodeEntiteDem ;
+			public $FltDevise ;
+			public $FltMontantDem ;
+			public $FltTauxDem ;
+			public $FltMontantSoumis ;
+			public $FltNomEntiteSoumis ;
+			public $FltCodeEntiteSoumis ;
+			public $FltTauxSoumis ;
+			public $ModeAccesMembre = 0 ;
+			public $CommissOuTaux = 0 ;
+			public $MaxFiltresEditionParLigne = 1 ;
+			public $LigneOpInterDem = array() ;
+			public $MsgReponseInterdit = '<div class="ui-state-error">Vous avez d&eacute;j&agrave; r&eacute;pondu &agrave; cette offre.</div>' ;
+			protected function CreeDessinFltsEdit()
+			{
+				return new DessinFiltresAjustOpInter() ;
+			}
+			protected function ReponsePossible()
+			{
+				$bd = & $this->ApplicationParent->BDPrincipale ;
+				$sql = 'select * from op_inter where num_op_inter_dem='.$bd->ParamPrefix.'numOpInterDem and numop='.$bd->ParamPrefix.'login' ;
+				$row = $bd->FetchSqlRow(
+					$sql,
+					array(
+						'numOpInterDem' => $this->FltIdEnCours->Lie(),
+						'login' => $this->ZoneParent->IdMembreConnecte()
+					)
+				) ;
+				return (is_array($row) && count($row) == 0) ? 1 : 0 ;
+			}
+			public function EstAccessible()
+			{
+				$ok = parent::EstAccessible() ;
+				if(! $ok)
+					return $ok ;
+				$idMembre = $this->ZoneParent->IdMembreConnecte() ;
+				$bd = & $this->ApplicationParent->BDPrincipale ;
+				$ligne = array() ;
+				if($this->InclureElementEnCours)
+				{
+					$idEnCours = $this->FltIdEnCours->Lie() ;
+					$ligne = $bd->FetchSqlRow('select t1.* from op_inter t1
+	inner join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter
+	where t1.num_op_inter='.$bd->ParamPrefix.'idEnCours and (t1.numop = '.$bd->ParamPrefix.'idMembre or t2.numop = '.$bd->ParamPrefix.'idMembre)', array('idEnCours' => $idEnCours, 'idMembre' => $idMembre)) ;
+				}
+				else
+				{
+					$ligne = $this->LigneOpInterDem ;
+				}
+				$ok = (is_array($ligne) && count($ligne) > 0) ;
+				if($ok)
+				{
+					$ligne["commiss_ou_taux"] = $ligne["id_devise1"] == ID_EURO_TRAD_PLATF ? 0 : 1 ;
+					$this->CommissOuTaux = $ligne["commiss_ou_taux"] ;
+					$this->ModeAccesMembre = ($ligne["numop"] == $idMembre) ? 1 : 0 ;
+					$this->ZoneParent->RemplisseurConfig->AppliqueCompComissOuTaux($this->FltTauxDem, $ligne, $this->InclureElementEnCours, 1) ;
+					$this->ZoneParent->RemplisseurConfig->AppliqueCompComissOuTaux($this->FltTauxSoumis, $ligne, 0) ;
+					if($this->InclureElementEnCours)
+					{
+						if($this->ModeAccesMembre == 1)
+						{
+							$this->FltTauxDem->EstEtiquette = 1 ;
+							$this->FltTauxDem->NePasLierColonne = 1 ;
+							$this->FltMontantDem->EstEtiquette = 1 ;
+							$this->FltMontantDem->NePasLierColonne = 1 ;
+						}
+						else
+						{
+							$this->FltTauxSoumis->EstEtiquette = 1 ;
+							$this->FltTauxSoumis->NePasLierColonne = 1 ;
+							$this->FltMontantSoumis->EstEtiquette = 1 ;
+							$this->FltMontantSoumis->NePasLierColonne = 1 ;
+						}
+					}
+					else
+					{
+						$this->FltTauxDem->EstEtiquette = 1 ;
+						$this->FltMontantDem->EstEtiquette = 1 ;
+					}
+				}
+				return $ok ;
+			}
+			public function ChargeConfig()
+			{
+				parent::ChargeConfig() ;
+				$this->ChargeFournDonneesSpec() ;
+				$this->DessinateurFiltresEdition = $this->CreeDessinFltsEdit() ;
+			}
+			protected function ChargeFournDonneesSpec()
+			{
+				$fourn = new PvFournisseurDonneesSql() ;
+				$fourn->BaseDonnees = & $this->ApplicationParent->BDPrincipale ;
+				$fourn->RequeteSelection = '(select t1.*, t3.lib_devise lib_devise1, t4.lib_devise code_devise2, '.$fourn->BaseDonnees->SqlConcat(array('t3.code_devise', "' / '", 't4.code_devise')).' lib_devise, t5.login login_soumis, t6.login login_dem, t7.code code_entite_soumis, t7.name nom_entite_soumis, t8.code code_entite_dem, t8.name nom_entite_dem from op_inter t1 left join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter left join devise t3 on t1.id_devise1 = t3.id_devise left join devise t4 on t1.id_devise2 = t4.id_devise left join operateur t5 on t1.numop = t5.numop left join operateur t6 on t2.numop = t6.numop left join entite t7 on t5.id_entite = t7.id_entite left join entite t8 on t6.id_entite = t8.id_entite)' ;
+				$fourn->TableEdition = 'op_inter' ;
+				$this->FournisseurDonnees = & $fourn ;
+			}
+			protected function ChargeFiltresSelection()
+			{
+				$this->FltIdEnCours = $this->InsereFltLgSelectHttpGet("idEnCours", 'num_op_inter = <self>') ;
+				$this->FltLimitOpInter = $this->InsereFltLgSelectFixe("limitOpInter", 0, 'num_op_inter_dem <> <self>') ;
+			}
+			protected function ChargeOpInterDem()
+			{
+				$bd = & $this->ApplicationParent->BDPrincipale ;
+				if(! $this->InclureElementEnCours)
+				{
+					$idEnCours = $this->FltIdEnCours->Lie() ;
+					$ligne = $bd->FetchSqlRow('select t1.*, '.$bd->SqlDateToStr('t1.date_operation').' date_operation_str, '.$bd->SqlDateToStr('t1.date_valeur').' date_valeur_str, t3.lib_devise lib_devise1, t4.lib_devise code_devise2, '.$bd->SqlConcat(array('t3.code_devise', "' / '", 't4.code_devise')).' lib_devise, \'\' login_soumis, t6.login login_soumis, \'\' code_entite_soumis, \'\' nom_entite_soumis, t6.login login_dem, t8.code code_entite_dem, t8.name nom_entite_dem from op_inter t1 left join devise t3 on t1.id_devise1 = t3.id_devise left join devise t4 on t1.id_devise2 = t4.id_devise left join operateur t6 on t1.numop = t6.numop left join entite t8 on t6.id_entite = t8.id_entite where t1.num_op_inter='.$bd->ParamPrefix.'idEnCours', array('idEnCours' => $idEnCours)) ;
+					if(count($ligne) > 0)
+					{
+						$flts = array() ;
+						$this->LigneOpInterDem = $ligne ;
+						foreach($ligne as $nom => $val)
+						{
+							if(in_array($nom, array("num_op_inter", "montant_soumis", "taux_soumis", "montant_change", "taux_change", "mtt_commiss", "ecran_taux", "date_valeur_str", "date_operation_str")))
+							{
+								continue ;
+							}
+							$valLiee = $val ;
+							if($nom == "type_change")
+								$valLiee = ($valLiee == 1) ? 2 : 1 ;
+							elseif($nom == "num_op_inter_dem")
+								$valLiee = $ligne["num_op_inter"] ;
+							elseif($nom == "numop")
+								$valLiee = $this->ZoneParent->IdMembreConnecte() ;
+							elseif($nom == "date_valeur")
+								$valLiee = $ligne["date_valeur_str"] ;
+							elseif($nom == "date_operation")
+								$valLiee = $ligne["date_operation_str"] ;
+							$flts[$nom] = $this->CreeFiltreFixe($nom, $valLiee) ;
+							$nomColLiee = $nom ;
+							if($nom == "id_devise1")
+							{
+								$nomColLiee = "id_devise2" ;
+							}
+							elseif($nom == "id_devise2")
+							{
+								$nomColLiee = "id_devise1" ;
+							}
+							if($nom == "bool_valide")
+							{
+								$flts[$nom]->ValeurParDefaut = 0 ;
+							}
+							$flts[$nom]->DefinitColLiee($nomColLiee) ;
+							if($nom == "date_valeur" || $nom == "date_operation")
+							{
+								$flts[$nom]->ExpressionColonneLiee = $bd->SqlStrToDate('<self>') ;
+							}
+							$this->FiltresEdition[] = & $flts[$nom] ;
+						}
+						$memberLogged = & $this->ZoneParent->Membership->MemberLogged ;
+						$this->FltLoginDem->ValeurParDefaut = $ligne["login_dem"] ;
+						$this->FltCodeEntiteDem->ValeurParDefaut = $ligne["code_entite_dem"] ;
+						$this->FltNomEntiteDem->ValeurParDefaut = $ligne["nom_entite_dem"] ;
+						$this->FltLoginSoumis->ValeurParDefaut = $memberLogged->Login ;
+						$this->FltCodeEntiteSoumis->ValeurParDefaut = $memberLogged->RawData["CODE_ENTITE"] ;
+						$this->FltNomEntiteSoumis->ValeurParDefaut = $memberLogged->RawData["NOM_ENTITE_MEMBRE"] ;
+						$this->FltDevise->ValeurParDefaut = $ligne["lib_devise"] ;
+						$this->FltDevise->ValeurParDefaut = $ligne["lib_devise"] ;
+						$this->FltMontantDem->ValeurParDefaut = $ligne["montant_change"] ;
+						$this->FltTauxDem->ValeurParDefaut = $this->ZoneParent->RemplisseurConfig->ObtientValeurTaux($ligne) ;
+						$this->FltMontantSoumis->ValeurParDefaut = $this->FltMontantDem->ValeurParDefaut ;
+						$this->FltTauxSoumis->ValeurParDefaut = $this->FltTauxDem->ValeurParDefaut ;
+						$this->FltRefChange->ValeurParDefaut = $ligne["ref_change"] ;
+						$this->ReinitParametres() ;
+					}
+				}
+			}
+			protected function ChargeFiltresEdition()
+			{
+				$this->FltDevise = $this->InsereFltEditHttpPost("lib_devise", "lib_devise") ;
+				$this->FltDevise->Libelle = "Devise" ;
+				$this->FltDevise->EstEtiquette = 1 ;
+				$this->FltLoginDem = $this->InsereFltEditHttpPost("login_dem", "login_dem") ;
+				$this->FltLoginDem->Libelle = "Login emetteur" ;
+				$this->FltLoginDem->EstEtiquette = 1 ;
+				$this->FltCodeEntiteDem = $this->InsereFltEditHttpPost("code_entite_dem", "code_entite_dem") ;
+				$this->FltCodeEntiteDem->Libelle = "Code banque emettrice" ;
+				$this->FltCodeEntiteDem->EstEtiquette = 1 ;
+				$this->FltNomEntiteDem = $this->InsereFltEditHttpPost("nom_entite_dem", "nom_entite_dem") ;
+				$this->FltNomEntiteDem->Libelle = "Nom banque emettrice" ;
+				$this->FltNomEntiteDem->EstEtiquette = 1 ;
+				$this->FltLoginSoumis = $this->InsereFltEditHttpPost("login_soumis", "login_soumis") ;
+				$this->FltLoginSoumis->Libelle = "Login" ;
+				$this->FltLoginSoumis->EstEtiquette = 1 ;
+				$this->FltCodeEntiteSoumis = $this->InsereFltEditHttpPost("nom_entite_soumis", "nom_entite_soumis") ;
+				$this->FltCodeEntiteSoumis->Libelle = "Code banque emettrice" ;
+				$this->FltCodeEntiteSoumis->EstEtiquette = 1 ;
+				$this->FltNomEntiteSoumis = $this->InsereFltEditHttpPost("nom_entite_soumis", "nom_entite_soumis") ;
+				$this->FltNomEntiteSoumis->Libelle = "Nom banque emettrice" ;
+				$this->FltNomEntiteSoumis->EstEtiquette = 1 ;
+				$this->FltMontantDem = $this->InsereFltEditHttpPost("montant_dem", "montant_change") ;
+				$this->FltMontantDem->Libelle = "Montant demand&eacute;" ;
+				$this->FltTauxDem = $this->InsereFltEditHttpPost("taux_dem", "taux_change") ;
+				$this->FltTauxDem->Libelle = "Taux demand&eacute;" ;
+				$this->FltMontantSoumis = $this->InsereFltEditHttpPost("montant_soumis", "montant_soumis") ;
+				$this->FltMontantSoumis->Libelle = "Montant possible" ;
+				$this->FltTauxSoumis = $this->InsereFltEditHttpPost("taux_soumis", "taux_soumis") ;
+				$this->FltTauxSoumis->Libelle = "Taux possible" ;
+				$this->FltRefChange = $this->InsereFltEditHttpPost("refChange", "ref_change") ;
+				$this->FltRefChange->Libelle = "Ref. Change" ;
+				$this->FltRefChange->NePasLierColonne = 1 ;
+				$this->ChargeOpInterDem() ;
+				if($this->InclureElementEnCours)
+				{
+					$this->FltValideOp = $this->InsereFltEditFixe("bool_valide", 1, "bool_valide") ;
+				}
+			}
+			public function CalculeElementsRendu()
+			{
+				parent::CalculeElementsRendu() ;
+				// print_r($this->FournisseurDonnees->BaseDonnees) ;
+			}
+			public function RenduDispositif()
+			{
+				$ok = 1 ;
+				if($this->InclureElementEnCours == 0)
+					$ok = $this->ReponsePossible() ;
+				$ctn = '' ;
+				if(! $ok)
+				{
+					$ctn .= $this->MsgReponseInterdit ;
+				}
+				else
+				{
+					$ctn .= parent::RenduDispositif() ;
+				}
+				return $ctn ;
+			}
 		}
+		class FormNegocPlacementTradPlatf extends FormAjustPlacementTradPlatf
+		{
+			public $InclureElementEnCours = 0 ;
+			public $InclureTotalElements = 0 ;
+			public $NomClasseCommandeExecuter = "CmdNegocOpInterTradPlatf" ;
+			public $FltTypeTaux ;
+			public $FltValeurTaux ;
+			public $FltEcranTaux ;
+			protected function ChargeFiltresEdition()
+			{
+				parent::ChargeFiltresEdition() ;
+				$this->FltTypeTaux = $this->InsereFltEditHttpPost("type_taux", "type_taux") ;
+				$this->FltTypeTaux->ValeurParDefaut = 0 ;
+				$this->FltValeurTaux = $this->InsereFltEditHttpPost("taux_change", "") ;
+				$this->ZoneParent->RemplisseurConfig->AppliqueCompValeurTaux($this->FltValeurTaux) ;
+				$this->FltEcranTaux = $this->InsereFltEditHttpPost("ecran_taux", "") ;
+				$this->ZoneParent->RemplisseurConfig->AppliqueCompEcranTaux($this->FltEcranTaux) ;
+			}
+			public function ChargeConfig()
+			{
+				parent::ChargeConfig() ;
+			}
+			protected function CreeDessinFltsEdit()
+			{
+				return new DessinFiltresNegocOpInter() ;
+			}
+		}
+		class FormInteretPlacementTradPlatf extends FormNegocPlacementTradPlatf
+		{
+			public $InclureElementEnCours = 0 ;
+			public $InclureTotalElements = 0 ;
+			protected function CreeDessinFltsEdit()
+			{
+				return new DessinFiltresInteretOpInter() ;
+			}
+			public function ChargeConfig()
+			{
+				parent::ChargeConfig() ;
+				// $this->FltValideOp->ValeurParDefaut = 0 ;
+				$this->NeLiePasParamFiltresEdition() ;
+			}
+		}
+		class FormReponsePlacementTradPlatf extends FormNegocPlacementTradPlatf
+		{
+		}
+		
 		class FormModifPlacementTradPlatf extends FormAjoutPlacementTradPlatf
 		{
 			public $InclureElementEnCours = 1 ;
@@ -732,7 +1419,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		class FormSupprPlacementTradPlatf extends FormModifPlacementTradPlatf
 		{
 			public $Editable = 0 ;
-			public $NomClasseCommandeExecuter = "PvCommandeSupprElement" ;
+			public $NomClasseCommandeExecuter = "CmdSupprOpInterTradPlatf" ;
+			public $LibelleCommandeExecuter = "Confirmer" ;
 		}
 		
 		class FormAjoutEmpruntTradPlatf extends FormOpInterBaseTradPlatf
@@ -745,11 +1433,14 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			public $InclureTotalElements = 1 ;
 			public $PourReponse = 1 ;
 		}
-		class FormNegocEmpruntTradPlatf extends FormAjoutEmpruntTradPlatf
+		class FormAjustEmpruntTradPlatf extends FormAjustPlacementTradPlatf
 		{
-			public $InclureElementEnCours = 1 ;
-			public $InclureTotalElements = 1 ;
-			public $PourReponse = 1 ;
+		}
+		class FormNegocEmpruntTradPlatf extends FormNegocPlacementTradPlatf
+		{
+		}
+		class FormInteretEmpruntTradPlatf extends FormNegocPlacementTradPlatf
+		{
 		}
 		class FormModifEmpruntTradPlatf extends FormAjoutEmpruntTradPlatf
 		{
@@ -760,11 +1451,86 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		class FormSupprEmpruntTradPlatf extends FormModifEmpruntTradPlatf
 		{
 			public $Editable = 0 ;
-			public $NomClasseCommandeExecuter = "PvCommandeSupprElement" ;
+			public $NomClasseCommandeExecuter = "CmdSupprOpInterTradPlatf" ;
+			public $LibelleCommandeExecuter = "Confirmer" ;
 		}
-
+		
 		class TablPlacementsBaseTradPlatf extends TablConsultOpInterTradPlatf
 		{
+			public $FltTypeMessage ;
+			public function ChargeConfig()
+			{
+				parent::ChargeConfig() ;
+				$this->FltTypeMessage = $this->InsereFltSelectFixe('typeMessage', 'demande') ;
+				$this->FltTypeMessage->ExpressionDonnees = 'type_message = <self>' ;
+			}
+		}
+		class TablEmpruntsBaseTradPlatf extends TablPlacementsBaseTradPlatf
+		{
+		}
+		
+		class ScriptSoumissPlacementTradPlatf extends ScriptListBaseOpInter
+		{
+			public $TablPrinc ;
+			public $TablSecond ;
+			public $TypeOpInter = 1 ;
+			protected function DetermineTablPrinc()
+			{
+				$this->TablPrinc = new TablSoumissOpInterTradPlatf() ;
+				$this->TablPrinc->AdopteScript("tablPrinc", $this) ;
+				$this->TablPrinc->ChargeConfig() ;
+			}
+			protected function DetermineTablSecond()
+			{
+				$this->TablSecond = new TablNegocEnvoyOpInterTradPlatf() ;
+				$this->TablSecond->AdopteScript("tablSecond", $this) ;
+				$this->TablSecond->ChargeConfig() ;
+			}
+			public function DetermineEnvironnement()
+			{
+				parent::DetermineEnvironnement() ;
+				$this->DetermineTablPrinc() ;
+				$this->DetermineTablSecond() ;
+			}
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$ctn .= $this->BarreMenu->RenduDispositif() ;
+				$ctn .= '<div id="tabs-'.$this->IDInstanceCalc.'">'.PHP_EOL ;
+				$ctn .= '<ul>' ;
+				$ctn .= '<li><a href="#tab-1-'.$this->IDInstanceCalc.'">Publications</a></li>' ;
+				$ctn .= '<li><a href="#tab-2-'.$this->IDInstanceCalc.'">Consultations</a></li>' ;
+				$ctn .= '</ul>' ;
+				$ctn .= '<div id="tab-1-'.$this->IDInstanceCalc.'">' ;
+				$ctn .= $this->TablPrinc->RenduDispositif() ;
+				$ctn .= '</div>' ;
+				$ctn .= '<div id="tab-2-'.$this->IDInstanceCalc.'">' ;
+				$ctn .= $this->TablSecond->RenduDispositif() ;
+				$ctn .= '</div>' ;
+				$ctn .= '</div>' ;
+				$ctn .= $this->ZoneParent->RenduContenuJsInclus('jQuery(function() { jQuery("#tabs-'.$this->IDInstanceCalc.'").tabs({active : '.((isset($_GET[$this->TablSecond->IDInstanceCalc.'_Commande'])) ? 1 : 0).'}) ; } ) ;') ;
+				return $ctn ;
+			}
+		}
+		class ScriptModifOpInterSoumisTradPlatf extends ScriptFormTransactBaseTradPlatf
+		{
+			public $FormPrinc ;
+			protected function DetermineFormPrinc()
+			{
+				$this->FormPrinc = new FormAjustPlacementTradPlatf() ;
+				$this->FormPrinc->AdopteScript("formPrinc", $this) ;
+				$this->FormPrinc->ChargeConfig() ;
+			}
+			public function DetermineEnvironnement()
+			{
+				$this->DetermineFormPrinc() ;
+			}
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$ctn .= $this->FormPrinc->RenduDispositif() ;
+				return $ctn ;
+			}
 		}
 		
 		class ScriptListePlacementsTradPlatf extends ScriptListBaseOpInter
@@ -779,8 +1545,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		}
 		class ScriptEditPlacementsTradPlatf extends ScriptListePlacementsTradPlatf
 		{
-			public $Titre = "Publications placements" ;
-			public $TitreDocument = "Publications placements" ;
+			public $Titre = "Publication placements" ;
+			public $TitreDocument = "Publication placements" ;
 			protected function CreeTableau()
 			{
 				return new TablEditOpInterTradPlatf() ;
@@ -788,8 +1554,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		}
 		class ScriptReservPlacementsTradPlatf extends ScriptListePlacementsTradPlatf
 		{
-			public $Titre = "R&eacute;servation placements" ;
-			public $TitreDocument = "R&eacute;servation placements" ;
+			public $Titre = "R&eacute;servations placements" ;
+			public $TitreDocument = "R&eacute;servations placements" ;
 			protected function CreeTableau()
 			{
 				return new TablReservOpInterTradPlatf() ;
@@ -797,9 +1563,11 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		}
 		class ScriptAjoutPlacementTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
-			public $TitreDocument = "Nouveau placement" ;
-			public $Titre = "Nouveau placement" ;
+			public $TitreDocument = "Nouvel placement" ;
+			public $Titre = "Nouvel placement" ;
 			public $FormOpInter ;
+			public $NecessiteMembreConnecte = 1 ;
+			public $TypeOpInter = 1 ;
 			protected function CreeFormOpInter()
 			{
 				return new FormAjoutPlacementTradPlatf() ;
@@ -830,8 +1598,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		}
 		class ScriptPostulsPlacementTradPlatf extends ScriptModifPlacementTradPlatf
 		{
-			public $TitreDocument = "R&eacute;servatiions placement" ;
-			public $Titre = "R&eacute;servatiions placement" ;
+			public $TitreDocument = "Negociations placement" ;
+			public $Titre = "Negociations placement" ;
 			public $FltIdEnCours ;
 			protected function EstConfirme()
 			{
@@ -851,7 +1619,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			}
 			protected function DetermineTablPostuls()
 			{
-				$this->TablPostuls = new TableauDonneesBaseTradPlatf() ;
+				$this->TablPostuls = new TablPostulsOpInterTradPlatf() ;
 				$this->TablPostuls->AdopteScript("tablPostuls", $this) ;
 				$this->TablPostuls->ChargeConfig() ;
 				$this->FltIdEnCours = $this->TablPostuls->InsereFltSelectHttpGet('idEnCours', 'num_op_inter_dem = <self>') ;
@@ -859,6 +1627,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$this->FltIdEnCours->Obligatoire = 1 ;
 				$this->TablPostuls->DeclareFournDonneesSql($this->ApplicationParent->BDPrincipale, '('.TXT_SQL_POSTUL_OP_INTER_TRAD_PLATF.')') ;
 				$this->TablPostuls->InsereDefColCachee('idEnCours', 'num_op_inter') ;
+				$this->TablPostuls->InsereDefColCachee('peut_ajuster', 'peut_ajuster') ;
 				$this->TablPostuls->InsereDefCol('loginop', 'Login') ;
 				$this->TablPostuls->InsereDefCol('nom_entite', 'Etablissement') ;
 				$this->TablPostuls->InsereDefCol('date_operation', 'Date rep.', $this->ApplicationParent->BDPrincipale->SqlDateToStrFr('date_operation')) ;
@@ -866,8 +1635,12 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$colConfirm->AlignElement = "center" ;
 				$colActions = $this->TablPostuls->InsereDefColActions("Actions") ;
 				$colActions->Largeur = "*" ;
+				// $lienAjuster = $this->TablPostuls->InsereLienAction($colActions, $this->ZoneParent->ScriptAjustEmprunt->ObtientUrl().'&idEnCours=${idEnCours}', 'Ajuster') ;
+				$lienAjuster = $this->TablPostuls->InsereLienOuvreFenetreAction($colActions, $this->ZoneParent->ScriptAjustEmprunt->ObtientUrl().'&idEnCours=${idEnCours}', 'N&eacute;gocier', 'ajuster_${idEnCours}', 'N&eacute;gocier', array('Modal' => 1, 'Largeur' => '450', 'Hauteur' => 525, 'BoutonFermer' => 0)) ;
+				$lienAjuster->NomDonneesValid = "peut_ajuster" ;
 				$lienConfirm = $this->TablPostuls->InsereLienAction($colActions, $this->ZoneParent->ScriptValPostulEmprunt->ObtientUrl().'&id=${idEnCours}', 'Confimer') ;
-				$lienConfirm->Visible = ! $this->EstConfirme() ;
+				$lienConfirm->NomDonneesValid = "peut_ajuster" ;
+				// $lienConfirm->Visible = ! $this->EstConfirme() ;
 				$this->TablPostuls->ToujoursAfficher = 1 ;
 				$this->TablPostuls->CacherFormulaireFiltres = 1 ;
 			}
@@ -895,39 +1668,76 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				return new FormReponsePlacementTradPlatf() ;
 			}
 		}
-		class ScriptNegocPlacementTradPlatf extends ScriptAjoutPlacementTradPlatf
+		class ScriptInteretPlacementTradPlatf extends ScriptAjoutPlacementTradPlatf
 		{
-			public $TitreDocument = "Negociation placement" ;
-			public $Titre = "Negociation placement" ;
+			public $TitreDocument = "N&eacute;gociation placement" ;
+			public $Titre = "N&eacute;gociation placement" ;
 			protected function CreeFormOpInter()
 			{
-				return new FormReponsePlacementTradPlatf() ;
+				return new FormInteretPlacementTradPlatf() ;
+				// return new FormAjustPlacementTradPlatf() ;
+			}
+		}
+		class ScriptNegocPlacementTradPlatf extends ScriptAjoutPlacementTradPlatf
+		{
+			public $TitreDocument = "N&eacute;gociation placement" ;
+			public $Titre = "N&eacute;gociation placement" ;
+			protected function CreeFormOpInter()
+			{
+				return new FormNegocPlacementTradPlatf() ;
+				// return new FormAjustPlacementTradPlatf() ;
+			}
+		}
+		class ScriptAjustPlacementTradPlatf extends ScriptAjoutPlacementTradPlatf
+		{
+			public $TitreDocument = "Ajustement placement" ;
+			public $Titre = "Ajustement placement" ;
+			protected function CreeFormOpInter()
+			{
+				return new FormAjustPlacementTradPlatf() ;
 			}
 		}
 		class ScriptSupprPlacementTradPlatf extends ScriptAjoutPlacementTradPlatf
 		{
 			public $TitreDocument = "Suppr. placement" ;
 			public $Titre = "Suppr. placement" ;
+			public $Description = "Vous vous appr&ecirc;tez &agrave; supprimer cet placement :" ;
 			protected function CreeFormOpInter()
 			{
 				return new FormSupprPlacementTradPlatf() ;
 			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = '' ;
+				$ctnForm = parent::RenduDispositifBrut() ;
+				if(count($this->FormOpInter->ElementEnCours) > 0 && ! $this->FormOpInter->PossedeCommandeSelectionnee())
+					$ctn .= '<p>'.$this->Description.'</p>' ;
+				$ctn .= $ctnForm ;
+				return $ctn ;
+			}
 		}
 		
-		class ScriptListeEmpruntsTradPlatf extends ScriptListBaseOpInter
+		class ScriptSoumissEmpruntTradPlatf extends ScriptSoumissPlacementTradPlatf
+		{
+			public $TypeOpInter = 2 ;
+			public $NomScriptEdit = "editEmprunts" ;
+			public $NomScriptReserv = "reservEmprunts" ;
+			public $NomScriptSoumiss = "soumissEmprunt" ;
+		}
+		class ScriptListeEmpruntsTradPlatf extends ScriptListBaseEmprunt
 		{
 			public $TypeOpInter = 2 ;
 			public $Titre = "Liste emprunts" ;
 			public $TitreDocument = "Liste emprunts" ;
 			protected function CreeTableau()
 			{
-				return new TablConsultOpInterTradPlatf() ;
+				return new TablEmpruntsBaseTradPlatf() ;
 			}
 		}
 		class ScriptEditEmpruntsTradPlatf extends ScriptListeEmpruntsTradPlatf
 		{
-			public $Titre = "Postultation emprunts" ;
-			public $TitreDocument = "Publication emprunts" ;
+			public $Titre = "Publications emprunts" ;
+			public $TitreDocument = "Publications emprunts" ;
 			protected function CreeTableau()
 			{
 				return new TablEditOpInterTradPlatf() ;
@@ -935,8 +1745,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		}
 		class ScriptReservEmpruntsTradPlatf extends ScriptListeEmpruntsTradPlatf
 		{
-			public $Titre = "R&eacute;servation emprunts" ;
-			public $TitreDocument = "R&eacute;servation emprunts" ;
+			public $Titre = "R&eacute;servations emprunts" ;
+			public $TitreDocument = "R&eacute;servations emprunts" ;
 			protected function CreeTableau()
 			{
 				return new TablReservOpInterTradPlatf() ;
@@ -947,6 +1757,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			public $TitreDocument = "Nouvel emprunt" ;
 			public $Titre = "Nouvel emprunt" ;
 			public $FormOpInter ;
+			public $TypeOpInter = 2 ;
+			public $NecessiteMembreConnecte = 1 ;
 			protected function CreeFormOpInter()
 			{
 				return new FormAjoutEmpruntTradPlatf() ;
@@ -977,9 +1789,9 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		}
 		class ScriptPostulsEmpruntTradPlatf extends ScriptPostulsPlacementTradPlatf
 		{
-			public $TitreDocument = "R&eacute;servatiions emprunt" ;
+			public $TitreDocument = "Negociations emprunt" ;
 			public $TypeOpInter = 2 ;
-			public $Titre = "R&eacute;servatiions emprunt" ;
+			public $Titre = "Negociations emprunt" ;
 		}
 		class ScriptReponseEmpruntTradPlatf extends ScriptAjoutEmpruntTradPlatf
 		{
@@ -990,24 +1802,57 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				return new FormReponseEmpruntTradPlatf() ;
 			}
 		}
+		class ScriptModifEmpruntSoumisTradPlatf extends ScriptAjoutEmpruntTradPlatf
+		{
+			public $TypeOpInter = 1 ;
+		}
+		class ScriptInteretEmpruntTradPlatf extends ScriptAjoutEmpruntTradPlatf
+		{
+			public $TitreDocument = "Negociation emprunt" ;
+			public $Titre = "Negociation emprunt" ;
+			protected function CreeFormOpInter()
+			{
+				return new FormInteretEmpruntTradPlatf() ;
+			}
+		}
 		class ScriptNegocEmpruntTradPlatf extends ScriptAjoutEmpruntTradPlatf
 		{
 			public $TitreDocument = "Negociation emprunt" ;
 			public $Titre = "Negociation emprunt" ;
 			protected function CreeFormOpInter()
 			{
-				return new FormReponseEmpruntTradPlatf() ;
+				return new FormNegocEmpruntTradPlatf() ;
+			}
+		}
+		class ScriptAjustEmpruntTradPlatf extends ScriptAjoutEmpruntTradPlatf
+		{
+			public $TitreDocument = "Ajustement emprunt" ;
+			public $Titre = "Ajustement emprunt" ;
+			protected function CreeFormOpInter()
+			{
+				return new FormAjustEmpruntTradPlatf() ;
 			}
 		}
 		class ScriptSupprEmpruntTradPlatf extends ScriptAjoutEmpruntTradPlatf
 		{
 			public $TitreDocument = "Suppr. emprunt" ;
 			public $Titre = "Suppr. emprunt" ;
+			public $Description = "Vous vous appr&ecirc;tez &agrave; supprimer cette emprunt :" ;
+			protected function RenduDispositifBrut()
+			{
+				$ctn = '' ;
+				$ctnForm = parent::RenduDispositifBrut() ;
+				if(count($this->FormOpInter->ElementEnCours) > 0 && ! $this->FormOpInter->PossedeCommandeSelectionnee())
+					$ctn .= '<p>'.$this->Description.'</p>' ;
+				$ctn .= $ctnForm ;
+				return $ctn ;
+			}
 			protected function CreeFormOpInter()
 			{
 				return new FormSupprEmpruntTradPlatf() ;
 			}
 		}
+		
 		class ScriptValPostulEmpruntTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
 			public $MsgSucces = 'La postulation a ete accept&eacute;e' ;
@@ -1056,6 +1901,59 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 					$ctn .= '<p><a href="?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($nomScript).'&idEnCours='.urlencode($this->LgnOpInterSelect["num_op_inter_dem"]).'">Retour a la transaction</a></p>' ;
 				}
 				return $ctn ;
+			}
+		}
+		
+		class ScriptConsultEmpruntsTradPlatf extends ScriptListePlacementsTradPlatf
+		{
+			public $TypeOpInter = 2 ;
+			public $NomScriptEdit = "editPlacements" ;
+			public $NomScriptReserv = "reservPlacements" ;
+			public $NomScriptSoumiss = "soumissPlacement" ;
+		}
+		class ScriptConsultPlacementsTradPlatf extends ScriptListeEmpruntsTradPlatf
+		{
+			public $TypeOpInter = 1 ;
+			public $NomScriptEdit = "editEmprunts" ;
+			public $NomScriptReserv = "reservEmprunts" ;
+			public $NomScriptSoumiss = "soumissEmprunt" ;
+		}
+		
+		class CritrOpInterDejaPostee extends PvCritereBase
+		{
+			public $FormatMessageErreur = 'Vous avez d&eacute;j&agrave; post&eacute; cette op&eacute;ration' ;
+			public function EstRespecte()
+			{
+				$montant = $this->FormulaireDonneesParent->FltMontant->Lie() ;
+				$id_devise1 = $this->FormulaireDonneesParent->FltDevise1->Lie() ;
+				$id_devise2 = $this->FormulaireDonneesParent->FltDevise2->Lie() ;
+				$montant = $this->FormulaireDonneesParent->FltMontant->Lie() ;
+				$numOp = $this->ZoneParent->Membership->MemberLogged->Id ;
+				$bd = & $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
+				$sql = 'select * from op_inter where numop='.$bd->ParamPrefix.'numOp and montant_change='.$bd->ParamPrefix.'montant and '.$bd->SqlDatePart($bd->SqlNow()).' = '.$bd->SqlDatePart('date_change').' and id_devise1 = '.$bd->ParamPrefix.'id_devise1 and id_devise2 = '.$bd->ParamPrefix.'id_devise2' ;
+				$lgn = $bd->FetchSqlRow($sql, array('montant' => $montant, 'id_devise1' => $id_devise1, 'id_devise2' => $id_devise2, 'numOp' => $numOp)) ;
+				if(! is_array($lgn) || count($lgn) > 0)
+				{
+					$this->MessageErreur = $this->FormatMessageErreur ;
+					return 0 ;
+				}
+				return 1 ;
+			}
+		}
+		class CritereEcheanceInvalideOpInter extends PvCritereBase
+		{
+			public $FormatMessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre inferieure &agrave; la date actuelle' ;
+			public function EstRespecte()
+			{
+				$valDateOper = $this->FormulaireDonneesParent->FltDateOper->Lie() ;
+				$timestmpJour = date("U", strtotime(date("Y-m-d"))) ;
+				$timestmpOper = strtotime($valDateOper) ;
+				if($timestmpJour > $timestmpOper)
+				{
+					$this->MessageErreur = $this->FormatMessageErreur ;
+					return 0 ;
+				}
+				return 1 ;
 			}
 		}
 	}

@@ -1531,7 +1531,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn .= $this->TablSecond->RenduDispositif() ;
 				$ctn .= '</div>' ;
 				$ctn .= '</div>' ;
-				$ctn .= $this->ZoneParent->RenduContenuJsInclus('jQuery(function() { jQuery("#tabs-'.$this->IDInstanceCalc.'").tabs() ; } ) ;') ;
+				$ctn .= $this->ZoneParent->RenduContenuJsInclus('jQuery(function() { jQuery("#tabs-'.$this->IDInstanceCalc.'").tabs({active : '.((isset($_GET[$this->TablSecond->IDInstanceCalc.'_Commande'])) ? 1 : 0).'}) ; } ) ;') ;
 				return $ctn ;
 			}
 		}

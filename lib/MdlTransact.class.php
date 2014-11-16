@@ -110,14 +110,20 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			protected function ArchiveAncTransacts()
 			{
 				$bd = $this->ApplicationParent->BDPrincipale ;
+				$sql = array() ;
 				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
-				$sql1 = 'insert into arch_op_change select op_change.*, '.$bd->SqlNow().' from op_change where '.$condArch ;
-				$sql2 = 'delete from op_change where '.$condArch ;
-				$sql3 = 'ALTER TABLE op_change auto_increment = 1' ;
+				$sqls[] = 'insert into arch_op_change select op_change.*, '.$bd->SqlNow().' from op_change where '.$condArch ;
+				$sqls[] = 'delete from op_change where '.$condArch ;
+				$sqls[] = 'ALTER TABLE op_change auto_increment = 1' ;
+				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
+				$sqls[] = 'insert into arch_op_inter select op_inter.*, '.$bd->SqlNow().' from op_inter where '.$condArch ;
+				$sqls[] = 'delete from op_inter where '.$condArch ;
+				$sqls[] = 'ALTER TABLE op_inter auto_increment = 1' ;
+				foreach($sqls as $i => $sql)
+				{
+					$bd->RunSql($sql) ;
+				}
 				// echo $sql1 ;
-				$bd->RunSql($sql1) ;
-				$bd->RunSql($sql2) ;
-				$bd->RunSql($sql3) ;
 			}
 			protected function EstPeriodeTransact()
 			{
@@ -232,6 +238,49 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $NomScriptEdit = "editVentesDevise" ;
 			public $NomScriptReserv = "reservVentesDevise" ;
 			public $NomScriptSoumiss = "soumissVenteDevise" ;
+		}
+		class ScriptListBaseOpInter extends ScriptListBaseOpChange
+		{
+			public $Privileges = array('post_op_change') ;
+			public $NomScriptEdit = "editPlacements" ;
+			public $NomScriptReserv = "reservPlacements" ;
+			public $NomScriptSoumiss = "soumissPlacement" ;
+			public $TypeOpInter = 1 ;
+			protected function DetermineBarreMenu()
+			{
+				$this->BarreMenu = $this->CreeBarreMenu() ;
+				$this->BarreMenu->AdopteScript("barreMenu", $this) ;
+				$this->BarreMenu->ChargeConfig() ;
+				// Consultation achat
+				$smConsult = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpInter == 1) ? "listePlacements" : "consultPlacements") ;
+				$smConsult->CheminMiniature = "images/miniatures/consulte_placement.png" ;
+				$smConsult->Titre = "Consultation Placement" ;
+				// Consultation emprunt
+				$smConsultOpp = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpInter == 2) ? "listeEmprunts" : "consultEmprunts") ;
+				$smConsultOpp->CheminMiniature = "images/miniatures/consulte_emprunt.png" ;
+				$smConsultOpp->Titre = "Consultation Emprunt" ;
+				// Edition
+				$smEdition = $this->BarreMenu->MenuRacine->InscritSousMenuScript($this->NomScriptEdit) ;
+				$smEdition->CheminMiniature = "images/miniatures/edit_opinter.png" ;
+				$smEdition->Titre = "Publication" ;
+				$smReserv = $this->BarreMenu->MenuRacine->InscritSousMenuScript($this->NomScriptReserv) ;
+				$smReserv->CheminMiniature = "images/miniatures/reserv_opinter.png" ;
+				$smReserv->Titre = "R&eacute;servation" ;
+				$smSoumiss = $this->BarreMenu->MenuRacine->InscritSousMenuScript($this->NomScriptSoumiss) ;
+				$smSoumiss->CheminMiniature = "images/miniatures/soumiss_opinter.png" ;
+				$smSoumiss->Titre = "Negociations" ;
+			}
+			public function TypeOpInterOppose()
+			{
+				return $this->TypeOpInter == 1 ? 2 : 1 ;
+			}
+		}
+		class ScriptListBaseEmprunt extends ScriptListBaseOpInter
+		{
+			public $TypeOpInter = 2 ;
+			public $NomScriptEdit = "editEmprunts" ;
+			public $NomScriptReserv = "reservEmprunts" ;
+			public $NomScriptSoumiss = "soumissEmprunt" ;
 		}
 	}
 	
