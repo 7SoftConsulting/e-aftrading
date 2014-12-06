@@ -20,6 +20,8 @@
 			public $DefColLibDevise ;
 			public $DefColDatePublic ;
 			public $DefColDateOp ;
+			public $DefColDateValeur ;
+			public $DefColDateEcheance ;
 			public $DefColTaux ;
 			public $DefColActions ;
 			public $FmtModif ;
@@ -92,6 +94,21 @@
 				$this->DefColDateOp->Largeur = "12%" ;
 				$this->DefColDateOp->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColDateOp ;
+				// Date valeur
+				$this->DefColDateValeur = new PvDefinitionColonneDonnees() ;
+				$this->DefColDateValeur->Libelle = "Date valeur" ;
+				$this->DefColDateValeur->NomDonnees = "date_valeur" ;
+				$this->DefColDateValeur->AliasDonnees = $bd->SqlDateToStrFr("date_valeur") ;
+				$this->DefColDateValeur->Largeur = "12%" ;
+				$this->DefColDateValeur->AlignElement = "center" ;
+				$this->DefinitionsColonnes[] = & $this->DefColDateValeur ;
+				$this->DefColDateEcheance = new PvDefinitionColonneDonnees() ;
+				$this->DefColDateEcheance->Libelle = "Date &eacute;ch&eacute;ance" ;
+				$this->DefColDateEcheance->NomDonnees = "date_echeance" ;
+				$this->DefColDateEcheance->AliasDonnees = $bd->SqlDateToStrFr("date_echeance") ;
+				$this->DefColDateEcheance->Largeur = "12%" ;
+				$this->DefColDateEcheance->AlignElement = "center" ;
+				$this->DefinitionsColonnes[] = & $this->DefColDateEcheance ;
 				$this->DefColMontant = new PvDefinitionColonneDonnees() ;
 				$this->DefColMontant->Libelle = "Montant" ;
 				$this->DefColMontant->NomDonnees = "montant_change" ;
@@ -217,7 +234,7 @@
 			}
 			protected function ObtientRequeteSelection(& $bd)
 			{
-				return "(select t1.*, case when t1.commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end taux_transact, ".$bd->SqlConcat(array('t2.code_devise', "' / '", 't3.code_devise'))." devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
+				return "(select t1.*, case when t1.commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end taux_transact, t2.code_devise devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
 case when t1.num_op_inter_dem = 0 then 'demande' else 'reponse' end type_message
 from op_inter t1
 left join devise t2
@@ -433,6 +450,8 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			public $FltIdCtrl ;
 			public $FltRefChange ;
 			public $FltDateOper ;
+			public $FltDateValeur ;
+			public $FltDateEcheance ;
 			public $FltDevise1 ;
 			public $FltDevise2 ;
 			public $FltCommissOuTaux ;
@@ -564,6 +583,20 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltDateOper->ValeurParDefaut = date("Y-m-d") ;
 				$this->FltDateOper->DeclareComposant("PvCalendarDateInput") ;
 				$this->FiltresEdition[] = & $this->FltDateOper ;
+				// Date valeur
+				$this->FltDateValeur = $this->ScriptParent->CreeFiltreHttpPost("date_valeur") ;
+				$this->FltDateValeur->DefinitColLiee("date_valeur") ;
+				$this->FltDateValeur->Libelle = "Date valeur" ;
+				$this->FltDateValeur->ValeurParDefaut = date("Y-m-d") ;
+				$this->FltDateValeur->DeclareComposant("PvCalendarDateInput") ;
+				$this->FiltresEdition[] = & $this->FltDateValeur ;
+				// Date echeance
+				$this->FltDateEcheance = $this->ScriptParent->CreeFiltreHttpPost("date_echeance") ;
+				$this->FltDateEcheance->DefinitColLiee("date_echeance") ;
+				$this->FltDateEcheance->Libelle = "Date echeance" ;
+				$this->FltDateEcheance->EcheanceParDefaut = date("Y-m-d") ;
+				$this->FltDateEcheance->DeclareComposant("PvCalendarDateInput") ;
+				$this->FiltresEdition[] = & $this->FltDateEcheance ;
 				// Type de change
 				$this->FltTypeChange = $this->ScriptParent->CreeFiltreFixe("typeChange", $this->TypeOpInter) ;
 				$this->FltTypeChange->DefinitColLiee("type_change") ;
@@ -882,14 +915,23 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn .= '<table width="100%" cellspacing=0 cellpadding="2">'.PHP_EOL ;
 				$ctn .= '<tr><th colspan="2" align="left">Transaction</th></tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td width="25%">Devise :</td><td width="*"><table cellspacing="0" cellpadding="0"><tr><td>'.$composant->FltDevise1->Rendu().'</td><td>&nbsp;&nbsp;Contre&nbsp;&nbsp;</td><td>'.$composant->FltDevise2->Rendu().'</td></tr></table></td>'.PHP_EOL ;
+				$ctn .= '<td width="25%">Devise :</td><td width="*"><table cellspacing="0" cellpadding="0"><tr><td>'.$composant->FltDevise1->Rendu().'</td></tr></table></td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Montant</td>'.PHP_EOL ;
 				$ctn .= '<td>'.$composant->FltMontant->Rendu().'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td>Date operation</td>'.PHP_EOL ;
+				$ctn .= '<td>Date valeur</td>'.PHP_EOL ;
+				$ctn .= '<td>'.$composant->FltDateValeur->Rendu().'</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td>Date &eacute;cheance</td>'.PHP_EOL ;
+				$ctn .= '<td>'.$composant->FltDateEcheance->Rendu().'</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td>Date op&eacute;ration</td>'.PHP_EOL ;
 				$ctn .= '<td>'.date("d/m/Y").'</td>'.PHP_EOL ;
 				$ctn .= '</tr>
 </table>
@@ -1898,6 +1940,14 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 				{
 					$typeChange = $this->LgnOpInterSelect["type_change_dem"] ;
 					$nomScript = ($typeChange == 1) ? "postulsPlacement" : "postulsEmprunt" ;
+					$ctn .= '<script type="text/javascript">
+	jQuery(function() {
+		if(window.parent.jQuery && window.parent.jQuery("#soumissOpInter iframe").length)
+		{
+			window.parent.jQuery("#soumissOpInter iframe")[0].contentWindow.location= window.parent.jQuery("#soumissOpInter iframe")[0].contentWindow.location ;
+		}
+	}) ;
+</script>' ;
 					$ctn .= '<p><a href="?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($nomScript).'&idEnCours='.urlencode($this->LgnOpInterSelect["num_op_inter_dem"]).'">Retour a la transaction</a></p>' ;
 				}
 				return $ctn ;
@@ -1917,6 +1967,148 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 			public $NomScriptEdit = "editEmprunts" ;
 			public $NomScriptReserv = "reservEmprunts" ;
 			public $NomScriptSoumiss = "soumissEmprunt" ;
+		}
+		
+		class TablNegocOpInterTradPlatf extends TableauDonneesBaseTradPlatf
+		{
+			public $DefColTypeTransact ;
+			public $DefColId ;
+			public $DefColDevise ;
+			public $DefColConfirm ;
+			public $DefColRefChange ;
+			public $DefColLoginOp ;
+			public $DefColNomEntiteOp ;
+			public $DefColDateOp ;
+			public $DefColDateEcheance ;
+			public $DefColDateValeur ;
+			public $DefColMontant ;
+			public $DefColTaux ;
+			public $DefColActions ;
+			public $LienNegocConsult ;
+			public $LienConfirmPubl ;
+			public $LienNegocPubl ;
+			public $FltNumOp ;
+			public $FltConfirme ;
+			public function ChargeConfig()
+			{
+				parent::ChargeConfig() ;
+				$this->ChargeDefCols() ;
+				$this->ChargeFlts() ;
+				$this->ChargeFournDonnees() ;
+			}
+			protected function ChargeFlts()
+			{
+				$bd = $this->ApplicationParent->BDPrincipale ;
+				$this->FltNumOp = $this->InsereFltSelectFixe('num_operateur', $this->ZoneParent->IdMembreConnecte(), '(id_emetteur=<self> or (id_repondeur=<self> and bool_valide=1))') ;
+				$this->FltConfirme = $this->InsereFltSelectFixe('est_confirme', 0, 'bool_confirme=<self>') ;
+				$this->FltConfirme->EstObligatoire = 1 ;
+			}
+			protected function ChargeDefCols()
+			{
+				$bd = $this->ApplicationParent->BDPrincipale ;
+				$this->InsereDefsColCachee("date_change", "num_op_inter", "id_emetteur", "id_devise1", "id_devise2", "lib_devise1", "lib_devise2", "bool_confirme", "bool_valide") ;
+				$this->DefColConfirm = $this->InsereDefColCachee('bool_confirme') ;
+				$this->DefColRefChange = $this->InsereDefCol('ref_change', 'Ref change') ;
+				$this->DefColDevise = $this->InsereDefColHtml('${lib_devise1}', 'Devise') ;
+				$this->DefColLoginOp = $this->InsereDefCol('login_operateur', 'Auteur') ;
+				$this->DefColNomEntiteOp = $this->InsereDefCol('nom_entite_operateur', 'Banque') ;
+				$this->DefColDateOp = $this->InsereDefCol('date_operation', 'Date Op.', $bd->SqlDateToStrFr('date_operation')) ;
+				$this->DefColDateValeur = $this->InsereDefCol('date_valeur', 'Date valeur', $bd->SqlDateToStrFr('date_valeur')) ;
+				$this->DefColDateEcheance = $this->InsereDefCol('date_operation', 'Date &eacute;ch&eacute;ance', $bd->SqlDateToStrFr('date_echeance')) ;
+				$this->DefColMontant = $this->InsereDefColMoney('montant_operateur', 'Montant') ;
+				$this->DefColTaux = $this->InsereDefCol('taux_transact', 'Taux') ;
+				$this->DefColActions = $this->InsereDefColActions('Actions') ;
+				$this->ChargeDefColActions() ;
+			}
+			protected function ChargeDefColActions()
+			{
+				// Lien Négociation
+				$this->LienNegocConsult = $this->InsereLienOuvreFenetreAction(
+					$this->DefColActions,'?appelleScript=modifOpInterSoumis&idEnCours=${num_op_inter}',
+					$this->ZoneParent->FournExprs->LibLienAjustNegoc, 'modif_op_inter_soumis_${num_op_inter}',
+					$this->ZoneParent->FournExprs->TitrFenAjustNegoc, 
+					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 525)
+				) ;
+				// Lien confirmation
+				$this->LienConfirmConsult = $this->InsereLienOuvreFenetreAction(
+					$this->DefColActions, $this->ZoneParent->ScriptValPostulEmprunt->ObtientUrl().'&id=${num_op_inter}',
+					$this->ZoneParent->FournExprs->LibLienConfirmNegoc, 'val_postul_op_inter_soumis_${num_op_inter}',
+					$this->ZoneParent->FournExprs->TitrFenAjustNegoc, 
+					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 300)
+				) ;
+				$this->LienConfirmConsult->DefinitValidite("id_emetteur", $this->ZoneParent->IdMembreConnecte()) ;
+			}
+			protected function ChargeFournDonnees()
+			{
+				$bd = $this->ApplicationParent->BDPrincipale ;
+				$this->FournisseurDonnees = new PvFournisseurDonneesSql() ;
+				$this->FournisseurDonnees->BaseDonnees = $bd ;
+				$this->FournisseurDonnees->RequeteSelection = "(
+	select d1.code_devise lib_devise1,
+		d2.code_devise lib_devise2,
+		t1.id_devise1,
+		t1.id_devise2,
+		case when t1.commiss_ou_taux = 0 then t1.taux_soumis when t1.type_taux = 0 then t1.taux_change else t1.ecran_taux end taux_transact,
+		t2.numop id_emetteur,
+		t3.login login_emetteur,
+		t4.id_entite id_entite_emetteur,
+		t4.name nom_entite_emetteur,
+		t1.numop id_repondeur,
+		e1.login login_repondeur,
+		e1.id_entite id_entite_repondeur,
+		e2.name nom_entite_repondeur,
+		t1.num_op_inter,
+		t1.num_op_inter_dem,
+		t1.ref_change,
+		t1.date_valeur,
+		t1.date_echeance,
+		t1.date_operation,
+		t1.montant_change,
+		t1.montant_soumis,
+		t1.date_change,
+		t1.commiss_ou_taux,
+		t1.taux_change,
+		t1.taux_soumis,
+		t1.ecran_taux,
+		t1.bool_valide,
+		t1.bool_confirme,
+		case when t1.numop = t2.numop then t1.montant_change else t1.montant_soumis end montant_operateur,
+		case when t1.numop = t2.numop then t2.numop else e1.numop end id_operateur,
+		case when t1.numop = t2.numop then t3.login else e1.login end login_operateur,
+		case when t1.numop = t2.numop then t4.name else e2.name end nom_entite_operateur
+	from op_inter t1
+	inner join op_inter t2 ON t2.num_op_inter = t1.num_op_inter_dem
+	inner join operateur t3 ON t3.numop = t2.numop
+	inner join entite t4 ON t3.id_entite = t4.id_entite
+	inner join operateur e1 ON t1.numop = e1.numop
+	inner join entite e2 ON e2.id_entite = e1.id_entite
+	left join devise d1 on d1.id_devise = t1.id_devise1
+	left join devise d2 on d2.id_devise = t1.id_devise2
+)" ;
+			}
+		}
+
+		class ScriptSoumissOpInterTradPlatf extends ScriptListBaseOpInter
+		{
+			protected function DetermineTablPrinc()
+			{
+				$this->TablPrinc = new TablNegocOpInterTradPlatf() ;
+				$this->TablPrinc->AdopteScript("tablPrinc", $this) ;
+				$this->TablPrinc->ChargeConfig() ;
+			}
+			public function DetermineEnvironnement()
+			{
+				parent::DetermineEnvironnement() ;
+				$this->DetermineTablPrinc() ;
+			}
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$ctn .= $this->TablPrinc->RenduDispositif() ;
+				// print_r($this->TablPrinc->FournisseurDonnees->BaseDonnees) ;
+				return $ctn ;
+			}
+
 		}
 		
 		class CritrOpInterDejaPostee extends PvCritereBase

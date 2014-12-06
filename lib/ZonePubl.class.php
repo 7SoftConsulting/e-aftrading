@@ -22,6 +22,10 @@
 		{
 			include dirname(__FILE__)."/OpInter.class.php" ;
 		}
+		if(! defined('EMISS_BON_TRESOR_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/EmissBonTresor.class.php" ;
+		}
 		define('ZONE_PUBL_TRAD_PLATF', 1) ;
 		
 		class ZonePublTradPlatf extends PvZoneWebAdminDirecte
@@ -151,10 +155,22 @@
 			public $ScriptValPostulEmprunt ;
 			public $ScriptSoumissOpInter ;
 			public $ScriptModifOpInterSoumis ;
+			public $ScriptConsultEmissBonTresor ;
+			public $ScriptPublierEmissBonTresor ;
+			public $ScriptAjoutEmissBonTresor ;
+			public $ScriptModifEmissBonTresor ;
+			public $ScriptSupprEmissBonTresor ;
+			public $ScriptProposEmissBonTresor ;
+			public $ScriptDetailProposEmissBonTresor ;
+			public $ScriptListReservEmissBonTresor ;
+			public $ScriptAjoutReservEmissBonTresor ;
+			public $ScriptModifReservEmissBonTresor ;
+			public $ScriptSupprReservEmissBonTresor ;
 			public $MenuParamOpInter ;
 			public $MenuLiaisonOpInter ;
 			public $MenuListePlacements ;
-			public $MenuListeEmprunts ;
+			public $MenuTresorier ;
+			public $MenuEmissBonTresor ;
 			public $RemplisseurConfig ;
 			public $DetectIconeCorresp = 1 ;
 			public $FournExprs ;
@@ -224,14 +240,24 @@ Financier UEMOA" ;
 				$this->MenuListeAchatsDevise->Titre = "Achat de devise" ;
 				$this->MenuListeVentesDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("listeVentesDevise") ;
 				$this->MenuListeVentesDevise->Titre = "Vente de devise" ;
-				$this->MenuSoumissOpChange = $this->MenuOpChangeDevise->InscritSousMenuScript("soumissOpChange") ;
-				$this->MenuSoumissOpChange->Titre = "Negociations" ;
 				$this->MenuOpInterbancaire = $this->MenuListeTransacts->InscritSousMenuFige("transactsOpInterbancaires") ;
 				$this->MenuOpInterbancaire->Titre = "Op&eacute;ration interbancaire" ;
 				$this->MenuListePlacements = $this->MenuOpInterbancaire->InscritSousMenuScript("listePlacements") ;
 				$this->MenuListePlacements->Titre = "Placements" ;
 				$this->MenuListeEmprunts = $this->MenuOpInterbancaire->InscritSousMenuScript("listeEmprunts") ;
 				$this->MenuListeEmprunts->Titre = "Emprunts" ;
+				$this->MenuTresorier = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('tresorier') ;
+				$this->MenuTresorier->Titre = "Tr&eacute;sorier" ;
+				$this->MenuEmissBonTresor = $this->MenuTresorier->InscritSousMenuScript(($this->AttrMembreConnecte('ID_TYPE_ENTITE_MEMBRE') != 5 || $this->PossedePrivilege('admin_members')) ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
+				$this->MenuEmissBonTresor->Titre = "Emission bon de tr&eacute;sor" ;
+				$this->MenuNegociations = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('negociations') ;
+				$this->MenuNegociations->Titre = "N&eacute;gociations" ;
+				$this->MenuSoumissOpChange = $this->MenuNegociations->InscritSousMenuScript("soumissOpChange") ;
+				$this->MenuSoumissOpChange->Titre = "Op&eacute;rations de change" ;
+				$this->MenuSoumissOpChange->Privileges[] = "post_op_change" ;
+				$this->MenuSoumissOpInter = $this->MenuNegociations->InscritSousMenuScript("soumissOpInter") ;
+				$this->MenuSoumissOpInter->Titre = "Op&eacute;rations interbancaires" ;
+				$this->MenuSoumissOpInter->Privileges[] = "post_op_change" ;
 			}
 			protected function ChargeAvantMenusMembership()
 			{
@@ -432,6 +458,10 @@ Financier UEMOA" ;
 				$this->InscritScript("soumissAchatDevise", $this->ScriptSoumissAchatDevise) ;
 				$this->ScriptSoumissVenteDevise = new ScriptSoumissVenteDeviseTradPlatf() ;
 				$this->InscritScript("soumissVenteDevise", $this->ScriptSoumissVenteDevise) ;
+				$this->ScriptSoumissOpChange = new ScriptSoumissOpChangeTradPlatf() ;
+				$this->InscritScript("soumissOpChange", $this->ScriptSoumissOpChange) ;
+				$this->ScriptSoumissOpInter = new ScriptSoumissOpInterTradPlatf() ;
+				$this->InscritScript("soumissOpInter", $this->ScriptSoumissOpInter) ;
 				$this->ScriptEditEmprunts = new ScriptEditEmpruntsTradPlatf() ;
 				$this->InscritScript("editEmprunts", $this->ScriptEditEmprunts) ;
 				$this->ScriptReservEmprunts = new ScriptReservEmpruntsTradPlatf() ;
@@ -464,6 +494,17 @@ Financier UEMOA" ;
 				$this->InscritScript("modifEmprunt", $this->ScriptModifEmprunt) ;
 				$this->ScriptSupprEmprunt = new ScriptSupprEmpruntTradPlatf() ;
 				$this->InscritScript("supprEmprunt", $this->ScriptSupprEmprunt) ;
+				$this->ScriptPublierEmissBonTresor = $this->InsereScript('publierEmissBonTresor', new ScriptPublierEmissBonTresorTradPlatf()) ;
+				$this->ScriptConsultEmissBonTresor = $this->InsereScript('consultEmissBonTresor', new ScriptConsultEmissBonTresorTradPlatf()) ;
+				$this->ScriptProposEmissBonTresor = $this->InsereScript('proposEmissBonTresor', new ScriptProposEmissBonTresorTradPlatf()) ;
+				$this->ScriptAjoutEmissBonTresor = $this->InsereScript('ajoutEmissBonTresor', new ScriptAjoutEmissBonTresorTradPlatf()) ;
+				$this->ScriptModifEmissBonTresor = $this->InsereScript('modifEmissBonTresor', new ScriptModifEmissBonTresorTradPlatf()) ;
+				$this->ScriptSupprEmissBonTresor = $this->InsereScript('supprEmissBonTresor', new ScriptSupprEmissBonTresorTradPlatf()) ;
+				$this->ScriptDetailProposEmissBonTresor = $this->InsereScript('detailProposEmissBonTresor', new ScriptDetailProposEmissBonTresorTradPlatf()) ;
+				$this->ScriptListReservEmissBonTresor = $this->InsereScript('listReservEmissBonTresor', new ScriptListReservEmissBonTresorTradPlatf()) ;
+				$this->ScriptAjoutReservEmissBonTresor = $this->InsereScript('ajoutReservEmissBonTresor', new ScriptAjoutReservEmissBonTresorTradPlatf()) ;
+				$this->ScriptModifReservEmissBonTresor = $this->InsereScript('modifReservEmissBonTresor', new ScriptModifReservEmissBonTresorTradPlatf()) ;
+				$this->ScriptSupprReservEmissBonTresor = $this->InsereScript('supprReservEmissBonTresor', new ScriptSupprReservEmissBonTresorTradPlatf()) ;
 				// $this->ScriptBienvenue->Titre = "Trading Platform" ;
 				$this->ScriptAccueil->TitreDocument = "Trading Platform" ;
 				// $this->ChargeScriptsMembershipSuppl() ;

@@ -359,6 +359,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			public $FltDatePubl ;
 			public $FltMontant ;
 			public $DefColTri ;
+			public $DefColRefChange ;
 			public $DefColId ;
 			public $DefColLoginDem ;
 			public $DefColBanqueDem ;
@@ -387,6 +388,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->DefColId = $this->InsereDefColCachee("num_op_change") ;
 				$this->DefColPeutAjust = $this->InsereDefColCachee("peut_ajuster") ;
 				$this->DefColDatePubl = $this->InsereDefCol("date_change", 'Date publication', $bd->SqlDateToStrFr('date_change')) ;
+				$this->DefColRefChange = $this->InsereDefCol("ref_change", 'Ref.') ;
 				$this->DefColLoginDem = $this->InsereDefCol("login_dem", 'Demandeur') ;
 				$this->DefColBanqueDem = $this->InsereDefCol("nom_entite_dem", 'Banque') ;
 				$this->DefColMontantDem = $this->InsereDefColMoney("montant_change", 'Montant') ;
@@ -428,6 +430,121 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 		class TablNegocEnvoyOpChangeTradPlatf extends TablReservOpChangeTradPlatf
 		{
 			public $ValeurConfirme = 0 ;
+		}
+		class TablNegocOpChangeTradPlatf extends TableauDonneesBaseTradPlatf
+		{
+			public $DefColTypeTransact ;
+			public $DefColId ;
+			public $DefColDevise ;
+			public $DefColConfirm ;
+			public $DefColRefChange ;
+			public $DefColLoginOp ;
+			public $DefColNomEntiteOp ;
+			public $DefColDateValeur ;
+			public $DefColDateOp ;
+			public $DefColMontant ;
+			public $DefColTaux ;
+			public $DefColActions ;
+			public $LienNegocConsult ;
+			public $LienConfirmPubl ;
+			public $LienNegocPubl ;
+			public $FltNumOp ;
+			public $FltConfirme ;
+			public function ChargeConfig()
+			{
+				parent::ChargeConfig() ;
+				$this->ChargeDefCols() ;
+				$this->ChargeFlts() ;
+				$this->ChargeFournDonnees() ;
+			}
+			protected function ChargeFlts()
+			{
+				$bd = $this->ApplicationParent->BDPrincipale ;
+				$this->FltNumOp = $this->InsereFltSelectFixe('num_operateur', $this->ZoneParent->IdMembreConnecte(), '(id_emetteur=<self> or (id_repondeur=<self> and bool_valide=1))') ;
+				$this->FltConfirme = $this->InsereFltSelectFixe('est_confirme', 0, 'bool_confirme=<self>') ;
+				$this->FltConfirme->EstObligatoire = 1 ;
+			}
+			protected function ChargeDefCols()
+			{
+				$bd = $this->ApplicationParent->BDPrincipale ;
+				$this->InsereDefsColCachee("date_change", "num_op_change", "id_emetteur", "id_devise1", "id_devise2", "lib_devise1", "lib_devise2", "bool_confirme", "bool_valide") ;
+				$this->DefColConfirm = $this->InsereDefColCachee('bool_confirme') ;
+				$this->DefColRefChange = $this->InsereDefCol('ref_change', 'Ref change') ;
+				$this->DefColDevise = $this->InsereDefColHtml('${lib_devise2} / ${lib_devise1}', 'Devise') ;
+				$this->DefColLoginOp = $this->InsereDefCol('login_operateur', 'Auteur') ;
+				$this->DefColNomEntiteOp = $this->InsereDefCol('nom_entite_operateur', 'Banque') ;
+				$this->DefColDateOp = $this->InsereDefCol('date_operation', 'Date Op.', $bd->SqlDateToStrFr('date_operation')) ;
+				$this->DefColDateValeur = $this->InsereDefCol('date_valeur', 'Date Valeur', $bd->SqlDateToStrFr('date_valeur')) ;
+				$this->DefColMontant = $this->InsereDefColMoney('montant_operateur', 'Montant') ;
+				$this->DefColTaux = $this->InsereDefCol('taux_transact', 'Taux') ;
+				$this->DefColActions = $this->InsereDefColActions('Actions') ;
+				$this->ChargeDefColActions() ;
+			}
+			protected function ChargeDefColActions()
+			{
+				// Lien Négociation
+				$this->LienNegocConsult = $this->InsereLienOuvreFenetreAction(
+					$this->DefColActions,'?appelleScript=modifOpChangeSoumis&idEnCours=${num_op_change}',
+					$this->ZoneParent->FournExprs->LibLienAjustNegoc, 'modif_op_change_soumis_${num_op_change}',
+					$this->ZoneParent->FournExprs->TitrFenAjustNegoc, 
+					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 525)
+				) ;
+				// Lien confirmation
+				$this->LienConfirmConsult = $this->InsereLienOuvreFenetreAction(
+					$this->DefColActions, $this->ZoneParent->ScriptValPostulVenteDevise->ObtientUrl().'&id=${num_op_change}',
+					$this->ZoneParent->FournExprs->LibLienConfirmNegoc, 'val_postul_op_change_soumis_${num_op_change}',
+					$this->ZoneParent->FournExprs->TitrFenAjustNegoc, 
+					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 300)
+				) ;
+				$this->LienConfirmConsult->DefinitValidite("id_emetteur", $this->ZoneParent->IdMembreConnecte()) ;
+			}
+			protected function ChargeFournDonnees()
+			{
+				$bd = $this->ApplicationParent->BDPrincipale ;
+				$this->FournisseurDonnees = new PvFournisseurDonneesSql() ;
+				$this->FournisseurDonnees->BaseDonnees = $bd ;
+				$this->FournisseurDonnees->RequeteSelection = "(
+	select d1.code_devise lib_devise1,
+		d2.code_devise lib_devise2,
+		t1.id_devise1,
+		t1.id_devise2,
+		case when t1.commiss_ou_taux = 0 then t1.taux_soumis when t1.type_taux = 0 then t1.taux_change else t1.ecran_taux end taux_transact,
+		t2.numop id_emetteur,
+		t3.login login_emetteur,
+		t4.id_entite id_entite_emetteur,
+		t4.name nom_entite_emetteur,
+		t1.numop id_repondeur,
+		e1.login login_repondeur,
+		e1.id_entite id_entite_repondeur,
+		e2.name nom_entite_repondeur,
+		t1.num_op_change,
+		t1.num_op_change_dem,
+		t1.ref_change,
+		t1.date_valeur,
+		t1.date_operation,
+		t1.montant_change,
+		t1.montant_soumis,
+		t1.date_change,
+		t1.commiss_ou_taux,
+		t1.taux_change,
+		t1.taux_soumis,
+		t1.ecran_taux,
+		t1.bool_valide,
+		t1.bool_confirme,
+		case when t1.numop = t2.numop then t1.montant_change else t1.montant_soumis end montant_operateur,
+		case when t1.numop = t2.numop then t2.numop else e1.numop end id_operateur,
+		case when t1.numop = t2.numop then t3.login else e1.login end login_operateur,
+		case when t1.numop = t2.numop then t4.name else e2.name end nom_entite_operateur
+	from op_change t1
+	inner join op_change t2 ON t2.num_op_change = t1.num_op_change_dem
+	inner join operateur t3 ON t3.numop = t2.numop
+	inner join entite t4 ON t3.id_entite = t4.id_entite
+	inner join operateur e1 ON t1.numop = e1.numop
+	inner join entite e2 ON e2.id_entite = e1.id_entite
+	left join devise d1 on d1.id_devise = t1.id_devise1
+	left join devise d2 on d2.id_devise = t1.id_devise2
+)" ;
+			}
 		}
 		
 		class FormOpChangeBaseTradPlatf extends FormulaireDonneesBaseTradPlatf
@@ -1462,7 +1579,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		class FormNegocVenteDeviseTradPlatf extends FormNegocAchatDeviseTradPlatf
 		{
 		}
-		class FormInteretVenteDeviseTradPlatf extends FormNegocAchatDeviseTradPlatf
+		class FormInteretVenteDeviseTradPlatf extends FormInteretAchatDeviseTradPlatf
 		{
 		}
 		class FormModifVenteDeviseTradPlatf extends FormAjoutVenteDeviseTradPlatf
@@ -1490,6 +1607,29 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class TablVentesDeviseBaseTradPlatf extends TablAchatsDeviseBaseTradPlatf
 		{
+		}
+		
+		class ScriptSoumissOpChangeTradPlatf extends ScriptListBaseOpChange
+		{
+			protected function DetermineTablPrinc()
+			{
+				$this->TablPrinc = new TablNegocOpChangeTradPlatf() ;
+				$this->TablPrinc->AdopteScript("tablPrinc", $this) ;
+				$this->TablPrinc->ChargeConfig() ;
+			}
+			public function DetermineEnvironnement()
+			{
+				parent::DetermineEnvironnement() ;
+				$this->DetermineTablPrinc() ;
+			}
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$ctn .= $this->TablPrinc->RenduDispositif() ;
+				// print_r($this->TablPrinc->FournisseurDonnees->BaseDonnees) ;
+				return $ctn ;
+			}
+
 		}
 		
 		class ScriptSoumissAchatDeviseTradPlatf extends ScriptListBaseOpChange
@@ -1571,6 +1711,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			public $NomScriptEdit = "editVentesDevise" ;
 			public $NomScriptReserv = "reservVentesDevise" ;
 			public $NomScriptSoumiss = "soumissVenteDevise" ;
+			public $NomScriptOp1 = "consultAchatsDevise" ;
+			public $NomScriptOp2 = "listeVentesDevise" ;
 		}
 		class ScriptEditAchatsDeviseTradPlatf extends ScriptListeAchatsDeviseTradPlatf
 		{
@@ -1768,6 +1910,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			public $NomScriptEdit = "editAchatsDevise" ;
 			public $NomScriptReserv = "reservAchatsDevise" ;
 			public $NomScriptSoumiss = "soumissAchatDevise" ;
+			public $NomScriptOp1 = "listeAchatsDevise" ;
+			public $NomScriptOp2 = "consultVentesDevise" ;
 		}
 		class ScriptEditVentesDeviseTradPlatf extends ScriptListeVentesDeviseTradPlatf
 		{
@@ -1911,7 +2055,8 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 				)) ;
 				if(count($this->LgnOpChangeSelect) > 0)
 				{
-					$succes = $bd->RunSql('update op_change set bool_confirme=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $id)) ;
+					$succes = $bd->RunSql('update op_change set bool_valide=1, bool_confirme=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $id)) ;
+					// $succes = 1 ;
 					if($succes)
 					{
 						$this->MsgExec = $this->MsgSucces ;
@@ -1933,7 +2078,15 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 				{
 					$typeChange = $this->LgnOpChangeSelect["type_change_dem"] ;
 					$nomScript = ($typeChange == 1) ? "postulsAchatDevise" : "postulsVenteDevise" ;
-					$ctn .= '<p><a href="?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($nomScript).'&idEnCours='.urlencode($this->LgnOpChangeSelect["num_op_change_dem"]).'">Retour a la transaction</a></p>' ;
+					$ctn .= '<script type="text/javascript">
+	jQuery(function() {
+		if(window.parent.jQuery && window.parent.jQuery("#soumissOpChange iframe").length)
+		{
+			window.parent.jQuery("#soumissOpChange iframe")[0].contentWindow.location= window.parent.jQuery("#soumissOpChange iframe")[0].contentWindow.location ;
+		}
+	}) ;
+</script>' ;
+					$ctn .= '<p><a href="javascript:;" onclick="window.top.fermeFenetreActive();">Retour a la transaction</a></p>' ;
 				}
 				return $ctn ;
 			}

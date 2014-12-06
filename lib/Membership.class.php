@@ -277,6 +277,7 @@
 				$sql = '' ;
 				$sql .= ', MEMBER_TABLE.fonction FONCTION_MEMBRE' ;
 				$sql .= ', MEMBER_TABLE.id_entite ID_ENTITE_MEMBRE' ;
+				$sql .= ', TABLE_ENTITE.idtype_entite ID_TYPE_ENTITE_MEMBRE' ;
 				$sql .= ', TABLE_ENTITE.name NOM_ENTITE_MEMBRE' ;
 				$sql .= ', TABLE_ENTITE.code CODE_ENTITE' ;
 				/*

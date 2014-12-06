@@ -19,6 +19,17 @@
 			public $TitrFenDemarrNegocEmprunt = "N&eacute;gocier vente de devise" ;
 			public $MsgInteretPlacement = 'Voulez-vous confirmer votre int&eacute;r&ecirc;t pour ce placement ?' ;
 			public $MsgInteretEmprunt = 'Voulez-vous confirmer votre int&eacute;r&ecirc;t pour cet emprunt ?' ;
+			public $TitrFenPublierEmissBonTresor = 'Publication &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenConsultEmissBonTresor = 'Consultation &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenProposEmissBonTresor = 'Propositions &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenDetailProposEmissBonTresor = 'D&eacute;tails  proposition &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenAjoutEmissBonTresor = 'Ajout &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenModifEmissBonTresor = 'Modification &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenSupprEmissBonTresor = 'Suppression &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenListReservEmissBonTresor = 'Liste des r&eacute;servations &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenAjoutReservEmissBonTresor = 'R&eacute;server &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenModifReservEmissBonTresor = 'Modifier r&eacute;serv . &eacute;mission bon de tr&eacute;sor' ;
+			public $TitrFenSupprReservEmissBonTresor = 'Supprimer r&eacute;serv. &eacute;mission bon de tr&eacute;sor' ;
 		}
 	}
 	

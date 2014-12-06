@@ -162,6 +162,8 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $TypeOpChange = 1 ;
 			public $Privileges = array('post_op_change') ;
 			public $NecessiteMembreConnecte = 1 ;
+			public $NomScriptOp1 = "listeAchatsDevise" ;
+			public $NomScriptOp2 = "consultVentesDevise" ;
 			public $NomScriptEdit = "editAchatsDevise" ;
 			public $NomScriptReserv = "reservAchatsDevise" ;
 			public $NomScriptSoumiss = "soumissAchatDevise" ;
@@ -185,11 +187,11 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				$this->BarreMenu->AdopteScript("barreMenu", $this) ;
 				$this->BarreMenu->ChargeConfig() ;
 				// Consultation achat
-				$smConsult = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpChange == 1) ? "listeAchatsDevise" : "consultAchatsDevise") ;
+				$smConsult = $this->BarreMenu->MenuRacine->InscritSousMenuScript($this->NomScriptOp1) ;
 				$smConsult->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
 				$smConsult->Titre = "Consultation Achat" ;
 				// Consultation vente
-				$smConsultOpp = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpChange == 2) ? "listeVentesDevise" : "consultVentesDevise") ;
+				$smConsultOpp = $this->BarreMenu->MenuRacine->InscritSousMenuScript($this->NomScriptOp2) ;
 				$smConsultOpp->CheminMiniature = "images/miniatures/consulte_vente_devise.png" ;
 				$smConsultOpp->Titre = "Consultation Vente" ;
 				// Edition
@@ -199,9 +201,11 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				$smReserv = $this->BarreMenu->MenuRacine->InscritSousMenuScript($this->NomScriptReserv) ;
 				$smReserv->CheminMiniature = "images/miniatures/reserv_opchange.png" ;
 				$smReserv->Titre = "R&eacute;servation" ;
+				/*
 				$smSoumiss = $this->BarreMenu->MenuRacine->InscritSousMenuScript($this->NomScriptSoumiss) ;
 				$smSoumiss->CheminMiniature = "images/miniatures/soumiss_opchange.png" ;
 				$smSoumiss->Titre = "Negociations" ;
+				*/
 			}
 			protected function DetermineTableau()
 			{
@@ -238,6 +242,8 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $NomScriptEdit = "editVentesDevise" ;
 			public $NomScriptReserv = "reservVentesDevise" ;
 			public $NomScriptSoumiss = "soumissVenteDevise" ;
+			public $NomScriptOp1 = "consultAchatsDevise" ;
+			public $NomScriptOp2 = "listeVentesDevise" ;
 		}
 		class ScriptListBaseOpInter extends ScriptListBaseOpChange
 		{
@@ -266,9 +272,11 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				$smReserv = $this->BarreMenu->MenuRacine->InscritSousMenuScript($this->NomScriptReserv) ;
 				$smReserv->CheminMiniature = "images/miniatures/reserv_opinter.png" ;
 				$smReserv->Titre = "R&eacute;servation" ;
+				/*
 				$smSoumiss = $this->BarreMenu->MenuRacine->InscritSousMenuScript($this->NomScriptSoumiss) ;
 				$smSoumiss->CheminMiniature = "images/miniatures/soumiss_opinter.png" ;
 				$smSoumiss->Titre = "Negociations" ;
+				*/
 			}
 			public function TypeOpInterOppose()
 			{
