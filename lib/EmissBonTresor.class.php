@@ -112,13 +112,13 @@
 				$this->BarreMenu->AdopteScript("barreMenu", $this) ;
 				$this->BarreMenu->ChargeConfig() ;
 				// Consultation
-				if($this->ZoneParent->AttrMembreConnecte('ID_TYPE_ENTITE_MEMBRE') != 5 || $this->ZoneParent->PossedePrivilege('admin_members'))
+				if($this->ZoneParent->PossedePrivilege('post_op_change'))
 				{
 					$this->SousMenuConsult = $this->BarreMenu->MenuRacine->InscritSousMenuScript('consultEmissBonTresor') ;
 					$this->SousMenuConsult->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
 					$this->SousMenuConsult->Titre = "Consultation" ;
 				}
-				if($this->ZoneParent->AttrMembreConnecte('ID_TYPE_ENTITE_MEMBRE') == 5 || $this->ZoneParent->MembreSuperAdminConnecte() || $this->ZoneParent->PossedePrivilege('admin_members'))
+				if($this->ZoneParent->PossedePrivilege('post_doc_tresorier'))
 				{
 					// Publication
 					$this->SousMenuPublier = $this->BarreMenu->MenuRacine->InscritSousMenuScript('publierEmissBonTresor') ;
@@ -142,6 +142,7 @@
 		
 		class ScriptPublierEmissBonTresorTradPlatf extends Script1EmissBonTresorTradPlatf
 		{
+			public $Privileges = array('post_doc_tresorier') ;
 			public $CmdAjout ;
 			public $LienModif ;
 			public $LienSuppr ;
@@ -192,6 +193,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		}
 		class ScriptConsultEmissBonTresorTradPlatf extends Script1EmissBonTresorTradPlatf
 		{
+			public $Privileges = array('post_op_change') ;
 			public $LienReserv ;
 			public $FournDonneesPrinc ;
 			public $DefColId ;
@@ -238,6 +240,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		}
 		class ScriptProposEmissBonTresorTradPlatf extends Script1EmissBonTresorTradPlatf
 		{
+			public $Privileges = array('post_doc_tresorier') ;
 			public $LienReserv ;
 			public $FournDonneesPrinc ;
 			public $DefColId ;
@@ -255,6 +258,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				parent::ChargeTablPrinc() ;
 				$bd = $this->BDPrinc() ;
 				$this->FltDateDebut = $this->TablPrinc->InsereFltSelectHttpGet("dateDebut", "date_emission >= <self>") ;
+				$this->FltDateDebut->ValeurParDefaut = date("Y-m-d", date("u") - 86400 * 90) ;
 				$this->FltDateFin = $this->TablPrinc->InsereFltSelectHttpGet("dateFin", "date_emission <= <self>") ;
 				$this->FltNumOpPubl = $this->TablPrinc->InsereFltSelectFixe("numOpPublieur", $this->ZoneParent->IdMembreConnecte(), "numop_publieur = <self>") ;
 				$this->FltDateDebut->Libelle = "Periode du" ;
@@ -272,7 +276,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColDateEcheance->NomDonnees = "date_echeance" ;
 				$this->DefColDateEcheance->AliasDonnees = $bd->SqlDateToStrFr("date_echeance", 0) ;
 				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.total total_reserv, d1.code_devise from emission_bon_tresor t1
-inner join (select id_emission, count(0) total from reserv_bon_tresor) t2
+inner join (select id_emission, count(0) total from reserv_bon_tresor group by id_emission) t2
 on t1.id = t2.id_emission
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
@@ -300,6 +304,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $PourAjout = 1 ;
 			public $PourDetail = 0 ;
 			public $FormPrincEditable = 1 ;
+			public $CritrValidPrinc ;
 			protected function DefinitExprs()
 			{
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenAjoutEmissBonTresor ;
@@ -337,6 +342,10 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FournDonneesPrinc->RequeteSelection = "emission_bon_tresor" ;
 				$this->FournDonneesPrinc->TableEdition = "emission_bon_tresor" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
+				if($this->FormPrinc->Editable == 1)
+				{
+					$this->CritrValidPrinc = $this->FormPrinc->CommandeExecuter->InsereNouvCritere(new CritrValidEmissBonTresorTradPlatf()) ;
+				}
 			}
 			protected function AccesPossibleFormPrinc()
 			{
@@ -467,6 +476,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $FltNumOpTablSecond ;
 			public $FltIdTablSecond ;
 			public $DefColIdTablSecond ;
+			public $DefColEntiteTablSecond ;
 			public $DefColMontantTablSecond ;
 			public $DefColTauxTablSecond ;
 			public $DefColActsTablSecond ;
@@ -493,10 +503,17 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltIdTablSecond = $this->TablSecond->InsereFltSelectHttpGet('id', 'id_emission = <self>') ;
 				$this->TablSecond->CacherFormulaireFiltres = 1 ;
 				$this->DefColIdTablSecond = $this->TablSecond->InsereDefColCachee('id') ;
+				$this->DefColEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite') ;
 				$this->DefColMontantTablSecond = $this->TablSecond->InsereDefColMoney('montant') ;
 				$this->DefColTauxTablSecond = $this->TablSecond->InsereDefCol('taux') ;
 				$this->FournDonneesSecond = $this->CreeFournDonneesPrinc() ;
-				$this->FournDonneesSecond->RequeteSelection = 'reserv_bon_tresor' ;
+				$this->FournDonneesSecond->RequeteSelection = 'reserv_bon_tresor(select t1.*, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
+from reserv_bon_tresor t1
+left join operateur t2
+on t1.numop_demandeur = t2.numop
+left join entite t3
+on t2.id_entite = t3.id_entite
+group by t1.numop_demandeur)' ;
 				$this->TablSecond->FournisseurDonnees = & $this->FournDonneesSecond ;
 			}
 			protected function RenduDispositifBrut()
@@ -606,8 +623,22 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			}
 		}
 		
-		class CritrValiditeEmissBonTresorTradPlatf extends PvCritereBase
+		class CritrValidEmissBonTresorTradPlatf extends PvCritereBase
 		{
+			public function EstRespecte()
+			{
+				$valDateEmiss = $this->ScriptParent->FltDateEmission->Lie() ;
+				$valDateEcheance = $this->ScriptParent->FltDateEcheance->Lie() ;
+				$timestmpJour = date("U", strtotime(date("Y-m-d"))) ;
+				$timestmpEmiss = strtotime($valDateOper) ;
+				$timestmpEcheance = strtotime($valDateValeur) ;
+				if($timestmpJour > $timestmpEmiss || $timestmpEmiss > $timestmpEcheance)
+				{
+					$this->MessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre inferieure &agrave; la date de valeur ou la date actuelle' ;
+					return 0 ;
+				}
+				return 1 ;
+			}
 		}
 		
 	}

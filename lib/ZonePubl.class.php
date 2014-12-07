@@ -205,7 +205,7 @@ Financier UEMOA" ;
 				$this->MenuGdEntreprise = $this->MenuAutresEntites->InscritSousMenuScript("listeGdEntreprises") ;
 				$this->MenuGdEntreprise->Titre = "Grande entreprise" ;
 				$this->MenuTresorsPubl = $this->MenuAutresEntites->InscritSousMenuScript("listeTresorsPubl") ;
-				$this->MenuTresorsPubl->Titre = "Tresor Publique" ;
+				$this->MenuTresorsPubl->Titre = "Tresor Public" ;
 				$this->MenuParamTransactEntites = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("paramOpInter") ;
 				$this->MenuParamTransactEntites->Privileges[] = "admin_operator" ;
 				$this->MenuParamTransactEntites->Titre = htmlentities("Paramétrage transaction entre entité") ;
@@ -246,11 +246,8 @@ Financier UEMOA" ;
 				$this->MenuListePlacements->Titre = "Placements" ;
 				$this->MenuListeEmprunts = $this->MenuOpInterbancaire->InscritSousMenuScript("listeEmprunts") ;
 				$this->MenuListeEmprunts->Titre = "Emprunts" ;
-				$this->MenuTresorier = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('tresorier') ;
-				$this->MenuTresorier->Titre = "Tr&eacute;sorier" ;
-				$this->MenuEmissBonTresor = $this->MenuTresorier->InscritSousMenuScript(($this->AttrMembreConnecte('ID_TYPE_ENTITE_MEMBRE') != 5 || $this->PossedePrivilege('admin_members')) ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
-				$this->MenuEmissBonTresor->Titre = "Emission bon de tr&eacute;sor" ;
 				$this->MenuNegociations = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('negociations') ;
+				$this->MenuNegociations->Privileges[] = "post_op_change" ;
 				$this->MenuNegociations->Titre = "N&eacute;gociations" ;
 				$this->MenuSoumissOpChange = $this->MenuNegociations->InscritSousMenuScript("soumissOpChange") ;
 				$this->MenuSoumissOpChange->Titre = "Op&eacute;rations de change" ;
@@ -258,6 +255,10 @@ Financier UEMOA" ;
 				$this->MenuSoumissOpInter = $this->MenuNegociations->InscritSousMenuScript("soumissOpInter") ;
 				$this->MenuSoumissOpInter->Titre = "Op&eacute;rations interbancaires" ;
 				$this->MenuSoumissOpInter->Privileges[] = "post_op_change" ;
+				$this->MenuTresorier = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('tresorier') ;
+				$this->MenuTresorier->Titre = "Tr&eacute;sor public" ;
+				$this->MenuEmissBonTresor = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
+				$this->MenuEmissBonTresor->Titre = "Emission bon de tr&eacute;sor" ;
 			}
 			protected function ChargeAvantMenusMembership()
 			{
