@@ -189,6 +189,7 @@
 		class ScriptListeEtabsFinancTradPlatf extends ScriptListeEntitesTradPlatf
 		{
 			public $TitreDocument = 'Etablissements financiers' ;
+			public $Titre = "Etablissements financiers" ;
 			public $InclureChoixTypeEntite = 0 ;
 			public $IdTypeEntiteParDefaut = 2 ;
 		}

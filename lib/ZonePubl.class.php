@@ -110,7 +110,7 @@
 			public $ScriptSoumissOpChange ;
 			public $ScriptModifOpChangeSoumis ;
 			public $MenuBanqEtabFinanc ;
-			public $MenuAutresEntites ;
+			public $MenuEtabBanq ;
 			public $MenuCiesAssurance ;
 			public $MenuGdEntreprise ;
 			public $MenuTresorPubl ;
@@ -162,6 +162,7 @@
 			public $ScriptSupprEmissBonTresor ;
 			public $ScriptProposEmissBonTresor ;
 			public $ScriptDetailProposEmissBonTresor ;
+			public $ScriptDetailReservEmissBonTresor ;
 			public $ScriptListReservEmissBonTresor ;
 			public $ScriptAjoutReservEmissBonTresor ;
 			public $ScriptModifReservEmissBonTresor ;
@@ -190,21 +191,15 @@
 				$this->MenuBanqEtabFinanc = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("etabFinanc") ;
 				$this->MenuBanqEtabFinanc->Privileges = array("admin_members") ;
 				$this->MenuBanqEtabFinanc->CheminIcone = "images/icones/listeEtabFinanc.png" ;
-				$this->MenuBanqEtabFinanc->Titre = "Banque &amp; Etablissement<br>
-Financier UEMOA" ;
+				$this->MenuBanqEtabFinanc->Titre = "Entit&eacute;s financi&egrave;res" ;
 				$this->MenuEtabBanq = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeBanques") ;
 				$this->MenuEtabBanq->Titre = "Etablissements bancaires" ;
 				$this->MenuEtabFinanc = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeEtabsFinanc") ;
-				$this->MenuEtabFinanc->Titre = "Etablissements financiers" ;
-				$this->MenuAutresEntites = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("listeEntites") ;
-				$this->MenuAutresEntites->CheminIcone = "images/icones/listeEtabFinanc.png" ;
-				$this->MenuAutresEntites->Privileges = array("admin_members") ;
-				$this->MenuAutresEntites->Titre = "Autres entit&eacute;s" ;
-				$this->MenuCiesAssurance = $this->MenuAutresEntites->InscritSousMenuScript("listeCiesAssurance") ;
-				$this->MenuCiesAssurance->Titre = "Compagnie assurance" ;
-				$this->MenuGdEntreprise = $this->MenuAutresEntites->InscritSousMenuScript("listeGdEntreprises") ;
+				$this->MenuCiesAssurance = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeCiesAssurance") ;
+				$this->MenuCiesAssurance->Titre = "Compagnies d'assurance" ;
+				$this->MenuGdEntreprise = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeGdEntreprises") ;
 				$this->MenuGdEntreprise->Titre = "Grande entreprise" ;
-				$this->MenuTresorsPubl = $this->MenuAutresEntites->InscritSousMenuScript("listeTresorsPubl") ;
+				$this->MenuTresorsPubl = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeTresorsPubl") ;
 				$this->MenuTresorsPubl->Titre = "Tresor Public" ;
 				$this->MenuParamTransactEntites = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("paramOpInter") ;
 				$this->MenuParamTransactEntites->Privileges[] = "admin_operator" ;
@@ -258,7 +253,7 @@ Financier UEMOA" ;
 				$this->MenuTresorier = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('tresorier') ;
 				$this->MenuTresorier->Titre = "Tr&eacute;sor public" ;
 				$this->MenuEmissBonTresor = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
-				$this->MenuEmissBonTresor->Titre = "Emission bon de tr&eacute;sor" ;
+				$this->MenuEmissBonTresor->Titre = "Bon de tr&eacute;sor" ;
 			}
 			protected function ChargeAvantMenusMembership()
 			{
@@ -506,6 +501,7 @@ Financier UEMOA" ;
 				$this->ScriptAjoutReservEmissBonTresor = $this->InsereScript('ajoutReservEmissBonTresor', new ScriptAjoutReservEmissBonTresorTradPlatf()) ;
 				$this->ScriptModifReservEmissBonTresor = $this->InsereScript('modifReservEmissBonTresor', new ScriptModifReservEmissBonTresorTradPlatf()) ;
 				$this->ScriptSupprReservEmissBonTresor = $this->InsereScript('supprReservEmissBonTresor', new ScriptSupprReservEmissBonTresorTradPlatf()) ;
+				$this->ScriptDetailReservEmissBonTresor = $this->InsereScript('detailReservEmissBonTresor', new ScriptDetailReservEmissBonTresorTradPlatf()) ;
 				// $this->ScriptBienvenue->Titre = "Trading Platform" ;
 				$this->ScriptAccueil->TitreDocument = "Trading Platform" ;
 				// $this->ChargeScriptsMembershipSuppl() ;

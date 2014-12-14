@@ -168,6 +168,8 @@
 				$this->FltDateDebut->DeclareComposant("PvCalendarDateInput") ;
 				$this->FltDateFin->Libelle = "au" ;
 				$this->FltDateFin->DeclareComposant("PvCalendarDateInput") ;
+				$this->TablPrinc->SensColonneTri = "desc" ;
+				$this->TablPrinc->AccepterTriColonneInvisible = 1 ;
 				$this->DefColId = $this->TablPrinc->InsereDefColCachee('id') ;
 				$this->DefColNumOp = $this->TablPrinc->InsereDefColCachee('numop_publieur') ;
 				$this->DefColRefTransact = $this->TablPrinc->InsereDefCol('ref_transact', 'Ref.') ;
@@ -217,6 +219,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltDateDebut->DeclareComposant("PvCalendarDateInput") ;
 				$this->FltDateFin->Libelle = "au" ;
 				$this->FltDateFin->DeclareComposant("PvCalendarDateInput") ;
+				$this->TablPrinc->AccepterTriColonneInvisible = 1 ;
+				$this->TablPrinc->SensColonneTri = "desc" ;
 				$this->DefColId = $this->TablPrinc->InsereDefColCachee('id') ;
 				$this->DefColNumOp = $this->TablPrinc->InsereDefColCachee('numop_publieur') ;
 				$this->DefColRefTransact = $this->TablPrinc->InsereDefCol('ref_transact', 'Ref.') ;
@@ -231,7 +235,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 FROM emission_bon_tresor t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=detailProposEmissBonTresor&id=${id}', 'Details', 'detail_emiss_bon_tresor_${id}', 'D&eacute;tails &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=detailProposEmissBonTresor&id=${id}', 'Intention souscription', 'detail_emiss_bon_tresor_${id}', 'D&eacute;tails &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
 			}
 			protected function DefinitExprs()
 			{
@@ -304,6 +308,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $PourAjout = 1 ;
 			public $PourDetail = 0 ;
 			public $FormPrincEditable = 1 ;
+			public $CritrNonVidePrinc ;
 			public $CritrValidPrinc ;
 			protected function DefinitExprs()
 			{
@@ -332,7 +337,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->CompDevise->FournisseurDonnees = $this->CreeFournDonneesPrinc() ;
 				$this->CompDevise->FournisseurDonnees->RequeteSelection = 'devise' ;
 				$this->CompDevise->NomColonneValeur = 'id_devise' ;
-				$this->CompDevise->NomColonneLibelle = 'lib_devise' ;
+				$this->CompDevise->NomColonneLibelle = 'code_devise' ;
 				$this->FltDateEmission = $this->FormPrinc->InsereFltEditHttpPost('date_emission', 'date_emission') ;
 				$this->FltDateEmission->Libelle = "Date émission" ;
 				$this->CompDateEmission = $this->FltDateEmission->DeclareComposant("PvCalendarDateInput") ;
@@ -345,6 +350,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				if($this->FormPrinc->Editable == 1)
 				{
 					$this->CritrValidPrinc = $this->FormPrinc->CommandeExecuter->InsereNouvCritere(new CritrValidEmissBonTresorTradPlatf()) ;
+					$this->CritrNonVidePrinc = $this->FormPrinc->CommandeExecuter->InsereNouvCritere(new PvCritereNonVide()) ;
+					$this->CritrNonVidePrinc->FiltresCibles = array(&$this->FltRefTransact, &$this->FltMontant)  ;
 				}
 			}
 			protected function AccesPossibleFormPrinc()
@@ -470,16 +477,14 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		
 		class ScriptListReservEmissBonTresorTradPlatf extends ScriptModifEmissBonTresorTradPlatf
 		{
-
 			public $PourDetail = 1 ;
 			public $TablSecond ;
 			public $FltNumOpTablSecond ;
 			public $FltIdTablSecond ;
 			public $DefColIdTablSecond ;
 			public $DefColEntiteTablSecond ;
-			public $DefColMontantTablSecond ;
-			public $DefColTauxTablSecond ;
 			public $DefColActsTablSecond ;
+			public $LienDetailsTablSecond ;
 			public function DetermineEnvironnement()
 			{
 				parent::DetermineEnvironnement() ;
@@ -503,17 +508,20 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltIdTablSecond = $this->TablSecond->InsereFltSelectHttpGet('id', 'id_emission = <self>') ;
 				$this->TablSecond->CacherFormulaireFiltres = 1 ;
 				$this->DefColIdTablSecond = $this->TablSecond->InsereDefColCachee('id') ;
-				$this->DefColEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite') ;
-				$this->DefColMontantTablSecond = $this->TablSecond->InsereDefColMoney('montant') ;
-				$this->DefColTauxTablSecond = $this->TablSecond->InsereDefCol('taux') ;
+				$this->DefColIdEmissTablSecond = $this->TablSecond->InsereDefColCachee('id_emission') ;
+				$this->DefColNumOpTablSecond = $this->TablSecond->InsereDefColCachee('numop') ;
+				$this->DefColEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite', "Entit&eacute;") ;
+				$this->DefColLoginTablSecond = $this->TablSecond->InsereDefCol('login', "Login") ;
+				$this->DefColActsTablSecond = $this->TablSecond->InsereDefColActions("Actions") ;
+				$this->LienDetailsTablSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=detailReservEmissBonTresor&id=${id_emission}&numop=${numop}', 'D&eacute;tails', 'details_reserv_emiss_bon_tresor_${id}_${numop}', 'Details &eacute;mission bon de tr&eacute;sor #${login}', $this->OptsFenetreDetail) ;
 				$this->FournDonneesSecond = $this->CreeFournDonneesPrinc() ;
-				$this->FournDonneesSecond->RequeteSelection = 'reserv_bon_tresor(select t1.*, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
+				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
 from reserv_bon_tresor t1
 left join operateur t2
 on t1.numop_demandeur = t2.numop
 left join entite t3
 on t2.id_entite = t3.id_entite
-group by t1.numop_demandeur)' ;
+group by t2.login)' ;
 				$this->TablSecond->FournisseurDonnees = & $this->FournDonneesSecond ;
 			}
 			protected function RenduDispositifBrut()
@@ -531,6 +539,36 @@ group by t1.numop_demandeur)' ;
 			protected function DefinitExprs()
 			{
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenListReservEmissBonTresor ;
+			}
+		}
+		class ScriptDetailReservEmissBonTresorTradPlatf extends ScriptListEmissBonTresorTradPlatf
+		{
+			public $DefColLogin ;
+			public $DefColEntite ;
+			public $DefColMontant ;
+			public $DefColTaux ;
+			public $FltId ;
+			public $FltNumOp ;
+			protected function DetermineTablPrinc()
+			{
+				parent::DetermineTablPrinc() ;
+				$this->FltId = $this->TablPrinc->InsereFltSelectHttpGet('id', 'id_emission = <self>') ;
+				$this->FltId->Obligatoire = 1 ;
+				$this->FltNumOp = $this->TablPrinc->InsereFltSelectHttpGet('numop', 'numop= <self>') ;
+				$this->FltNumOp->Obligatoire = 1 ;
+				$this->TablPrinc->CacherFormulaireFiltres = 1 ;
+				$this->TablPrinc->CacherBlocCommandes = 1 ;
+				$this->TablPrinc->ToujoursAfficher = 1 ;
+				$this->DefColEntite = $this->TablPrinc->InsereDefCol('nom_entite', 'Entit&eacute;') ;
+				$this->DefColLogin = $this->TablPrinc->InsereDefCol('login', 'Login') ;
+				$this->DefColMontant = $this->TablPrinc->InsereDefCol('montant', 'Montant') ;
+				$this->DefColTaux = $this->TablPrinc->InsereDefCol('taux', 'Taux') ;
+				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
+from reserv_bon_tresor t1
+left join operateur t2
+on t1.numop_demandeur = t2.numop
+left join entite t3
+on t2.id_entite = t3.id_entite)' ;
 			}
 		}
 		
@@ -627,14 +665,21 @@ group by t1.numop_demandeur)' ;
 		{
 			public function EstRespecte()
 			{
+				$bd = $this->ApplicationParent->BDPrincipale ;
 				$valDateEmiss = $this->ScriptParent->FltDateEmission->Lie() ;
 				$valDateEcheance = $this->ScriptParent->FltDateEcheance->Lie() ;
 				$timestmpJour = date("U", strtotime(date("Y-m-d"))) ;
-				$timestmpEmiss = strtotime($valDateOper) ;
-				$timestmpEcheance = strtotime($valDateValeur) ;
+				$timestmpEmiss = strtotime($valDateEmiss) ;
+				$timestmpEcheance = strtotime($valDateEcheance) ;
 				if($timestmpJour > $timestmpEmiss || $timestmpEmiss > $timestmpEcheance)
 				{
 					$this->MessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre inferieure &agrave; la date de valeur ou la date actuelle' ;
+					return 0 ;
+				}
+				$totEmissSimil = $bd->FetchSqlValue('select count(0) tot from emission_bon_tresor where upper(ref_transact)=upper(:refTransact)', array('refTransact' => $this->ScriptParent->FltRefTransact->Lie()), 'tot') ;
+				if($totEmissSimil > 0)
+				{
+					$this->MessageErreur = 'Le num&eacute;ro de transaction a &eacute;t&eacute; utilis&eacute;' ;
 					return 0 ;
 				}
 				return 1 ;
