@@ -2,6 +2,10 @@
 	
 	if(! defined('ZONE_PUBL_TRAD_PLATF'))
 	{
+		if(! defined('CLIENT_MDGM'))
+		{
+			include dirname(__FILE__)."/ClientMdgm.class.php" ;
+		}
 		if(! defined('MEMBERSHIP_TRAD_PLATF'))
 		{
 			include dirname(__FILE__)."/Membership.class.php" ;
@@ -25,6 +29,18 @@
 		if(! defined('EMISS_BON_TRESOR_TRAD_PLATF'))
 		{
 			include dirname(__FILE__)."/EmissBonTresor.class.php" ;
+		}
+		if(! defined('EMISS_OBLIGATION_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/EmissObligation.class.php" ;
+		}
+		if(! defined('COTATION_TRANSF_DEV_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/CotationTransfDev.class.php" ;
+		}
+		if(! defined('COTATION_DEPOT_TERME_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/CotationDepotTerme.class.php" ;
 		}
 		define('ZONE_PUBL_TRAD_PLATF', 1) ;
 		
@@ -167,11 +183,36 @@
 			public $ScriptAjoutReservEmissBonTresor ;
 			public $ScriptModifReservEmissBonTresor ;
 			public $ScriptSupprReservEmissBonTresor ;
+			public $ScriptConsultEmissObligation ;
+			public $ScriptPublierEmissObligation ;
+			public $ScriptAjoutEmissObligation ;
+			public $ScriptModifEmissObligation ;
+			public $ScriptSupprEmissObligation ;
+			public $ScriptProposEmissObligation ;
+			public $ScriptDetailProposEmissObligation ;
+			public $ScriptDetailReservEmissObligation ;
+			public $ScriptListReservEmissObligation ;
+			public $ScriptAjoutReservEmissObligation ;
+			public $ScriptModifReservEmissObligation ;
+			public $ScriptSupprReservEmissObligation ;
+			public $ScriptConsultCotationTransfDev ;
+			public $ScriptPublierCotationTransfDev ;
+			public $ScriptAjoutCotationTransfDev ;
+			public $ScriptModifCotationTransfDev ;
+			public $ScriptSupprCotationTransfDev ;
+			public $ScriptProposCotationTransfDev ;
+			public $ScriptDetailProposCotationTransfDev ;
+			public $ScriptDetailReservCotationTransfDev ;
+			public $ScriptListReservCotationTransfDev ;
+			public $ScriptAjoutReservCotationTransfDev ;
+			public $ScriptModifReservCotationTransfDev ;
+			public $ScriptSupprReservCotationTransfDev ;
 			public $MenuParamOpInter ;
 			public $MenuLiaisonOpInter ;
 			public $MenuListePlacements ;
 			public $MenuTresorier ;
 			public $MenuEmissBonTresor ;
+			public $MenuEmissObligation ;
 			public $RemplisseurConfig ;
 			public $DetectIconeCorresp = 1 ;
 			public $FournExprs ;
@@ -241,6 +282,15 @@
 				$this->MenuListePlacements->Titre = "Placements" ;
 				$this->MenuListeEmprunts = $this->MenuOpInterbancaire->InscritSousMenuScript("listeEmprunts") ;
 				$this->MenuListeEmprunts->Titre = "Emprunts" ;
+				if(! $this->PossedePrivilege("post_doc_entreprise"))
+				{
+					$this->MenuOpEntreprise = $this->MenuListeTransacts->InscritSousMenuFige("transactsOpEntreprises") ;
+					$this->MenuOpEntreprise->Titre = "Op&eacute;ration entreprise/assurance" ;
+					$this->MenuOpCotationTransfDev = $this->MenuOpEntreprise->InscritSousMenuScript("consultCotationTransfDev") ;
+					$this->MenuOpCotationTransfDev->Titre = "Cotation transfert de devise" ;
+					$this->MenuOpCotationDepotTerme = $this->MenuOpEntreprise->InscritSousMenuScript("consultCotationDepotTerme") ;
+					$this->MenuOpCotationDepotTerme->Titre = "Cotation depot &agrave; terme" ;
+				}
 				$this->MenuNegociations = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('negociations') ;
 				$this->MenuNegociations->Privileges[] = "post_op_change" ;
 				$this->MenuNegociations->Titre = "N&eacute;gociations" ;
@@ -254,6 +304,17 @@
 				$this->MenuTresorier->Titre = "Tr&eacute;sor public" ;
 				$this->MenuEmissBonTresor = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
 				$this->MenuEmissBonTresor->Titre = "Bon de tr&eacute;sor" ;
+				$this->MenuEmissObligation = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissObligation' : 'publierEmissObligation') ;
+				if($this->PossedePrivilege('post_doc_entreprise'))
+				{
+					$this->MenuEmissObligation->Titre = "Obligations" ;
+					$this->MenuEntreprise = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('entreprise') ;
+					$this->MenuEntreprise->Titre = "Entreprise" ;
+					$this->MenuCotationTransfDev = $this->MenuEntreprise->InscritSousMenuScript('publierCotationTransfDev') ;
+					$this->MenuCotationTransfDev->Titre = "Cotation transfert en devise" ;
+					$this->MenuCotationDepotTerme = $this->MenuEntreprise->InscritSousMenuScript('publierCotationDepotTerme') ;
+					$this->MenuCotationDepotTerme->Titre = "Cotation d&eacute;pot &agrave; terme" ;
+				}
 			}
 			protected function ChargeAvantMenusMembership()
 			{
@@ -502,6 +563,44 @@
 				$this->ScriptModifReservEmissBonTresor = $this->InsereScript('modifReservEmissBonTresor', new ScriptModifReservEmissBonTresorTradPlatf()) ;
 				$this->ScriptSupprReservEmissBonTresor = $this->InsereScript('supprReservEmissBonTresor', new ScriptSupprReservEmissBonTresorTradPlatf()) ;
 				$this->ScriptDetailReservEmissBonTresor = $this->InsereScript('detailReservEmissBonTresor', new ScriptDetailReservEmissBonTresorTradPlatf()) ;
+				$this->ScriptPublierEmissObligation = $this->InsereScript('publierEmissObligation', new ScriptPublierEmissObligationTradPlatf()) ;
+				$this->ScriptConsultEmissObligation = $this->InsereScript('consultEmissObligation', new ScriptConsultEmissObligationTradPlatf()) ;
+				$this->ScriptProposEmissObligation = $this->InsereScript('proposEmissObligation', new ScriptProposEmissObligationTradPlatf()) ;
+				$this->ScriptAjoutEmissObligation = $this->InsereScript('ajoutEmissObligation', new ScriptAjoutEmissObligationTradPlatf()) ;
+				$this->ScriptModifEmissObligation = $this->InsereScript('modifEmissObligation', new ScriptModifEmissObligationTradPlatf()) ;
+				$this->ScriptSupprEmissObligation = $this->InsereScript('supprEmissObligation', new ScriptSupprEmissObligationTradPlatf()) ;
+				$this->ScriptDetailProposEmissObligation = $this->InsereScript('detailProposEmissObligation', new ScriptDetailProposEmissObligationTradPlatf()) ;
+				$this->ScriptListReservEmissObligation = $this->InsereScript('listReservEmissObligation', new ScriptListReservEmissObligationTradPlatf()) ;
+				$this->ScriptAjoutReservEmissObligation = $this->InsereScript('ajoutReservEmissObligation', new ScriptAjoutReservEmissObligationTradPlatf()) ;
+				$this->ScriptModifReservEmissObligation = $this->InsereScript('modifReservEmissObligation', new ScriptModifReservEmissObligationTradPlatf()) ;
+				$this->ScriptSupprReservEmissObligation = $this->InsereScript('supprReservEmissObligation', new ScriptSupprReservEmissObligationTradPlatf()) ;
+				$this->ScriptDetailReservEmissObligation = $this->InsereScript('detailReservEmissObligation', new ScriptDetailReservEmissObligationTradPlatf()) ;
+				// Cotation transf devise
+				$this->ScriptPublierCotationTransfDev = $this->InsereScript('publierCotationTransfDev', new ScriptPublierCotationTransfDevTradPlatf()) ;
+				$this->ScriptConsultCotationTransfDev = $this->InsereScript('consultCotationTransfDev', new ScriptConsultCotationTransfDevTradPlatf()) ;
+				$this->ScriptProposCotationTransfDev = $this->InsereScript('proposCotationTransfDev', new ScriptProposCotationTransfDevTradPlatf()) ;
+				$this->ScriptAjoutCotationTransfDev = $this->InsereScript('ajoutCotationTransfDev', new ScriptAjoutCotationTransfDevTradPlatf()) ;
+				$this->ScriptModifCotationTransfDev = $this->InsereScript('modifCotationTransfDev', new ScriptModifCotationTransfDevTradPlatf()) ;
+				$this->ScriptSupprCotationTransfDev = $this->InsereScript('supprCotationTransfDev', new ScriptSupprCotationTransfDevTradPlatf()) ;
+				$this->ScriptDetailProposCotationTransfDev = $this->InsereScript('detailProposCotationTransfDev', new ScriptDetailProposCotationTransfDevTradPlatf()) ;
+				$this->ScriptListReservCotationTransfDev = $this->InsereScript('listReservCotationTransfDev', new ScriptListReservCotationTransfDevTradPlatf()) ;
+				$this->ScriptAjoutReservCotationTransfDev = $this->InsereScript('ajoutReservCotationTransfDev', new ScriptAjoutReservCotationTransfDevTradPlatf()) ;
+				$this->ScriptModifReservCotationTransfDev = $this->InsereScript('modifReservCotationTransfDev', new ScriptModifReservCotationTransfDevTradPlatf()) ;
+				$this->ScriptSupprReservCotationTransfDev = $this->InsereScript('supprReservCotationTransfDev', new ScriptSupprReservCotationTransfDevTradPlatf()) ;
+				$this->ScriptDetailReservCotationTransfDev = $this->InsereScript('detailReservCotationTransfDev', new ScriptDetailReservCotationTransfDevTradPlatf()) ;
+				// Cotation depot terme
+				$this->ScriptPublierCotationDepotTerme = $this->InsereScript('publierCotationDepotTerme', new ScriptPublierCotationDepotTermeTradPlatf()) ;
+				$this->ScriptConsultCotationDepotTerme = $this->InsereScript('consultCotationDepotTerme', new ScriptConsultCotationDepotTermeTradPlatf()) ;
+				$this->ScriptProposCotationDepotTerme = $this->InsereScript('proposCotationDepotTerme', new ScriptProposCotationDepotTermeTradPlatf()) ;
+				$this->ScriptAjoutCotationDepotTerme = $this->InsereScript('ajoutCotationDepotTerme', new ScriptAjoutCotationDepotTermeTradPlatf()) ;
+				$this->ScriptModifCotationDepotTerme = $this->InsereScript('modifCotationDepotTerme', new ScriptModifCotationDepotTermeTradPlatf()) ;
+				$this->ScriptSupprCotationDepotTerme = $this->InsereScript('supprCotationDepotTerme', new ScriptSupprCotationDepotTermeTradPlatf()) ;
+				$this->ScriptDetailProposCotationDepotTerme = $this->InsereScript('detailProposCotationDepotTerme', new ScriptDetailProposCotationDepotTermeTradPlatf()) ;
+				$this->ScriptListReservCotationDepotTerme = $this->InsereScript('listReservCotationDepotTerme', new ScriptListReservCotationDepotTermeTradPlatf()) ;
+				$this->ScriptAjoutReservCotationDepotTerme = $this->InsereScript('ajoutReservCotationDepotTerme', new ScriptAjoutReservCotationDepotTermeTradPlatf()) ;
+				$this->ScriptModifReservCotationDepotTerme = $this->InsereScript('modifReservCotationDepotTerme', new ScriptModifReservCotationDepotTermeTradPlatf()) ;
+				$this->ScriptSupprReservCotationDepotTerme = $this->InsereScript('supprReservCotationDepotTerme', new ScriptSupprReservCotationDepotTermeTradPlatf()) ;
+				$this->ScriptDetailReservCotationDepotTerme = $this->InsereScript('detailReservCotationDepotTerme', new ScriptDetailReservCotationDepotTermeTradPlatf()) ;
 				// $this->ScriptBienvenue->Titre = "Trading Platform" ;
 				$this->ScriptAccueil->TitreDocument = "Trading Platform" ;
 				// $this->ChargeScriptsMembershipSuppl() ;
