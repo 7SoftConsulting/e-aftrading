@@ -289,7 +289,7 @@
 					$this->MenuOpCotationTransfDev = $this->MenuOpEntreprise->InscritSousMenuScript("consultCotationTransfDev") ;
 					$this->MenuOpCotationTransfDev->Titre = "Cotation transfert de devise" ;
 					$this->MenuOpCotationDepotTerme = $this->MenuOpEntreprise->InscritSousMenuScript("consultCotationDepotTerme") ;
-					$this->MenuOpCotationDepotTerme->Titre = "Cotation depot &agrave; terme" ;
+					$this->MenuOpCotationDepotTerme->Titre = "Cotation d&eacute;p&ocirc;t &agrave; terme" ;
 				}
 				$this->MenuNegociations = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('negociations') ;
 				$this->MenuNegociations->Privileges[] = "post_op_change" ;
@@ -313,7 +313,7 @@
 					$this->MenuCotationTransfDev = $this->MenuEntreprise->InscritSousMenuScript('publierCotationTransfDev') ;
 					$this->MenuCotationTransfDev->Titre = "Cotation transfert en devise" ;
 					$this->MenuCotationDepotTerme = $this->MenuEntreprise->InscritSousMenuScript('publierCotationDepotTerme') ;
-					$this->MenuCotationDepotTerme->Titre = "Cotation d&eacute;pot &agrave; terme" ;
+					$this->MenuCotationDepotTerme->Titre = "Cotation d&eacute;p&ocirc;t &agrave; terme" ;
 				}
 			}
 			protected function ChargeAvantMenusMembership()

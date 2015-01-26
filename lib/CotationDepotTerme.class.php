@@ -127,7 +127,7 @@
 					// Propositions
 					$this->SousMenuPropos = $this->BarreMenu->MenuRacine->InscritSousMenuScript('proposCotationDepotTerme') ;
 					$this->SousMenuPropos->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
-					$this->SousMenuPropos->Titre = "R&eacute;servations" ;
+					$this->SousMenuPropos->Titre = "consultation cotation" ;
 				}
 			}
 			protected function RenduDispositifBrut()
@@ -232,7 +232,7 @@ FROM cotation_depot_terme t1
 left join devise d1 on t1.id_devise = d1.id_devise
 left join operateur o1 on t1.numop_publieur = o1.numop)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationDepotTerme&id=${id}', 'R&eacute;ponse', 'bordereau_decpte_transf_${id}', 'Bordereau d&eacute;compte transfert de devise #${id}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationDepotTerme&id_cotation=${id}', 'R&eacute;ponse', 'reserv_cotation_depot_terme_${id}', 'Bordereau d&eacute;compte transfert de devise #${id}', $this->OptsFenetreDetail) ;
 			}
 			protected function DefinitExprs()
 			{
@@ -248,10 +248,10 @@ left join operateur o1 on t1.numop_publieur = o1.numop)' ;
 			public $DefColNumOp ;
 			public $DefColRefTransact ;
 			public $DefColDateMisePlace ;
+			public $DefColDateMaturite ;
 			public $DefColMontant ;
 			public $DefColTaux ;
 			public $DefColDevise ;
-			public $DefColDateEcheance ;
 			public $FltDateDebut ;
 			public $FltDateFin ;
 			public $FltNumOpPubl ;
@@ -269,21 +269,18 @@ left join operateur o1 on t1.numop_publieur = o1.numop)' ;
 				$this->FltDateFin->DeclareComposant("PvCalendarDateInput") ;
 				$this->DefColId = $this->TablPrinc->InsereDefColCachee('id') ;
 				$this->DefColNumOp = $this->TablPrinc->InsereDefColCachee('numop_publieur') ;
-				$this->DefColRefTransact = $this->TablPrinc->InsereDefCol('ref_transact', 'Ref.') ;
-				$this->DefColDateMisePlace = $this->TablPrinc->InsereDefCol('date_mise_place', 'Date &eacute;mission') ;
+				$this->DefColDateMisePlace = $this->TablPrinc->InsereDefCol('date_mise_place', 'Date mise en place') ;
 				$this->DefColDateMisePlace->AliasDonnees = $bd->SqlDateToStrFr("date_mise_place", 0) ;
-				$this->DefColDateMaturite = $this->TablPrinc->InsereDefCol('date_maturite', 'Date mise en place') ;
+				$this->DefColDateMaturite = $this->TablPrinc->InsereDefCol('date_maturite', 'Date maturit&eacute;') ;
 				$this->DefColDateMaturite->AliasDonnees = $bd->SqlDateToStrFr("date_maturite", 0) ;
 				$this->DefColMontant = $this->TablPrinc->InsereDefColMoney('montant', 'Montant') ;
-				$this->DefColTaux = $this->TablPrinc->InsereDefCol('taux', 'Taux') ;
 				$this->DefColDevise = $this->TablPrinc->InsereDefCol('code_devise', 'Devise') ;
-				$this->DefColDateEcheance->AliasDonnees = $bd->SqlDateToStrFr("date_echeance", 0) ;
 				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.total total_reserv, d1.code_devise from cotation_depot_terme t1
-inner join (select id_cotation, count(0) total from bordereau_decpte_transf group by id_cotation) t2
+inner join (select id_cotation, count(0) total from reserv_cotation_depot_terme group by id_cotation) t2
 on t1.id = t2.id_cotation
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservCotationDepotTerme&id=${id}', 'R&eacute;servations', 'list_reserv_emiss_obligation_${id}', 'Liste r&eacute;servations cotation transfert de devise #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservCotationDepotTerme&id=${id}', 'R&eacute;servations', 'list_reserv_cotation_depot_terme_${id}', 'Liste r&eacute;servations cotation depot de terme #${ref_transact}', $this->OptsFenetreDetail) ;
 			}
 			protected function DefinitExprs()
 			{
@@ -357,7 +354,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				if($this->PourAjout || $this->PourDetail)
 					return 1 ;
 				$bd = $this->BDPrinc() ;
-				$total = $bd->FetchSqlValue('select count(0) total from bordereau_decpte_transf t1 where id_cotation=:id', array('id' => $this->FltId->Lie()), 'total') ;
+				$total = $bd->FetchSqlValue('select count(0) total from reserv_cotation_depot_terme t1 where id_cotation=:id', array('id' => $this->FltId->Lie()), 'total') ;
 				if(is_numeric($total))
 				{
 					if($total == 0)
@@ -448,7 +445,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColTauxTablSecond = $this->TablSecond->InsereDefCol('taux') ;
 				$this->DefColActsTablSecond = $this->TablSecond->InsereDefColActions('Actions') ;
 				$this->FournDonneesSecond = $this->CreeFournDonneesPrinc() ;
-				$this->FournDonneesSecond->RequeteSelection = 'bordereau_decpte_transf' ;
+				$this->FournDonneesSecond->RequeteSelection = 'reserv_cotation_depot_terme' ;
 				$this->TablSecond->FournisseurDonnees = & $this->FournDonneesSecond ;
 				$this->LienModifSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=modifReservCotationDepotTerme&id=${id}', 'Modifier', 'modif_reserv_emiss_obligation_${id}', 'Modifier r&eacute;serv. cotation transfert de devise ${montant} ${taux}%', $this->OptsFenetreEdit) ;
 				$this->LienSupprSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=supprReservCotationDepotTerme&id=${id}', 'Supprimer', 'suppr_reserv_emiss_obligation_${id}', 'Supprimer r&eacute;serv. cotation transfert de devise ${montant} ${taux}%', $this->OptsFenetreEdit) ;
@@ -514,19 +511,22 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColCodeEntiteTablSecond = $this->TablSecond->InsereDefCol('code_entite', "Code entit&eacute;") ;
 				$this->DefColCodeEntiteTablSecond->AlignElement = "center" ;
 				$this->DefColEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite', "Entit&eacute;") ;
-				$this->DefColMontantTablSecond = $this->TablSecond->InsereDefColMoney('montant', "Montant") ;
+				$this->DefColTauxTablSecond = $this->TablSecond->InsereDefColMoney('taux', "Taux") ;
+				$this->DefColTaxeTransfTablSecond = $this->TablSecond->InsereDefColMoney('taxe_transfert', "Taxe transfert") ;
 				$this->DefColMontantTablSecond->AlignElement = "right" ;
 				/*
 				$this->DefColActsTablSecond = $this->TablSecond->InsereDefColActions("Actions") ;
 				$this->LienDetailsTablSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=detailReservCotationDepotTerme&id=${id_cotation}&numop=${numop}', 'D&eacute;tails', 'details_reserv_emiss_obligation_${id}_${numop}', 'Details cotation transfert de devise #${login}', $this->OptsFenetreDetail) ;
 				*/
 				$this->FournDonneesSecond = $this->CreeFournDonneesPrinc() ;
-				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite, t3.code code_entite
-from bordereau_decpte_transf t1
+				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t4.montant, t4.date_maturite, t4.date_mise_place, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite, t3.code code_entite
+from reserv_cotation_depot_terme t1
 left join operateur t2
 on t1.numop_demandeur = t2.numop
 left join entite t3
-on t2.id_entite = t3.id_entite)' ;
+on t2.id_entite = t3.id_entite
+left join cotation_depot_terme t4
+on t4.id = t1.id_cotation)' ;
 				$this->TablSecond->FournisseurDonnees = & $this->FournDonneesSecond ;
 			}
 			protected function RenduDispositifBrut()
@@ -536,6 +536,8 @@ on t2.id_entite = t3.id_entite)' ;
 				{
 					$ctn .= '<div class="ui-widget ui-widget-content">' ;
 					$ctn .= $this->TablSecond->RenduDispositif() ;
+					// echo "mmmm" ;
+					// $ctn .= print_r($this->TablSecond->FournisseurDonnees->BaseDonnees, true) ;
 					// print_r($this->TablSecond->FournisseurDonnees) ;
 					$ctn .= '</div>' ;
 				}
@@ -569,7 +571,7 @@ on t2.id_entite = t3.id_entite)' ;
 				$this->DefColMontant = $this->TablPrinc->InsereDefCol('montant', 'Montant') ;
 				$this->DefColTaux = $this->TablPrinc->InsereDefCol('taux', 'Taux') ;
 				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
-from bordereau_decpte_transf t1
+from reserv_cotation_depot_terme t1
 left join operateur t2
 on t1.numop_demandeur = t2.numop
 left join entite t3
@@ -582,19 +584,13 @@ on t2.id_entite = t3.id_entite)' ;
 			public $FltId ;
 			public $FltIdCotation ;
 			public $FltNumOp ;
-			public $FltContreValeurDev ;
-			public $FltTaxeTransf ;
-			public $FltCommissTransf ;
-			public $FltFraisFixes ;
-			public $FltFraisDossier ;
-			public $FltCommissFinex ;
-			public $FltFraisTelex ;
-			public $FltTPS ;
+			public $FltMontant ;
 			public $FltDevise ;
-			public $FltTauxDevise ;
-			public $FltTauxTaxeTransf ;
-			public $FltTauxCommTransf ;
-			public $NomClasseCmdExecFormPrinc = "PvCommandeAjoutElement" ;
+			public $FltDateMisePlace ;
+			public $FltDateMaturite ;
+			public $FltTaxeTransf ;
+			public $FltTaux ;
+			public $NomClasseCmdExecFormPrinc = "CmdAjoutReservCotationDepotTermeTradPlatf" ;
 			public $PourAjout = 1 ;
 			public $FormPrincEditable = 1 ;
 			protected function DefinitExprs()
@@ -616,61 +612,61 @@ on t2.id_entite = t3.id_entite)' ;
 				$this->FltIdCotation = $this->FormPrinc->InsereFltEditHttpGet('id_cotation', 'id_cotation') ;
 				$this->FltIdCotation->LectureSeule = 1 ;
 				$this->FltNumOp = $this->FormPrinc->InsereFltEditFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop_demandeur') ;
-				$this->FltContreValeurDev = $this->FormPrinc->InsereFltEditHttpPost('contre_valeur_devise', 'contre_valeur_devise') ;
-				$this->FltContreValeurDev->Libelle = "Contrevaleur devise" ;
-				$this->FltTaxeTransf = $this->FormPrinc->InsereFltEditHttpPost('taxe_transf', 'taxe_transf') ;
-				$this->FltTaxeTransf->Libelle = "Taxe de transfert" ;
-				$this->FltCommissTransf = $this->FormPrinc->InsereFltEditHttpPost('commiss_transf', 'commiss_transf') ;
-				$this->FltCommissTransf->Libelle = "Commission de transfert" ;
-				$this->FltFraisFixes = $this->FormPrinc->InsereFltEditHttpPost('frais_fixes', 'frais_fixes') ;
-				$this->FltFraisFixes->Libelle = "Frais Fixes" ;
-				$this->FltFraisDossier = $this->FormPrinc->InsereFltEditHttpPost('frais_dossier', 'frais_dossier') ;
-				$this->FltFraisDossier->Libelle = "Frais de dossiers" ;
-				$this->FltCommissFinex = $this->FormPrinc->InsereFltEditHttpPost('commiss_finex', 'commiss_finex') ;
-				$this->FltCommissFinex->Libelle = "Commission de FINEX" ;
-				$this->FltFraisTelex = $this->FormPrinc->InsereFltEditHttpPost('frais_telex', 'frais_telex') ;
-				$this->FltFraisTelex->Libelle = "Frais de T&eacute;lex" ;
-				$this->FltTPS = $this->FormPrinc->InsereFltEditHttpPost('tps', 'tps') ;
-				$this->FltTPS->Libelle = "TPS" ;
-				$this->FltDevise = $this->FormPrinc->InsereFltEditHttpPost('id_devise', 'id_devise') ;
+				$this->FltMontant = $this->FormPrinc->InsereFltEditHttpPost('montant', '') ;
+				$this->FltMontant->Libelle = "Montant" ;
+				$this->FltMontant->EstEtiquette = 1 ;
+				$this->FltDevise = $this->FormPrinc->InsereFltEditHttpPost('devise', '') ;
 				$this->FltDevise->Libelle = "Devise" ;
-				$this->CompDevise = $this->FltDevise->DeclareComposant("PvZoneBoiteSelectHtml") ;
-				$this->CompDevise->FournisseurDonnees = $this->CreeFournDonneesPrinc() ;
-				$this->CompDevise->FournisseurDonnees->RequeteSelection = 'devise' ;
-				$this->CompDevise->NomColonneValeur = 'id_devise' ;
-				$this->CompDevise->NomColonneLibelle = 'code_devise' ;
-				$this->FltTauxDevise = $this->FormPrinc->InsereFltEditHttpPost('taux_devise', 'taux_devise') ;
-				$this->FltTauxDevise->Libelle = "Taux devise" ;
-				$this->FltTauxTaxeTransf = $this->FormPrinc->InsereFltEditHttpPost('taux_taxe_transf', 'taux_taxe_transf') ;
-				$this->FltTauxTaxeTransf->Libelle = "Taux taxe transfert" ;
-				$this->FltTauxCommTransf = $this->FormPrinc->InsereFltEditHttpPost('taux_comm_transf', 'taux_comm_transf') ;
-				$this->FltTauxCommTransf->Libelle = "Taux comm. transfert" ;
-				$this->FournDonneesPrinc->RequeteSelection = "bordereau_decpte_transf" ;
-				$this->FournDonneesPrinc->TableEdition = "bordereau_decpte_transf" ;
+				$this->FltDevise->EstEtiquette = 1 ;
+				$this->FltDateMisePlace = $this->FormPrinc->InsereFltEditHttpPost('date_mise_place', '') ;
+				$this->FltDateMisePlace->Libelle = "Date mise en place" ;
+				$this->FltDateMisePlace->EstEtiquette = 1 ;
+				$this->FltDateMaturite = $this->FormPrinc->InsereFltEditHttpPost('date_maturite', '') ;
+				$this->FltDateMaturite->Libelle = "Date maturit&eacute;" ;
+				$this->FltDateMaturite->EstEtiquette = 1 ;
+				$this->FltTaxeTransf = $this->FormPrinc->InsereFltEditHttpPost('taxe_transfert', 'taxe_transfert') ;
+				$this->FltTaxeTransf->Libelle = "Taxe de transfert" ;
+				$this->FltTaux = $this->FormPrinc->InsereFltEditHttpPost('taux', 'taux') ;
+				$this->FltTaux->Libelle = "Taux" ;
+				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, t2.code_devise, t3.taux, t3.taxe_transfert from cotation_depot_terme t1
+left join devise t2 on t1.id_devise = t2.id_devise
+left join reserv_cotation_depot_terme t3 on t1.id = t3.id_cotation)" ;
+				$this->FournDonneesPrinc->TableEdition = "reserv_cotation_depot_terme" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
-				$this->FormPrinc->DessinateurFiltresEdition = new DessinFltsReservCotationDepotTerme() ;
+				// $this->FormPrinc->DessinateurFiltresEdition = new DessinFltsReservCotationDepotTerme() ;
 			}
 			protected function AccesPossibleFormPrinc()
 			{
 				$ok = 1 ;
 				return $ok ;
 			}
-			protected function CalculeMontantParDefaut()
+			protected function CalculeLgnParDefaut()
 			{
 				if(! $this->PourAjout)
 					return ;
 				$idLgnEmiss = $this->FltIdCotation->Lie() ;
 				// print 'MM : '.$idLgnEmiss ;
 				$bd = $this->BDPrinc() ;
-				$montant = $bd->FetchSqlValue('select montant from cotation_depot_terme where id='.$bd->ParamPrefix.'id', array('id' => $idLgnEmiss), 'montant') ;
-				$this->FltMontant->ValeurParDefaut = $montant ;
+				$lgn = $bd->FetchSqlRow('select t1.*, t2.code_devise from cotation_depot_terme t1 left join devise t2 on t1.id_devise = t2.id_devise where t1.id='.$bd->ParamPrefix.'id', array('id' => $idLgnEmiss)) ;
+				if(! is_array($lgn) || count($lgn) == 0)
+					return ;
+				$this->FltMontant->ValeurParDefaut = $lgn["montant"] ;
+				$this->FltDevise->ValeurParDefaut = $lgn["code_devise"] ;
+				$this->FltDateMaturite->ValeurParDefaut = $lgn["date_maturite"] ;
+				$this->FltDateMisePlace->ValeurParDefaut = $lgn["date_mise_place"] ;
+				$lgn = $bd->FetchSqlRow('select t1.* from reserv_cotation_depot_terme t1 where t1.id_cotation='.$bd->ParamPrefix.'id and numop_demandeur='.$bd->ParamPrefix.'numop', array('numop' => $this->ZoneParent->IdMembreConnecte())) ;
+				if(is_array($lgn) && count($lgn) > 0)
+				{
+					$this->FltTaux->ValeurParDefaut = $lgn["taux"] ;
+					$this->FltTaxeTransf->ValeurParDefaut = $lgn["taxe_transfert"] ;
+				}
 			}
 			protected function RenduDispositifBrut()
 			{
 				$ctn = '' ;
 				if($this->AccesPossibleFormPrinc())
 				{
-					$this->CalculeMontantParDefaut() ;
+					$this->CalculeLgnParDefaut() ;
 					$ctn .= parent::RenduDispositifBrut() ;
 				}
 				else
@@ -774,11 +770,12 @@ on t2.id_entite = t3.id_entite)' ;
 				$form->LieTousLesFiltres() ;
 				$idCotisation = $script->FltIdCotation->Lie() ;
 				$numOpDemandeur = $script->ZoneParent->IdMembreConnecte() ;
-				$ok = $bd->RunSql('delete from bordereau_decpte_transf where id_cotation=:idCotisation and numop_demandeur=:numOpDemandeur', array('idCotisation' => $idCotisation, 'numOpDemandeur' => $numOpDemandeur)) ;
+				$ok = $bd->RunSql('delete from reserv_cotation_depot_terme where id_cotation=:idCotisation and numop_demandeur=:numOpDemandeur', array('idCotisation' => $idCotisation, 'numOpDemandeur' => $numOpDemandeur)) ;
 				if($ok)
 				{
-					$montant = $script->FltMontant1->Lie() ;
-					$bd->InsertRow('bordereau_decpte_transf', array('numop_demandeur' => $numOpDemandeur, 'id_cotation' => $idCotisation, 'montant' => $montant)) ;
+					$taux = $script->FltTaux->Lie() ;
+					$taxe_transfert = $script->FltTaxeTransf->Lie() ;
+					$bd->InsertRow('reserv_cotation_depot_terme', array('numop_demandeur' => $numOpDemandeur, 'id_cotation' => $idCotisation, 'taux' => $taux, 'taxe_transfert' => $taxe_transfert)) ;
 					$this->ConfirmeSucces() ;
 				}
 				else
