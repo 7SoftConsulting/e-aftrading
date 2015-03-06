@@ -936,6 +936,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn .= '</tr>
 </table>
 </div>'.PHP_EOL ;
+				/*
 				$ctn .= '<div id="infosSupplTransact">
 	<ul>
 		<li><a href="#ongletCibleTransact"><span>Transaction</span></a></li>
@@ -955,6 +956,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 	</div>
 	<div id="ongletCommentTransact">'.$composant->FltCommentaire->Rendu().'</div>
 </div>'.PHP_EOL ;
+				*/
 				$ctn .= '</div>'.PHP_EOL ;
 				$ctn .= '</td></tr>'.PHP_EOL ;
 				$ctn .= '</table>'.PHP_EOL ;
@@ -1268,7 +1270,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			{
 				$fourn = new PvFournisseurDonneesSql() ;
 				$fourn->BaseDonnees = & $this->ApplicationParent->BDPrincipale ;
-				$fourn->RequeteSelection = '(select t1.*, t3.lib_devise lib_devise1, t4.lib_devise code_devise2, '.$fourn->BaseDonnees->SqlConcat(array('t3.code_devise', "' / '", 't4.code_devise')).' lib_devise, t5.login login_soumis, t6.login login_dem, t7.code code_entite_soumis, t7.name nom_entite_soumis, t8.code code_entite_dem, t8.name nom_entite_dem from op_inter t1 left join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter left join devise t3 on t1.id_devise1 = t3.id_devise left join devise t4 on t1.id_devise2 = t4.id_devise left join operateur t5 on t1.numop = t5.numop left join operateur t6 on t2.numop = t6.numop left join entite t7 on t5.id_entite = t7.id_entite left join entite t8 on t6.id_entite = t8.id_entite)' ;
+				$fourn->RequeteSelection = '(select t1.*, t3.lib_devise lib_devise1, t4.lib_devise code_devise2, case when t3.code_devise is not null then  t3.code_devise else t4.code_devise end lib_devise, t5.login login_soumis, t6.login login_dem, t7.code code_entite_soumis, t7.name nom_entite_soumis, t8.code code_entite_dem, t8.name nom_entite_dem from op_inter t1 left join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter left join devise t3 on t1.id_devise1 = t3.id_devise left join devise t4 on t1.id_devise2 = t4.id_devise left join operateur t5 on t1.numop = t5.numop left join operateur t6 on t2.numop = t6.numop left join entite t7 on t5.id_entite = t7.id_entite left join entite t8 on t6.id_entite = t8.id_entite)' ;
 				$fourn->TableEdition = 'op_inter' ;
 				$this->FournisseurDonnees = & $fourn ;
 			}
@@ -1333,8 +1335,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 						$this->FltLoginSoumis->ValeurParDefaut = $memberLogged->Login ;
 						$this->FltCodeEntiteSoumis->ValeurParDefaut = $memberLogged->RawData["CODE_ENTITE"] ;
 						$this->FltNomEntiteSoumis->ValeurParDefaut = $memberLogged->RawData["NOM_ENTITE_MEMBRE"] ;
-						$this->FltDevise->ValeurParDefaut = $ligne["lib_devise"] ;
-						$this->FltDevise->ValeurParDefaut = $ligne["lib_devise"] ;
+						$this->FltDevise->ValeurParDefaut = $ligne["lib_devise1"] ;
 						$this->FltMontantDem->ValeurParDefaut = $ligne["montant_change"] ;
 						$this->FltTauxDem->ValeurParDefaut = $this->ZoneParent->RemplisseurConfig->ObtientValeurTaux($ligne) ;
 						$this->FltMontantSoumis->ValeurParDefaut = $this->FltMontantDem->ValeurParDefaut ;
@@ -1403,6 +1404,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				{
 					$ctn .= parent::RenduDispositif() ;
 				}
+				// print_r($this->FournisseurDonnees->BaseDonnees) ;
 				return $ctn ;
 			}
 		}
@@ -1583,15 +1585,6 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			protected function CreeTableau()
 			{
 				return new TablPlacementsBaseTradPlatf() ;
-			}
-		}
-		class ScriptEditPlacementsTradPlatf extends ScriptListePlacementsTradPlatf
-		{
-			public $Titre = "Publication placements" ;
-			public $TitreDocument = "Publication placements" ;
-			protected function CreeTableau()
-			{
-				return new TablEditOpInterTradPlatf() ;
 			}
 		}
 		class ScriptReservPlacementsTradPlatf extends ScriptListePlacementsTradPlatf
@@ -1776,15 +1769,6 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				return new TablEmpruntsBaseTradPlatf() ;
 			}
 		}
-		class ScriptEditEmpruntsTradPlatf extends ScriptListeEmpruntsTradPlatf
-		{
-			public $Titre = "Publications emprunts" ;
-			public $TitreDocument = "Publications emprunts" ;
-			protected function CreeTableau()
-			{
-				return new TablEditOpInterTradPlatf() ;
-			}
-		}
 		class ScriptReservEmpruntsTradPlatf extends ScriptListeEmpruntsTradPlatf
 		{
 			public $Titre = "R&eacute;servations emprunts" ;
@@ -1954,16 +1938,14 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 			}
 		}
 		
-		class ScriptConsultEmpruntsTradPlatf extends ScriptListePlacementsTradPlatf
+		class ScriptConsultEmpruntsTradPlatf extends ScriptListeEmpruntsTradPlatf
 		{
-			public $TypeOpInter = 2 ;
 			public $NomScriptEdit = "editPlacements" ;
 			public $NomScriptReserv = "reservPlacements" ;
 			public $NomScriptSoumiss = "soumissPlacement" ;
 		}
-		class ScriptConsultPlacementsTradPlatf extends ScriptListeEmpruntsTradPlatf
+		class ScriptConsultPlacementsTradPlatf extends ScriptListePlacementsTradPlatf
 		{
-			public $TypeOpInter = 1 ;
 			public $NomScriptEdit = "editEmprunts" ;
 			public $NomScriptReserv = "reservEmprunts" ;
 			public $NomScriptSoumiss = "soumissEmprunt" ;
@@ -2025,15 +2007,16 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 				// Lien Négociation
 				$this->LienNegocConsult = $this->InsereLienOuvreFenetreAction(
 					$this->DefColActions,'?appelleScript=modifOpInterSoumis&idEnCours=${num_op_inter}',
-					$this->ZoneParent->FournExprs->LibLienAjustNegoc, 'modif_op_inter_soumis_${num_op_inter}',
-					$this->ZoneParent->FournExprs->TitrFenAjustNegoc, 
+					$this->ZoneParent->FournExprs->LibLienAjustNegocOpInter, 'modif_op_inter_soumis_${num_op_inter}',
+					$this->ZoneParent->FournExprs->TitrFenAjustNegocOpInter, 
 					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 525)
 				) ;
+				$this->LienNegocConsult->RafraichOnglActifSurFerm = 1 ;
 				// Lien confirmation
 				$this->LienConfirmConsult = $this->InsereLienOuvreFenetreAction(
 					$this->DefColActions, $this->ZoneParent->ScriptValPostulEmprunt->ObtientUrl().'&id=${num_op_inter}',
 					$this->ZoneParent->FournExprs->LibLienConfirmNegoc, 'val_postul_op_inter_soumis_${num_op_inter}',
-					$this->ZoneParent->FournExprs->TitrFenAjustNegoc, 
+					$this->ZoneParent->FournExprs->TitrFenAjustNegocOpInter, 
 					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 300)
 				) ;
 				$this->LienConfirmConsult->DefinitValidite("id_emetteur", $this->ZoneParent->IdMembreConnecte()) ;
@@ -2085,6 +2068,25 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 	left join devise d1 on d1.id_devise = t1.id_devise1
 	left join devise d2 on d2.id_devise = t1.id_devise2
 )" ;
+			}
+		}
+
+		class ScriptEditEmpruntsTradPlatf extends ScriptListeEmpruntsTradPlatf
+		{
+			public $Titre = "Publications emprunts" ;
+			public $TitreDocument = "Publications emprunts" ;
+			protected function CreeTableau()
+			{
+				return new TablEditOpInterTradPlatf() ;
+			}
+		}
+		class ScriptEditPlacementsTradPlatf extends ScriptListePlacementsTradPlatf
+		{
+			public $Titre = "Publication placements" ;
+			public $TitreDocument = "Publication placements" ;
+			protected function CreeTableau()
+			{
+				return new TablEditOpInterTradPlatf() ;
 			}
 		}
 

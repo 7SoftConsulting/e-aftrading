@@ -9,7 +9,7 @@
 	
 	$clt->Connecte() ;
 	$not = $clt->Notation(1390634) ;
-	print_r($not) ;
+	print_r($clt) ;
 	echo "</pre>" ;
 	
 ?>

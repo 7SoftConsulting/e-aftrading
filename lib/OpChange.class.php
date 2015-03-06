@@ -1025,7 +1025,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Date operation</td>'.PHP_EOL ;
-				$ctn .= '<td>'.date("d/m/Y").'</td>'.PHP_EOL ;
+				$ctn .= '<td>'.$composant->FltDateOper->Rendu().'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Date valeur</td>'.PHP_EOL ;
@@ -1033,6 +1033,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn .= '</tr>
 </table>
 </div>'.PHP_EOL ;
+				/*
 				$ctn .= '<div id="infosSupplTransact">
 	<ul>
 		<li><a href="#ongletCibleTransact"><span>Transaction</span></a></li>
@@ -1052,6 +1053,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 	</div>
 	<div id="ongletCommentTransact">'.$composant->FltCommentaire->Rendu().'</div>
 </div>'.PHP_EOL ;
+				*/
 				$ctn .= '</div>'.PHP_EOL ;
 				$ctn .= '</td></tr>'.PHP_EOL ;
 				$ctn .= '</table>'.PHP_EOL ;
@@ -1366,7 +1368,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			{
 				$fourn = new PvFournisseurDonneesSql() ;
 				$fourn->BaseDonnees = & $this->ApplicationParent->BDPrincipale ;
-				$fourn->RequeteSelection = '(select t1.*, t3.lib_devise lib_devise1, t4.lib_devise code_devise2, '.$fourn->BaseDonnees->SqlConcat(array('t3.code_devise', "' / '", 't4.code_devise')).' lib_devise, t5.login login_soumis, t6.login login_dem, t7.code code_entite_soumis, t7.name nom_entite_soumis, t8.code code_entite_dem, t8.name nom_entite_dem from op_change t1 left join op_change t2 on t1.num_op_change_dem = t2.num_op_change left join devise t3 on t1.id_devise1 = t3.id_devise left join devise t4 on t1.id_devise2 = t4.id_devise left join operateur t5 on t1.numop = t5.numop left join operateur t6 on t2.numop = t6.numop left join entite t7 on t5.id_entite = t7.id_entite left join entite t8 on t6.id_entite = t8.id_entite)' ;
+				$fourn->RequeteSelection = '(select t1.*, t3.lib_devise lib_devise1, t4.lib_devise code_devise2, '.$fourn->BaseDonnees->SqlConcat(array('t4.code_devise', "' / '", 't3.code_devise')).' lib_devise, t5.login login_soumis, t6.login login_dem, t7.code code_entite_soumis, t7.name nom_entite_soumis, t8.code code_entite_dem, t8.name nom_entite_dem from op_change t1 left join op_change t2 on t1.num_op_change_dem = t2.num_op_change left join devise t3 on t1.id_devise1 = t3.id_devise left join devise t4 on t1.id_devise2 = t4.id_devise left join operateur t5 on t1.numop = t5.numop left join operateur t6 on t2.numop = t6.numop left join entite t7 on t5.id_entite = t7.id_entite left join entite t8 on t6.id_entite = t8.id_entite)' ;
 				$fourn->TableEdition = 'op_change' ;
 				$this->FournisseurDonnees = & $fourn ;
 			}
@@ -1453,13 +1455,13 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$this->FltCodeEntiteDem = $this->InsereFltEditHttpPost("code_entite_dem", "code_entite_dem") ;
 				$this->FltCodeEntiteDem->Libelle = "Code banque emettrice" ;
 				$this->FltCodeEntiteDem->EstEtiquette = 1 ;
-				$this->FltNomEntiteDem = $this->InsereFltEditHttpPost("nom_entite_dem", "nom_entite_dem") ;
+				$this->FltNomEntiteDem = $this->InsereFltEditHttpPost("code_entite_dem", "code_entite_dem") ;
 				$this->FltNomEntiteDem->Libelle = "Nom banque emettrice" ;
 				$this->FltNomEntiteDem->EstEtiquette = 1 ;
 				$this->FltLoginSoumis = $this->InsereFltEditHttpPost("login_soumis", "login_soumis") ;
 				$this->FltLoginSoumis->Libelle = "Login" ;
 				$this->FltLoginSoumis->EstEtiquette = 1 ;
-				$this->FltCodeEntiteSoumis = $this->InsereFltEditHttpPost("nom_entite_soumis", "nom_entite_soumis") ;
+				$this->FltCodeEntiteSoumis = $this->InsereFltEditHttpPost("code_entite_soumis", "code_entite_soumis") ;
 				$this->FltCodeEntiteSoumis->Libelle = "Code banque emettrice" ;
 				$this->FltCodeEntiteSoumis->EstEtiquette = 1 ;
 				$this->FltNomEntiteSoumis = $this->InsereFltEditHttpPost("nom_entite_soumis", "nom_entite_soumis") ;

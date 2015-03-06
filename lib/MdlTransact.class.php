@@ -258,11 +258,11 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				$this->BarreMenu->AdopteScript("barreMenu", $this) ;
 				$this->BarreMenu->ChargeConfig() ;
 				// Consultation achat
-				$smConsult = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpInter == 1) ? "listePlacements" : "consultPlacements") ;
+				$smConsult = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->NomScriptEdit == "editPlacements") ? "listePlacements" : "consultPlacements") ;
 				$smConsult->CheminMiniature = "images/miniatures/consulte_placement.png" ;
 				$smConsult->Titre = "Consultation Placement" ;
 				// Consultation emprunt
-				$smConsultOpp = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->TypeOpInter == 2) ? "listeEmprunts" : "consultEmprunts") ;
+				$smConsultOpp = $this->BarreMenu->MenuRacine->InscritSousMenuScript(($this->NomScriptEdit == "editEmprunts") ? "listeEmprunts" : "consultEmprunts") ;
 				$smConsultOpp->CheminMiniature = "images/miniatures/consulte_emprunt.png" ;
 				$smConsultOpp->Titre = "Consultation Emprunt" ;
 				// Edition

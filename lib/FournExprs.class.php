@@ -10,6 +10,10 @@
 			public $TitrFenDemarrNegoc = "N&eacute;gocier operation de change" ;
 			public $LibLienAjustNegoc = "N&eacute;gocier" ;
 			public $TitrFenAjustNegoc = "N&eacute;gocier operation de change" ;
+			public $LibLienDemarrNegocOpInter = "N&eacute;gocier" ;
+			public $TitrFenDemarrNegocOpInter = "N&eacute;gocier operation Inter" ;
+			public $LibLienAjustNegocOpInter = "N&eacute;gocier" ;
+			public $TitrFenAjustNegocOpInter = "N&eacute;gocier operation Inter" ;
 			public $LibLienConfirmNegoc = "Confirmer" ;
 			public $TitrFenDemarrNegocAchatDevise = "N&eacute;gocier achat de devise" ;
 			public $TitrFenDemarrNegocVenteDevise = "N&eacute;gocier vente de devise" ;

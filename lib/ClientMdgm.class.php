@@ -177,7 +177,7 @@
 			{
 				$this->InitClientHttp() ;
 				$entetes = array("Authorization" => "Basic ".base64_encode($this->LoginApp.":".$this->PasswordApp)) ;
-				$this->Session = new HttpSession() ;
+				$this->Session = new SessionMdgm() ;
 				// $entetes = array() ;
 				$result = $this->ClientHttp->GetPage("https://xml-ssl.mdgms.com/session.xml?ID_CUST_XML=13048", array(), $entetes) ;
 				// $result = $this->ResultConnecteTest() ;

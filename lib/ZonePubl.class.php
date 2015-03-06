@@ -241,7 +241,7 @@
 				$this->MenuGdEntreprise = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeGdEntreprises") ;
 				$this->MenuGdEntreprise->Titre = "Grande entreprise" ;
 				$this->MenuTresorsPubl = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeTresorsPubl") ;
-				$this->MenuTresorsPubl->Titre = "Tresor Public" ;
+				$this->MenuTresorsPubl->Titre = "SGI" ;
 				$this->MenuParamTransactEntites = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("paramOpInter") ;
 				$this->MenuParamTransactEntites->Privileges[] = "admin_operator" ;
 				$this->MenuParamTransactEntites->Titre = htmlentities("Paramétrage transaction entre entité") ;
@@ -270,6 +270,7 @@
 				$this->MenuParamOpInter->Titre = htmlentities("Echange opération interbancaire (Placement/Emprunt)") ;
 				$this->MenuListeTransacts = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("listeTransacts") ;
 				$this->MenuListeTransacts->Titre = "Op&eacute;rations bancaires" ;
+				$this->MenuListeTransacts->Privileges[] = "post_op_change" ;
 				$this->MenuOpChangeDevise = $this->MenuListeTransacts->InscritSousMenuFige("transactsOpChangeDevise") ;
 				$this->MenuOpChangeDevise->Titre = "Op&eacute;ration change devise" ;
 				$this->MenuListeAchatsDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("listeAchatsDevise") ;
@@ -278,6 +279,7 @@
 				$this->MenuListeVentesDevise->Titre = "Vente de devise" ;
 				$this->MenuOpInterbancaire = $this->MenuListeTransacts->InscritSousMenuFige("transactsOpInterbancaires") ;
 				$this->MenuOpInterbancaire->Titre = "Op&eacute;ration interbancaire" ;
+				$this->MenuOpInterbancaire->Privileges[] = "post_op_change" ;
 				$this->MenuListePlacements = $this->MenuOpInterbancaire->InscritSousMenuScript("listePlacements") ;
 				$this->MenuListePlacements->Titre = "Placements" ;
 				$this->MenuListeEmprunts = $this->MenuOpInterbancaire->InscritSousMenuScript("listeEmprunts") ;
@@ -301,7 +303,7 @@
 				$this->MenuSoumissOpInter->Titre = "Op&eacute;rations interbancaires" ;
 				$this->MenuSoumissOpInter->Privileges[] = "post_op_change" ;
 				$this->MenuTresorier = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('tresorier') ;
-				$this->MenuTresorier->Titre = "Tr&eacute;sor public" ;
+				$this->MenuTresorier->Titre = "SGI" ;
 				$this->MenuEmissBonTresor = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
 				$this->MenuEmissBonTresor->Titre = "Bon de tr&eacute;sor" ;
 				$this->MenuEmissObligation = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissObligation' : 'publierEmissObligation') ;
@@ -1045,10 +1047,17 @@
 			public $TitreDocument = 'Bienvenue' ;
 			public $MessageBienvenue = 'Bienvenue sur l\'application Trading Platform.' ;
 			public $CheminIcone = "images/icones/house.png" ;
+			public $TablNotationsMdgm ;
+			public function DetermineEnvironnement()
+			{
+				parent::DetermineEnvironnement() ;
+				$this->TablNotationsMdgm = new TablNotationsMdgm() ;
+			}
 			public function RenduSpecifique()
 			{
 				$ctn = '' ;
-				$ctn .= $this->MessageBienvenue ;
+				$ctn .= '<p>'.$this->MessageBienvenue.'</p>' ;
+				$ctn .= $this->TablNotationsMdgm->RenduDispositif() ;
 				return $ctn ;
 			}
 		}
@@ -1102,6 +1111,89 @@
 				$ctn .= '</table>'.PHP_EOL ;
 				$ctn .= '</div>'.PHP_EOL ;
 				return $ctn ;
+			}
+		}
+		
+		class SymboleAft
+		{
+			public $Id ;
+			public $LeftCurrency ;
+			public $RightCurrency ;
+			public function __construct($id, $leftCurrency, $rightCurrency)
+			{
+				$this->Id = $id ;
+				$this->LeftCurrency = $leftCurrency ;
+				$this->RightCurrency = $rightCurrency ;
+			}
+		}
+		class ReferenceNotationsMdgm
+		{
+			public static $Symboles = array() ;
+			protected static $SymbolesCharges = 0 ;
+			public static function ChargeSymboles()
+			{
+				if(ReferenceNotationsMdgm::$SymbolesCharges == 1)
+					return ;
+				ReferenceNotationsMdgm::$Symboles[1390634] = new SymboleAft(1390634, 'EUR', 'USD') ;
+				ReferenceNotationsMdgm::$Symboles[3895009] = new SymboleAft(1390634, 'EUR', 'GBP') ;
+				ReferenceNotationsMdgm::$Symboles[1619898] = new SymboleAft(1619898, 'EUR', 'CHF') ;
+				ReferenceNotationsMdgm::$Symboles[1171295] = new SymboleAft(1171295, 'EUR', 'CAD') ;
+				ReferenceNotationsMdgm::$Symboles[991341] = new SymboleAft(991341, 'EUR', 'JPY') ;
+				ReferenceNotationsMdgm::$Symboles[1292138] = new SymboleAft(1292138, 'EUR', 'ZAR') ;
+				ReferenceNotationsMdgm::$Symboles[415007] = new SymboleAft(415007, 'EUR', 'SAR') ;
+				ReferenceNotationsMdgm::$Symboles[1361925] = new SymboleAft(1361925, 'USD', 'NGN') ;
+				ReferenceNotationsMdgm::$SymbolesCharges = 1 ;
+			}
+		}
+		class TablNotationsMdgm extends PvComposantIUBase
+		{
+			public $IdNotations = array(1390634, 3895009, 1619898, 1171295, 991341, 1292138, 415007, 1361925) ;
+			protected $Client ;
+			protected function InitClient()
+			{
+				ReferenceNotationsMdgm::ChargeSymboles() ;
+				$this->Client = new ClientMdgm() ;
+			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = '' ;
+				$this->InitClient() ;
+				if(! $this->Client->Connecte())
+				{
+					$ctn .= '<div class="ui-state-error">Impossible de se connecter a la plateforme des notations</div>' ;
+				}
+				else
+				{
+					$ctn .= '<table width="100%" cellspacing="0" cellpadding="4" class="ui-widget ui-content">'.PHP_EOL ;
+					$ctn .= '<tr class="ui-widget ui-widget-content ui-state-active">' ;
+					$ctn .= '<th>DATE</th>' ;
+					$ctn .= '<th>DEVISE 1</th>' ;
+					$ctn .= '<th>DEVISE 2</th>' ;
+					$ctn .= '<th>PRIX NORMAL</th>' ;
+					$ctn .= '<th>PRIX MIN.</th>' ;
+					$ctn .= '<th>PRIX MAX.</th>' ;
+					$ctn .= '</tr>'.PHP_EOL ;
+					foreach($this->IdNotations as $i => $id)
+					{
+						$not = $this->Client->Notation($id) ;
+						$classeAlt = ($i % 2 == 0) ? "ui-priority-primary" : "ui-priority-secondary" ;
+						$ctn .= '<tr class="ui-widget ui-widget-content '.$classeAlt.'">' ;
+						$ctn .= '<td align="center">'.htmlentities($this->ExtraitDate($not->DATETIME_PRICE)).'</td>' ;
+						$ctn .= '<td align="center">'.htmlentities(ReferenceNotationsMdgm::$Symboles[$id]->LeftCurrency).'</td>' ;
+						$ctn .= '<td align="center">'.htmlentities(ReferenceNotationsMdgm::$Symboles[$id]->RightCurrency).'</td>' ;
+						$ctn .= '<td align="center">'.htmlentities($not->PRICE).'</td>' ;
+						$ctn .= '<td align="center">'.htmlentities($not->LOW).'</td>' ;
+						$ctn .= '<td align="center">'.htmlentities($not->HIGH).'</td>' ;
+						$ctn .= '</tr>'.PHP_EOL ;
+					}
+					$ctn .= '</table>' ;
+				}
+				return $ctn ;
+			}
+			protected function ExtraitDate($dateBrute)
+			{
+				$timestamp = strtotime(str_replace("T", "", $dateBrute)) ;
+				return date("d/m/Y H:i:s", $timestamp) ;
 			}
 		}
 	}
