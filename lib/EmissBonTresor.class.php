@@ -142,6 +142,8 @@
 		
 		class ScriptPublierEmissBonTresorTradPlatf extends Script1EmissBonTresorTradPlatf
 		{
+			public $TitreDocument = "Emission bon de tresor" ;
+			public $Titre = "Emission bon de tresor" ;
 			public $Privileges = array('post_doc_tresorier') ;
 			public $CmdAjout ;
 			public $LienModif ;
@@ -185,7 +187,9 @@ FROM emission_bon_tresor t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifEmissBonTresor&id=${id}', 'Modifier', 'modif_emiss_bon_tresor_${id}', 'Modifier &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienModif->ClasseCSS = "lien-act-001" ;
 				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprEmissBonTresor&id=${id}', 'Supprimer', 'suppr_emiss_bon_tresor_${id}', 'Supprimer &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutEmissBonTresor", '?appelleScript=ajoutEmissBonTresor', 'Ajouter', 'ajoutEmissBonTresor', "Poster une &eacute;mission bon de tr&eacute;sor", $this->OptsFenetreEdit) ;
 			}
 			protected function DefinitExprs()
@@ -195,6 +199,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		}
 		class ScriptConsultEmissBonTresorTradPlatf extends Script1EmissBonTresorTradPlatf
 		{
+			public $TitreDocument = "Consulter emission bon de tresor" ;
+			public $Titre = "Consulter emission bon de tresor" ;
 			public $Privileges = array('post_op_change') ;
 			public $LienReserv ;
 			public $FournDonneesPrinc ;
@@ -235,7 +241,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 FROM emission_bon_tresor t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissBonTresor&id_emission=${id}', 'Intention souscription', 'detail_emiss_bon_tresor_${id}', 'D&eacute;tails &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissBonTresor&id_emission=${id}', 'souscription', 'detail_emiss_bon_tresor_${id}', 'D&eacute;tails obligation #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 			}
 			protected function DefinitExprs()
 			{
@@ -285,6 +292,7 @@ on t1.id = t2.id_emission
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservEmissBonTresor&id=${id}', 'R&eacute;servations', 'list_reserv_emiss_bon_tresor_${id}', 'Liste r&eacute;servations &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 			}
 			protected function DefinitExprs()
 			{
@@ -454,7 +462,9 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FournDonneesSecond->RequeteSelection = 'reserv_bon_tresor' ;
 				$this->TablSecond->FournisseurDonnees = & $this->FournDonneesSecond ;
 				$this->LienModifSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=modifReservEmissBonTresor&id=${id}', 'Modifier', 'modif_reserv_emiss_bon_tresor_${id}', 'Modifier r&eacute;serv. &eacute;mission bon de tr&eacute;sor ${montant} ${taux}%', $this->OptsFenetreEdit) ;
+				$this->LienModifSecond->ClasseCSS = "lien-act-001" ;
 				$this->LienSupprSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=supprReservEmissBonTresor&id=${id}', 'Supprimer', 'suppr_reserv_emiss_bon_tresor_${id}', 'Supprimer r&eacute;serv. &eacute;mission bon de tr&eacute;sor ${montant} ${taux}%', $this->OptsFenetreEdit) ;
+				$this->LienSupprSecond->ClasseCSS = "lien-act-002" ;
 				$this->CmdAjoutSecond = $this->TablSecond->InsereCmdOuvreFenetreScript("ajoutReservEmissBonTresor", '?appelleScript=ajoutReservEmissBonTresor&id_emission='.urlencode($this->FltIdTablSecond->Lie()), 'Ajouter', 'ajoutReservEmissBonTresor', "R&eacute;server une &eacute;mission bon de tr&eacute;sor", $this->OptsFenetreEdit) ;
 			}
 			protected function DefinitExprs()
@@ -514,6 +524,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColLoginTablSecond = $this->TablSecond->InsereDefCol('login', "Login") ;
 				$this->DefColActsTablSecond = $this->TablSecond->InsereDefColActions("Actions") ;
 				$this->LienDetailsTablSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=detailReservEmissBonTresor&id=${id_emission}&numop=${numop}', 'D&eacute;tails', 'details_reserv_emiss_bon_tresor_${id}_${numop}', 'Details &eacute;mission bon de tr&eacute;sor #${login}', $this->OptsFenetreDetail) ;
+				$this->LienDetailsTablSecond->ClasseCSS = "lien-act-003" ;
 				$this->FournDonneesSecond = $this->CreeFournDonneesPrinc() ;
 				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
 from reserv_bon_tresor t1
@@ -770,7 +781,7 @@ on t2.id_entite = t3.id_entite)' ;
 					$timestmpEcheance = strtotime($valDateEcheance) ;
 					if($timestmpJour > $timestmpEmiss || $timestmpEmiss > $timestmpEcheance)
 					{
-						$this->MessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre inferieure &agrave; la date de valeur ou la date actuelle' ;
+						$this->MessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre anterieure &agrave; la date de valeur' ;
 						return 0 ;
 					}
 				}

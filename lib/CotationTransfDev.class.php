@@ -179,7 +179,9 @@ FROM cotation_transf_devise t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifCotationTransfDev&id=${id}', 'Modifier', 'modif_emiss_obligation_${id}', 'Modifier cotation transfert de devise #${id}', $this->OptsFenetreEdit, 1) ;
+				$this->LienModif->ClasseCSS = "lien-act-001" ;
 				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprCotationTransfDev&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer cotation transfert de devise #${id}', $this->OptsFenetreEdit, 1) ;
+				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutCotationTransfDev", '?appelleScript=ajoutCotationTransfDev', 'Ajouter', 'ajoutCotationTransfDev', "Poster une cotation transfert de devise", $this->OptsFenetreEdit, 1) ;
 			}
 			protected function DefinitExprs()
@@ -228,6 +230,7 @@ left join devise d1 on t1.id_devise = d1.id_devise
 left join operateur o1 on t1.numop_publieur = o1.numop)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationTransfDev&id_cotation=${id}', 'R&eacute;ponse', 'bordereau_decpte_transf_${id}', 'Bordereau d&eacute;compte transfert de devise #${id}', $this->OptsFenetreDetail) ;
+				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 			}
 			protected function DefinitExprs()
 			{
@@ -273,7 +276,8 @@ inner join (select id_cotation, count(0) total from bordereau_decpte_transf grou
 on t1.id = t2.id_cotation
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=detailProposCotationTransfDev&id=${id}', 'Consultation cotation', 'liste_reserv_transf_dev_${id}', 'Bordereaux de d&eacute;compte transfert #${id}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=detailProposCotationTransfDev&id=${id}', 'Consultation', 'liste_reserv_transf_dev_${id}', 'Bordereaux de d&eacute;compte transfert #${id}', $this->OptsFenetreDetail) ;
+				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 			}
 			protected function DefinitExprs()
 			{
@@ -319,9 +323,6 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltNumOp = $this->FormPrinc->InsereFltEditFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop_publieur') ;
 				$this->FltMontant = $this->FormPrinc->InsereFltEditHttpPost('montant', 'montant') ;
 				$this->FltMontant->Libelle = "Montant" ;
-				$this->FltDateValeur = $this->FormPrinc->InsereFltEditHttpPost('date_valeur', 'date_valeur') ;
-				$this->FltDateValeur->Libelle = "Date valeur" ;
-				$this->FltDateValeur->DeclareComposant("PvCalendarDateInput") ;
 				$this->FltDevise = $this->FormPrinc->InsereFltEditHttpPost('id_devise', 'id_devise') ;
 				$this->FltDevise->Libelle = "Devise" ;
 				$this->CompDevise = $this->FltDevise->DeclareComposant("PvZoneBoiteSelectHtml") ;
@@ -329,6 +330,9 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->CompDevise->FournisseurDonnees->RequeteSelection = 'devise' ;
 				$this->CompDevise->NomColonneValeur = 'id_devise' ;
 				$this->CompDevise->NomColonneLibelle = 'code_devise' ;
+				$this->FltDateValeur = $this->FormPrinc->InsereFltEditHttpPost('date_valeur', 'date_valeur') ;
+				$this->FltDateValeur->Libelle = "Date valeur" ;
+				$this->FltDateValeur->DeclareComposant("PvCalendarDateInput") ;
 				$this->FournDonneesPrinc->RequeteSelection = "cotation_transf_devise" ;
 				$this->FournDonneesPrinc->TableEdition = "cotation_transf_devise" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
@@ -439,6 +443,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t2.login, t3.name nom_entite from bordereau_decpte_transf t1 left join operateur t2 on t1.numop_demandeur = t2.numop left join entite t3 on t2.id_entite = t3.id_entite)' ;
 				$this->TablSecond->FournisseurDonnees = & $this->FournDonneesSecond ;
 				$this->LienModifSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=modifReservCotationTransfDev&id=${id}', 'Consultation', 'modif_reserv_emiss_obligation_${id}', 'D&eacute;tails bordereau de d&eacute;compte #${id}', $this->OptsFenetreDetail) ;
+				$this->LienModifSecond->ClasseCSS = "lien-act-001" ;
 			}
 			protected function DefinitExprs()
 			{
@@ -872,7 +877,7 @@ on t2.id_entite = t3.id_entite)' ;
 					$timestmpEmiss = strtotime($valDateValeur) ;
 					if($timestmpJour > $timestmpEmiss)
 					{
-						$this->MessageErreur = 'La date de valeur ne doit pas &ecirc;tre inferieure &agrave; la date actuelle' ;
+						$this->MessageErreur = 'La date de valeur ne doit pas &ecirc;tre anterieure &agrave; la date actuelle' ;
 						return 0 ;
 					}
 				}

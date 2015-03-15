@@ -142,6 +142,7 @@
 		
 		class ScriptPublierEmissObligationTradPlatf extends Script1EmissObligationTradPlatf
 		{
+			public $Titre = "Emission obligation" ;
 			public $Privileges = array('post_doc_tresorier') ;
 			public $CmdAjout ;
 			public $LienModif ;
@@ -187,8 +188,10 @@ FROM emission_obligation t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifEmissObligation&id=${id}', 'Modifier', 'modif_emiss_obligation_${id}', 'Modifier &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienModif->ClasseCSS = "lien-act-001" ;
 				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprEmissObligation&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
-				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutEmissObligation", '?appelleScript=ajoutEmissObligation', 'Ajouter', 'ajoutEmissObligation', "Poster une &eacute;mission bon de tr&eacute;sor", $this->OptsFenetreEdit) ;
+				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
+				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutEmissObligation", '?appelleScript=ajoutEmissObligation', 'Ajouter', 'ajoutEmissObligation', "Poster une &eacute;mission obligation", $this->OptsFenetreEdit) ;
 			}
 			protected function DefinitExprs()
 			{
@@ -197,6 +200,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		}
 		class ScriptConsultEmissObligationTradPlatf extends Script1EmissObligationTradPlatf
 		{
+			public $Titre = "Consulter Emission obligation" ;
+			public $TitreDocument = "Consulter Emission obligation" ;
 			public $Privileges = array('post_op_change') ;
 			public $LienReserv ;
 			public $FournDonneesPrinc ;
@@ -239,7 +244,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 FROM emission_obligation t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissObligation&id=${id}', 'Intention souscription', 'detail_emiss_obligation_${id}', 'D&eacute;tails &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissObligation&id=${id}', 'souscription', 'detail_emiss_obligation_${id}', 'D&eacute;tails &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 			}
 			protected function DefinitExprs()
 			{
@@ -291,6 +297,7 @@ on t1.id = t2.id_emission
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservEmissObligation&id=${id}', 'R&eacute;servations', 'list_reserv_emiss_obligation_${id}', 'Liste r&eacute;servations &eacute;mission bon de tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv->ClasseCSS = "lien-act-001" ;
 			}
 			protected function DefinitExprs()
 			{
@@ -463,7 +470,9 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FournDonneesSecond->RequeteSelection = 'reserv_obligation' ;
 				$this->TablSecond->FournisseurDonnees = & $this->FournDonneesSecond ;
 				$this->LienModifSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=modifReservEmissObligation&id=${id}', 'Modifier', 'modif_reserv_emiss_obligation_${id}', 'Modifier r&eacute;serv. &eacute;mission bon de tr&eacute;sor ${montant} ${taux}%', $this->OptsFenetreEdit) ;
+				$this->LienModifSecond->ClasseCSS = "lien-act-001" ;
 				$this->LienSupprSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=supprReservEmissObligation&id=${id}', 'Supprimer', 'suppr_reserv_emiss_obligation_${id}', 'Supprimer r&eacute;serv. &eacute;mission bon de tr&eacute;sor ${montant} ${taux}%', $this->OptsFenetreEdit) ;
+				$this->LienSupprSecond->ClasseCSS = "lien-act-002" ;
 				$this->CmdAjoutSecond = $this->TablSecond->InsereCmdOuvreFenetreScript("ajoutReservEmissObligation", '?appelleScript=ajoutReservEmissObligation&id_emission='.urlencode($this->FltIdTablSecond->Lie()), 'Ajouter', 'ajoutReservEmissObligation', "R&eacute;server une &eacute;mission bon de tr&eacute;sor", $this->OptsFenetreEdit) ;
 			}
 			protected function DefinitExprs()
@@ -771,7 +780,7 @@ on t2.id_entite = t3.id_entite)' ;
 					$timestmpEcheance = strtotime($valDateEcheance) ;
 					if($timestmpJour > $timestmpEmiss || $timestmpEmiss > $timestmpEcheance)
 					{
-						$this->MessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre inferieure &agrave; la date de valeur ou la date actuelle' ;
+						$this->MessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre anterieure &agrave; la date de valeur' ;
 						return 0 ;
 					}
 				}

@@ -89,14 +89,14 @@
 				$this->DefColDateOp->Libelle = "Date Op." ;
 				$this->DefColDateOp->NomDonnees = "date_operation" ;
 				$this->DefColDateOp->AliasDonnees = $bd->SqlDateToStrFr("date_operation") ;
-				$this->DefColDateOp->Largeur = "12%" ;
+				$this->DefColDateOp->Largeur = "8%" ;
 				$this->DefColDateOp->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColDateOp ;
 				$this->DefColDateValeur = new PvDefinitionColonneDonnees() ;
 				$this->DefColDateValeur->Libelle = "Date valeur" ;
 				$this->DefColDateValeur->NomDonnees = "date_valeur" ;
 				$this->DefColDateValeur->AliasDonnees = $bd->SqlDateToStrFr("date_valeur") ;
-				$this->DefColDateValeur->Largeur = "12%" ;
+				$this->DefColDateValeur->Largeur = "8%" ;
 				$this->DefColDateValeur->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColDateValeur ;
 				$this->DefColMontant = new PvDefinitionColonneDonnees() ;
@@ -130,17 +130,19 @@
 				$this->FmtModif = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtModif->NomDonneesValid = "peut_modif" ;
 				$this->FmtModif->FormatLibelle = "Modifier" ;
+				$this->FmtModif->ClasseCSS = "lien-act-001" ;
 				$this->FmtModif->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtModif->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtModif->OptionsOnglet["Largeur"] = 600 ;
 				$this->FmtModif->OptionsOnglet["Hauteur"] = 535 ;
-				$this->FmtSuppr->FormatIdOnglet = 'modif_op_change_${num_op_change}' ;
+				$this->FmtModif->FormatIdOnglet = 'modif_op_change_${num_op_change}' ;
 				$this->FmtModif->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Modifier achat de devise' : 'Modifier vente de devise' ;
 				$this->FmtModif->FormatCheminIcone = 'images/icones/modif.png' ;
 				$this->FmtModif->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpChange == 1) ? 'modifAchatDevise' : 'modifVenteDevise').'&idEnCours=${num_op_change}' ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtModif ;
 				$this->FmtSuppr = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtSuppr->NomDonneesValid = "peut_modif" ;
+				$this->FmtSuppr->ClasseCSS = "lien-act-002" ;
 				$this->FmtSuppr->FormatLibelle = "Supprimer" ;
 				$this->FmtSuppr->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtSuppr->OptionsOnglet["BoutonFermer"] = 0 ;
@@ -154,6 +156,7 @@
 				$this->FmtPostuls = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtPostuls->NomDonneesValid = "peut_modif" ;
 				$this->FmtPostuls->FormatLibelle = "Negociations" ;
+				$this->FmtPostuls->ClasseCSS = "lien-act-004" ;
 				$this->FmtPostuls->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtPostuls->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtPostuls->OptionsOnglet["Hauteur"] = 600 ;
@@ -165,6 +168,7 @@
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtPostuls ;
 				$this->FmtRepondre = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtRepondre->NomDonneesValid = "peut_repondre" ;
+				$this->FmtRepondre->ClasseCSS = "lien-act-003" ;
 				$this->FmtRepondre->FormatLibelle = $this->ZoneParent->FournExprs->LibLienDemarrNegoc ;
 				$this->FmtRepondre->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtRepondre->OptionsOnglet["BoutonFermer"] = 0 ;
@@ -1935,8 +1939,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptAjoutVenteDeviseTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
-			public $TitreDocument = "Nouvel vente de devise" ;
-			public $Titre = "Nouvel vente de devise" ;
+			public $TitreDocument = "Nouvelle vente de devise" ;
+			public $Titre = "Nouvelle vente de devise" ;
 			public $FormOpChange ;
 			public $TypeOpChange = 2 ;
 			public $NecessiteMembreConnecte = 1 ;

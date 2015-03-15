@@ -1,0 +1,7 @@
+GET /prices/price.csv?XID=31333034383b32f8-54fe25ef-b3e7feb32f608c45&VERSION=2&ID_NOTATION=1390634 HTTP/1.0
+Host: xml.mdgms.com
+Content-Type: text/html; charset=utf-8
+Accept: text/*
+User-Agent: PHP Http Session v1.0
+Connection: close
+

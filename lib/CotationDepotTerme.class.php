@@ -182,7 +182,9 @@ FROM cotation_depot_terme t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifCotationDepotTerme&id=${id}', 'Modifier', 'modif_emiss_obligation_${id}', 'Modifier cotation transfert de devise #${id}', $this->OptsFenetreEdit) ;
+				$this->LienModif->ClasseCSS = "lien-act-001" ;
 				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprCotationDepotTerme&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer cotation transfert de devise #${id}', $this->OptsFenetreEdit) ;
+				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutCotationDepotTerme", '?appelleScript=ajoutCotationDepotTerme', 'Ajouter', 'ajoutCotationDepotTerme', "Poster une cotation depot a terme", $this->OptsFenetreEdit) ;
 			}
 			protected function DefinitExprs()
@@ -233,6 +235,7 @@ left join devise d1 on t1.id_devise = d1.id_devise
 left join operateur o1 on t1.numop_publieur = o1.numop)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationDepotTerme&id_cotation=${id}', 'R&eacute;ponse', 'reserv_cotation_depot_terme_${id}', 'Cotation depot a terme #${id}', $this->OptsFenetreDetail) ;
+				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 			}
 			protected function DefinitExprs()
 			{
@@ -280,7 +283,8 @@ inner join (select id_cotation, count(0) total from reserv_cotation_depot_terme 
 on t1.id = t2.id_cotation
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservCotationDepotTerme&id=${id}', 'Consultation cotation', 'list_reserv_cotation_depot_terme_${id}', 'Liste r&eacute;servations cotation depot de terme #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservCotationDepotTerme&id=${id}', 'Consultation', 'list_reserv_cotation_depot_terme_${id}', 'Liste r&eacute;servations cotation depot de terme #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 			}
 			protected function DefinitExprs()
 			{
@@ -448,7 +452,9 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FournDonneesSecond->RequeteSelection = 'reserv_cotation_depot_terme' ;
 				$this->TablSecond->FournisseurDonnees = & $this->FournDonneesSecond ;
 				$this->LienModifSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=modifReservCotationDepotTerme&id=${id}', 'Modifier', 'modif_reserv_emiss_obligation_${id}', 'Modifier r&eacute;serv. cotation transfert de devise ${montant} ${taux}%', $this->OptsFenetreEdit) ;
+				$this->LienModifSecond->ClasseCSS = "lien-act-001" ;
 				$this->LienSupprSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=supprReservCotationDepotTerme&id=${id}', 'Supprimer', 'suppr_reserv_emiss_obligation_${id}', 'Supprimer r&eacute;serv. cotation transfert de devise ${montant} ${taux}%', $this->OptsFenetreEdit) ;
+				$this->LienSupprSecond->ClasseCSS = "lien-act-002" ;
 				$this->CmdAjoutSecond = $this->TablSecond->InsereCmdOuvreFenetreScript("ajoutReservCotationDepotTerme", '?appelleScript=ajoutReservCotationDepotTerme&id_cotation='.urlencode($this->FltIdTablSecond->Lie()), 'Ajouter', 'ajoutReservCotationDepotTerme', "R&eacute;server une cotation transfert de devise", $this->OptsFenetreEdit) ;
 			}
 			protected function DefinitExprs()
@@ -800,7 +806,7 @@ left join reserv_cotation_depot_terme t3 on t1.id = t3.id_cotation)" ;
 					$timestmpEmiss = strtotime($valDateMisePlace) ;
 					if($timestmpJour > $timestmpEmiss)
 					{
-						$this->MessageErreur = 'La date de valeur ne doit pas &ecirc;tre inferieure &agrave; la date actuelle' ;
+						$this->MessageErreur = 'La date de valeur ne doit pas &ecirc;tre anterieure &agrave; la date actuelle' ;
 						return 0 ;
 					}
 				}

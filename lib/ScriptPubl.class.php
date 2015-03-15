@@ -95,6 +95,7 @@
 					$this->FmtLienRattach->FormatTitreOnglet = 'Liaisons ${nom_type_entite} ${code}' ;
 					$this->FmtLienRattach->FormatCheminIcone = 'images/icones/liaisons.png' ;
 					$this->FmtLienRattach->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->MdlTransact->NomScriptRattach).'&idEnCours=${id_entite}' ;
+					$this->FmtLienRattach->ClasseCSS = 'lien-act-003' ;
 					$this->DefColActions->Formatteur->Liens[] = & $this->FmtLienRattach ;
 					$this->FmtLienLiaisons = new PvConfigFormatteurColonneOuvreFenetre() ;
 					$this->FmtLienLiaisons->FormatLibelle = "Consultation" ;
@@ -104,6 +105,7 @@
 					$this->FmtLienLiaisons->FormatTitreOnglet = 'Liaisons ${nom_type_entite} ${code}' ;
 					$this->FmtLienLiaisons->FormatCheminIcone = 'images/icones/liaisons.png' ;
 					$this->FmtLienLiaisons->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->MdlTransact->NomScriptLiaisons).'&idEnCours=${id_entite}' ;
+					$this->FmtLienLiaisons->ClasseCSS = 'lien-act-004' ;
 					$this->DefColActions->Formatteur->Liens[] = & $this->FmtLienLiaisons ;
 				}
 				else
@@ -113,6 +115,7 @@
 					$this->FmtLienModif->FormatIdOnglet = 'modif_entite_${id_entite}' ;
 					$this->FmtLienModif->FormatTitreOnglet = 'Modifier ${nom_type_entite} ${code}' ;
 					$this->FmtLienModif->FormatCheminIcone = 'images/icones/modif.png' ;
+					$this->FmtLienModif->ClasseCSS = 'lien-act-001' ;
 					$this->FmtLienModif->OptionsOnglet = array('Hauteur' => '300', 'Modal' => 1, 'BoutonFermer' => 0) ;
 					$this->FmtLienModif->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'=modifEntite&idEnCours=${id_entite}' ;
 					$this->DefColActions->Formatteur->Liens[] = & $this->FmtLienModif ;
@@ -122,6 +125,7 @@
 					$this->FmtLienSuppr->FormatTitreOnglet = 'Supprimer ${nom_type_entite} ${code}' ;
 					$this->FmtLienSuppr->OptionsOnglet = array('Hauteur' => '300', 'Modal' => 1, 'BoutonFermer' => 0) ;
 					$this->FmtLienSuppr->FormatCheminIcone = 'images/icones/suppr.png' ;
+					$this->FmtLienSuppr->ClasseCSS = 'lien-act-002' ;
 					$this->FmtLienSuppr->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'=supprEntite&idEnCours=${id_entite}' ;
 					$this->DefColActions->Formatteur->Liens[] = & $this->FmtLienSuppr ;
 				}
@@ -283,7 +287,10 @@
 				$this->FormEntite->NomClasseCommandeExecuter = $this->CmdExecFormEntite ;
 				$this->FormEntite->AdopteScript("formEntite", $this) ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueSommEntite($this->FormEntite) ;
-				$this->FormEntite->CommandeExecuter->MessageSuccesExecution = $this->MsgSuccesExecFormEntite ;
+				if($this->FormEntite->EstPasNul($this->FormEntite->CommandeExecuter))
+				{
+					$this->FormEntite->CommandeExecuter->MessageSuccesExecution = $this->MsgSuccesExecFormEntite ;
+				}
 			}
 			public function DetermineEnvironnement()
 			{
@@ -430,6 +437,8 @@ left join pays t4 on t4.idpays = t2.idpays where top_active=1)' ;
 			public $FltStatut ;
 			public $FltBanque ;
 			public $LienChangeStatut ;
+			public $LienActiver ;
+			public $LienDesactiver ;
 			public $NecessiteMembreConnecte = 1 ;
 			public $Privileges = array("admin_members") ;
 			public function DetermineEnvironnement()
@@ -458,7 +467,16 @@ left join pays t4 on t4.idpays = t2.idpays where top_active=1)' ;
 				$this->DefColStatut->Formatteur = new PvFormatteurColonneBooleen() ;
 				$this->TablMembres->DefinitionsColonnes[] = & $this->DefColStatut ;
 				$this->DefColActions = $this->TablMembres->InsereDefColActions("Actions") ;
+				/*
 				$this->LienChangeStatut = $this->TablMembres->InsereLienOuvreFenetreAction($this->DefColActions, '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'=changeStatutMembre&idEnCours=${MEMBER_ID}', 'Activer / Desactiver', 'ch_statut_membre_${MEMBER_ID}', 'Changer le statut de ${MEMBER_LOGIN}', array('Hauteur' => 300, 'Modal' => 1, 'Largeur' => 300)) ;
+				*/
+				$this->LienActiver = $this->TablMembres->InsereLienOuvreFenetreAction($this->DefColActions, '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'=changeStatutMembre&idEnCours=${MEMBER_ID}', 'Activer', 'ch_statut_membre_${MEMBER_ID}', 'Changer le statut de ${MEMBER_LOGIN}', array('Hauteur' => 300, 'Modal' => 1, 'Largeur' => 300)) ;
+				$this->LienActiver->NomDonneesValid = "MEMBER_ENABLE" ;
+				$this->LienActiver->ValeurVraiValid = 0 ;
+				$this->LienActiver->ClasseCSS = "lien-act-003" ;
+				$this->LienDesactiver = $this->TablMembres->InsereLienOuvreFenetreAction($this->DefColActions, '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'=changeStatutMembre&idEnCours=${MEMBER_ID}', 'D&eacute;sactiver', 'ch_statut_membre_${MEMBER_ID}', 'Changer le statut de ${MEMBER_LOGIN}', array('Hauteur' => 300, 'Modal' => 1, 'Largeur' => 300)) ;
+				$this->LienDesactiver->ClasseCSS = "lien-act-002" ;
+				$this->LienDesactiver->NomDonneesValid = "MEMBER_ENABLE" ;
 				$this->FltStatut = $this->TablMembres->InsereFltSelectHttpGet('fltStatut', 'MEMBER_ENABLE = <self>', 'PvZoneBoiteSelectHtml') ;
 				$this->FltStatut->Libelle = "Actif" ;
 				$this->FltStatut->ValeurParDefaut = 1 ;
@@ -507,7 +525,6 @@ left join pays t4 on t4.idpays = t2.idpays where top_active=1)' ;
 				$this->SommMembre->InscrireCommandeAnnuler = "0" ;
 				$this->SommMembre->Editable = 0 ;
 				array_splice($this->SommMembre->DispositionComposants, 1, 0, 4) ;
-				$this->SommMembre->Description = "Souhaitez-vous changer le statut de ce membre ?" ;
 				$this->SommMembre->MaxFiltresEditionParLigne = 1 ;
 				$this->SommMembre->ChargeConfig() ;
 				$somm = & $this->SommMembre ;
@@ -531,7 +548,9 @@ left join pays t4 on t4.idpays = t2.idpays where top_active=1)' ;
 			}
 			public function RenduSpecifique()
 			{
-				$ctn = $this->SommMembre->RenduDispositif() ;
+				$ctn = '' ;
+				$ctn .= '<p>Souhaitez-vous changer le statut de ce membre ?</p>' ;
+				$ctn .= $this->SommMembre->RenduDispositif() ;
 				return $ctn ;
 			}
 		}

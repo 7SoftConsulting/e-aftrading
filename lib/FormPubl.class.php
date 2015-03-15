@@ -83,8 +83,8 @@
 				$comp->InclureLienSelectAucun = 1 ;
 				$comp->NomColonneValeur = "id_entite" ;
 				$comp->NomColonneValeurParDefaut = "top_active" ;
-				$this->FltPaysSelectRef->ValeurParDefaut = 0 ;
 				$this->FltPaysSelectRef = $this->ScriptParent->CreeFiltreRef("idPaysRef", $this->ScriptParent->FormMdlTransacts->FltPaysDoc) ;
+				$this->FltPaysSelectRef->ValeurParDefaut = 0 ;
 				$this->FltPaysSelectRef->ExpressionDonnees = "idpays = <self>" ;
 				$comp->FiltresSelection[] = & $this->FltPaysSelectRef ;
 				$this->FltIdEntiteRef = $this->ScriptParent->CreeFiltreRef("idEntite", $this->ScriptParent->FormEntite->FiltresLigneSelection[0]) ;

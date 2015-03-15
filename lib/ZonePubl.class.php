@@ -61,8 +61,10 @@
 			public $InscrireMenuDeconnexion = 0 ;
 			public $InscrireMenuChangeMotPasse = 0 ;
 			public $InscrireMenuAjoutMembre = 0 ;
-			public $ContenuRenduEntete = '<table style="background:white" align="center"><tr><td><img src="images/logo.png" height="75" /></td></tr></table>' ;
+			public $ContenuRenduEntete = '<table style="background:white" align="center"><tr><td><img src="images/logo.png" height="60" /></td></tr></table>' ;
 			public $ImageArrierePlanDocument = "" ;
+			public $EtirerImageArrierePlanDocument = 0 ;
+			public $CouleurArrierePlanDocument = "white" ;
 			public $ScriptAccueil ;
 			public $ScriptBienvenue ;
 			public $ScriptActivationMembre ;
@@ -239,12 +241,12 @@
 				$this->MenuCiesAssurance = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeCiesAssurance") ;
 				$this->MenuCiesAssurance->Titre = "Compagnies d'assurance" ;
 				$this->MenuGdEntreprise = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeGdEntreprises") ;
-				$this->MenuGdEntreprise->Titre = "Grande entreprise" ;
+				$this->MenuGdEntreprise->Titre = "Entreprises" ;
 				$this->MenuTresorsPubl = $this->MenuBanqEtabFinanc->InscritSousMenuScript("listeTresorsPubl") ;
 				$this->MenuTresorsPubl->Titre = "SGI" ;
 				$this->MenuParamTransactEntites = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("paramOpInter") ;
 				$this->MenuParamTransactEntites->Privileges[] = "admin_operator" ;
-				$this->MenuParamTransactEntites->Titre = htmlentities("Paramétrage transaction entre entité") ;
+				$this->MenuParamTransactEntites->Titre = "Param&eacute;trage transaction entre entit&eacute;" ;
 				$this->MenuParamTransactEntites->CheminIcone = "images/icones/paramEtabFinanc.png" ;
 				if($this->PossedePrivilege('admin_members'))
 				{
@@ -258,16 +260,16 @@
 					$this->MenuLiaisonOpChange = $this->MenuParamTransactEntites->InscritSousMenuFenetreScript("liaisonsEntite") ;
 					$this->MenuLiaisonOpChange->ParamsScript["idEnCours"] = $this->Membership->MemberLogged->RawData["ID_ENTITE_MEMBRE"] ;
 					$this->MenuLiaisonOpChange->Largeur = 725 ;
-					$this->MenuLiaisonOpChange->Titre = htmlentities("Liaisons opération change devise (Achat/Vente devise)") ;
+					$this->MenuLiaisonOpChange->Titre = "Liaisons op&eacute;ration change devise (Achat/Vente devise)" ;
 					$this->MenuParamOpInter = $this->MenuParamTransactEntites->InscritSousMenuFenetreScript("rattachOpInter") ;
 					$this->MenuParamOpInter->ParamsScript["idEnCours"] = $this->Membership->MemberLogged->RawData["ID_ENTITE_MEMBRE"] ;
 					$this->MenuLiaisonOpInter = $this->MenuParamTransactEntites->InscritSousMenuFenetreScript("liaisonsOpInter") ;
 					$this->MenuLiaisonOpInter->ParamsScript["idEnCours"] = $this->Membership->MemberLogged->RawData["ID_ENTITE_MEMBRE"] ;
 					$this->MenuLiaisonOpInter->Largeur = 725 ;
-					$this->MenuLiaisonOpInter->Titre = htmlentities("Liaisons opération interbancaire (Placement/Emprunt)") ;
+					$this->MenuLiaisonOpInter->Titre = "Liaisons op&eacute;ration interbancaire (Placement/Emprunt)" ;
 				}
-				$this->MenuParamOpChange->Titre = htmlentities("Echange opération change devise (Achat/Vente devise)") ;
-				$this->MenuParamOpInter->Titre = htmlentities("Echange opération interbancaire (Placement/Emprunt)") ;
+				$this->MenuParamOpChange->Titre = "Echange op&eacute;ration change devise (Achat/Vente devise)" ;
+				$this->MenuParamOpInter->Titre = "Echange op&eacute;ration interbancaire (Placement/Emprunt)" ;
 				$this->MenuListeTransacts = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("listeTransacts") ;
 				$this->MenuListeTransacts->Titre = "Op&eacute;rations bancaires" ;
 				$this->MenuListeTransacts->Privileges[] = "post_op_change" ;
@@ -305,8 +307,9 @@
 				$this->MenuTresorier = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('tresorier') ;
 				$this->MenuTresorier->Titre = "SGI" ;
 				$this->MenuEmissBonTresor = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
-				$this->MenuEmissBonTresor->Titre = "Bon de tr&eacute;sor" ;
+				$this->MenuEmissBonTresor->Titre = "Bons de tresor" ;
 				$this->MenuEmissObligation = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissObligation' : 'publierEmissObligation') ;
+				$this->MenuEmissObligation->Titre = "Obligations" ;
 				if($this->PossedePrivilege('post_doc_entreprise'))
 				{
 					$this->MenuEmissObligation->Titre = "Obligations" ;
@@ -336,14 +339,17 @@
 			protected function ChargeAutresMenus()
 			{
 				parent::ChargeAutresMenus() ;
-				$this->MenuAjoutMembre->Largeur = 725 ;
-				$this->MenuAjoutMembre->Hauteur = 450 ;
-				$this->MenuAjoutMembre->BoutonFermer = 0 ;
-				$this->MenuAjoutProfil->Hauteur = 300 ;
-				$this->MenuAjoutProfil->BoutonFermer = 0 ;
-				$this->MenuAjoutRole->Hauteur = 300 ;
-				$this->MenuAjoutRole->BoutonFermer = 0 ;
-				$this->MenuAuthentification->CheminIcone = "images/icones/authentification.png" ;
+				if($this->EstPasNul($this->MenuAjoutMembre))
+				{
+					$this->MenuAjoutMembre->Largeur = 725 ;
+					$this->MenuAjoutMembre->Hauteur = 450 ;
+					$this->MenuAjoutMembre->BoutonFermer = 0 ;
+					$this->MenuAjoutProfil->Hauteur = 300 ;
+					$this->MenuAjoutProfil->BoutonFermer = 0 ;
+					$this->MenuAjoutRole->Hauteur = 300 ;
+					$this->MenuAjoutRole->BoutonFermer = 0 ;
+					$this->MenuAuthentification->CheminIcone = "images/icones/authentification.png" ;
+				}
 			}
 			protected function ChargeAutresMenusMembres()
 			{
@@ -620,6 +626,93 @@
 				}
 				// print get_class($this->ScriptListeProfils) ;
 			}
+			protected function ObtientContenuCSSNonConnecte()
+			{
+				$ctn = parent::ObtientContenuCSSNonConnecte().PHP_EOL ;
+				$ctn .= '#espaceTravail {
+	background-image:url(images/pied-accueil.png) ;
+	background-repeat:no-repeat;
+	padding-top:72px ;
+	background-position: center top ;
+}' ;
+				return $ctn ;
+			}
+			protected function ObtientContenuCSSScript()
+			{
+				$ctn = parent::ObtientContenuCSSScript().PHP_EOL ;
+				$ctn .= '	.LiensRangee a:link { color : white; }
+	.lien-act-001 { background-image:url(images/bg-lien-01.png) ; }
+	.lien-act-002 { background-image:url(images/bg-lien-02.png) ; }
+	.lien-act-003 { background-image:url(images/bg-lien-03.png) ; }
+	.lien-act-004 { background-image:url(images/bg-lien-04.png) ; }
+	.lien-act-005 { background-image:url(images/bg-lien-05.png) ; }
+	.lien-act-001, .lien-act-002, .lien-act-003, .lien-act-004, .lien-act-005 { background-position: top center ; background-repeat:no-repeat; padding : 6px; padding-left:20px; padding-right:20px; text-decoration:none ; }
+	.lien-act-001:link, .lien-act-002:link, .lien-act-003:link, .lien-act-004:link, .lien-act-005:link, .lien-act-001:visited, .lien-act-002:visited, .lien-act-003:visited, .lien-act-004:visited, .lien-act-005:visited { color:white ; }
+	.lien-act-001:hover, .lien-act-002:hover, .lien-act-003:hover, .lien-act-004:hover { color:#ededed ; }' ;
+				return $ctn ;
+			}
+			protected function RenduCorpsDocumentNonConnecte()
+			{
+				$ctn = '' ;
+				$ctn .= '<script type="text/javascript">
+	jQuery(function() {
+		if(window.top != window)
+		{
+			window.top.location.href = window.location ;
+		}
+	}) ;
+</script>' ;
+				$ctn .= '<body id="corps_document">' ;
+				$ctn .= '<div align="center"><img src="images/logo-accueil.png" width="375" /></div>'.PHP_EOL ;
+				if($this->ScriptPourRendu->NomElementZone == $this->NomScriptDeconnexion)
+				{
+					$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
+	<tr>
+	<td align="center">' ;
+					$ctn .= $this->RenduContenuCorpsDocument() ;
+					$ctn .= '</td>
+	</tr>
+</table>' ;
+				}
+				else
+				{
+					$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
+	<tr>
+	<td align="center">' ;
+					$ctn .= '<p><a href="javascript:ouvreFenetreConnexion() ;"><img src="images/btn-acces-platf.png" border="0" width="250" /></a></p>
+	</td>
+	</tr>
+	</table>'.PHP_EOL ;
+					$ctn .= '<div id="fenetreConnexion" title="Authentification">
+		<form id="formulaireConnexion" action="'.$this->ScriptConnexion->ObtientUrl().'" method="post">' ;
+					if($this->ScriptConnexion->TentativeConnexionEnCours && $this->ScriptConnexion->TentativeConnexionValidee == 0)
+					{
+						$ctn .= '<div class="erreur ui-state-error">'.$this->ScriptConnexion->MessageConnexionEchouee.'</div>'.PHP_EOL ;
+					}
+					$ctn .= $this->ScriptConnexion->RenduTableauParametres().'
+		</form>
+	</div>'.PHP_EOL ;
+				}
+				$ctn .= '<div id="pied">'.$this->ContenuPiedDocument.'</div>'.PHP_EOL ;
+				$ctn .= '</body>' ;
+				return $ctn ;
+			}
+			protected function RenduCorpsDocumentParDefaut()
+			{
+				$ctn = parent::RenduCorpsDocumentParDefaut() ;
+				$ctn .= '<script src="js/jquery.backstretch.js" type="text/javascript"></script>
+<script type="text/javascript">
+	jQuery.backstretch(["images/bg-body.png"]);
+</script>' ;
+				$ctn .= '<style type="text/css">
+	body { margin:0px; padding:0px ; }
+	#entete, #pied { background : white; color:#016095 ; }
+	#entete { margin-bottom:10px ; }
+	#pied { margin-top:10px ; }
+	.btn-princ { background-image:url(images/btn-princ-moyen.png) ; background-repeat:no-repeat ; background-position:center top ; width : 140px ; height:22px; color:white ; padding-top : 4px; }
+</style>' ;
+				return $ctn ;
+			}
 		}
 		
 		class RemplisseurConfigPublTradPlatf
@@ -713,6 +806,7 @@
 			}
 			public function AppliqueFormTypeEntite(& $form)
 			{
+				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
 				$form->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$form->FournisseurDonnees->BaseDonnees = $form->ApplicationParent->BDPrincipale ;
 				$form->FournisseurDonnees->RequeteSelection = "type_entite" ;
@@ -725,6 +819,7 @@
 			}
 			public function AppliqueFormDevise(& $form)
 			{
+				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
 				$form->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$form->FournisseurDonnees->BaseDonnees = $form->ApplicationParent->BDPrincipale ;
 				$form->FournisseurDonnees->RequeteSelection = "devise" ;
@@ -744,6 +839,7 @@
 			}
 			public function AppliqueFormPays(& $form)
 			{
+				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
 				$form->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$form->FournisseurDonnees->BaseDonnees = $form->ApplicationParent->BDPrincipale ;
 				$form->FournisseurDonnees->RequeteSelection = "pays" ;
@@ -766,6 +862,7 @@
 			}
 			public function AppliqueFormZonePays(& $form)
 			{
+				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
 				$form->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$form->FournisseurDonnees->BaseDonnees = $form->ApplicationParent->BDPrincipale ;
 				$form->FournisseurDonnees->RequeteSelection = "region_pays" ;
@@ -781,6 +878,7 @@
 			}
 			public function AppliqueFormEntite(& $form)
 			{
+				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
 				$this->FltIdEntiteEnCours = $form->ScriptParent->CreeFiltreHttpGet("idEnCours") ;
 				$this->FltIdEntiteEnCours->ExpressionDonnees = "id_entite = <self>" ;
 				$form->FiltresLigneSelection[] = & $this->FltIdEntiteEnCours ;
@@ -1045,19 +1143,58 @@
 		{
 			public $Titre = 'Bienvenue' ;
 			public $TitreDocument = 'Bienvenue' ;
-			public $MessageBienvenue = 'Bienvenue sur l\'application Trading Platform.' ;
+			public $MessageBienvenue = 'Bienvenue sur l\'application e-AFTrading.' ;
 			public $CheminIcone = "images/icones/house.png" ;
-			public $TablNotationsMdgm ;
+			public $TablNotations1Mdgm ;
+			public $BlocNotations1Mdgm ;
+			public $TablNotations2Mdgm ;
+			public $BlocNotations2Mdgm ;
 			public function DetermineEnvironnement()
 			{
 				parent::DetermineEnvironnement() ;
-				$this->TablNotationsMdgm = new TablNotationsMdgm() ;
+				$this->TablNotations1Mdgm = new TablNotationsMdgm() ;
+				$this->TablNotations1Mdgm->AdopteScript("tabl", $this) ;
+				// $this->TablNotations1Mdgm->IdNotations = array(1390634, 3895009, 1619898, 1171295, 991341, 1292138, 415007, 1361925) ;
+				$this->TablNotations1Mdgm->IdNotations = array(1390634, 3895009, 1619898, 1171295, 991341, 1292138, 415007, 1361925, 
+				356488, 8326535, 8326536, 8326537, 8326540, 8326546, 8326547, 8326549, 8326976, 8326977, 8326978, 8326981, 8326988, 8326990, 8327199, 8327200, 8327201, 8327204, 8327211, 8327213, 8327379, 8327380, 8327381, 8327384, 8327390, 8327391, 8327393, 8327854, 8327855, 8327856, 8327859, 8327866, 8327868, 8354343, 8354344, 8354345, 8354346, 8354349, 8354350, 8354352, 8354593, 8354597, 8354598, 8354601, 8327189) ;
+				$this->BlocNotations1Mdgm = new PvBlocAjax() ;
+				$this->BlocNotations1Mdgm->AdopteScript("brr", $this) ;
+				$this->BlocNotations1Mdgm->DelaiRafraich = 10 ;
+				$this->BlocNotations1Mdgm->DelaiExpiration = 120 ;
+				$this->BlocNotations1Mdgm->AutoRafraich = true ;
+				$this->BlocNotations1Mdgm->Support = & $this->TablNotations1Mdgm ;
+				// 2
+				$this->TablNotations2Mdgm = new TablNotationsMdgm() ;
+				$this->TablNotations2Mdgm->AdopteScript("tabl2", $this) ;
+				$this->TablNotations2Mdgm->IdNotations = array(1031430, 1031431, 1326189, 4062566, 8328001) ;
+				$this->BlocNotations2Mdgm = new PvBlocAjax() ;
+				$this->BlocNotations2Mdgm->AdopteScript("brr2", $this) ;
+				$this->BlocNotations2Mdgm->DelaiRafraich = 10 ;
+				$this->BlocNotations2Mdgm->DelaiExpiration = 120 ;
+				$this->BlocNotations2Mdgm->AutoRafraich = true ;
+				$this->BlocNotations2Mdgm->Support = & $this->TablNotations2Mdgm ;
 			}
 			public function RenduSpecifique()
 			{
 				$ctn = '' ;
-				$ctn .= '<p>'.$this->MessageBienvenue.'</p>' ;
-				$ctn .= $this->TablNotationsMdgm->RenduDispositif() ;
+				$ctn .= '<p>'.$this->MessageBienvenue.'</p>'.PHP_EOL ;
+				$ctn .= '<div id="grpNotations">'.PHP_EOL ;
+				$ctn .= '<ul>'.PHP_EOL ;
+				$ctn .= '<li><a href="#devises">Devises</a></li>'.PHP_EOL ;
+				$ctn .= '<li><a href="#matieres">Mati&egrave;res premi&egrave;res</a></li>'.PHP_EOL ;
+				$ctn .= '</ul>'.PHP_EOL ;
+				$ctn .= '<div id="devises">'.PHP_EOL ;
+				$ctn .= $this->BlocNotations1Mdgm->RenduDispositif() ;
+				$ctn .= '</div>'.PHP_EOL ;
+				$ctn .= '<div id="matieres">'.PHP_EOL ;
+				$ctn .= $this->BlocNotations2Mdgm->RenduDispositif() ;
+				$ctn .= '</div>'.PHP_EOL ;
+				$ctn .= '</div>'.PHP_EOL ;
+				$ctn .= '<script language="javascript">
+	jQuery(function () {
+		jQuery("#grpNotations").tabs() ;
+	}) ;
+</script>'.PHP_EOL ;
 				return $ctn ;
 			}
 		}
@@ -1075,7 +1212,7 @@
 				if($membreConnecte == null)
 					return '' ;
 				$ctn = '' ;
-				$ctn .= '<div id="'.$this->IDInstanceCalc.'" class="ui-wigdet ui-widget-content ui-state-focus" style="margin:2px">'.PHP_EOL ;
+				$ctn .= '<div id="'.$this->IDInstanceCalc.'" class="ui-wigdet ui-widget-content ui-state-active" style="margin:2px">'.PHP_EOL ;
 				$ctn .= '<table width="100%" cellspacing="0" cellpadding=4>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td width="50%">Utilisateur : '.htmlentities($membreConnecte->FirstName.' '.$membreConnecte->LastName).' ('.htmlentities($membreConnecte->Login).') / '.htmlentities($membreConnecte->Profile->Title).PHP_EOL ;
@@ -1084,16 +1221,16 @@
 				$ctn .= '<div align="center" style="float:right"><a href="'.$this->ZoneParent->ObtientUrlScript($this->ZoneParent->NomScriptDeconnexion).'">' ;
 				if($this->InclureIconeLiens)
 				{
-					$ctn .= '<img src="'.$this->CheminIconeLienDecnx.'" border="0" /><br />' ;
+					$ctn .= '<div><img src="'.$this->CheminIconeLienDecnx.'" border="0" /></div>' ;
 				}
-				$ctn .= $this->LibelleLienDecnx ;
+				$ctn .= '<div class="btn-princ">'.$this->LibelleLienDecnx.'</div>' ;
 				$ctn .= '</a></div>' ;
 				$ctn .= '<div style="float:right; padding-right:16px;" align="center"><a href="javascript:ouvreFenetreCadre(\'changeMotPasse\', \'\',\'Change mot de passe\', '.htmlentities(svc_json_encode($this->ZoneParent->ObtientUrlScript($this->ZoneParent->NomScriptChangeMotPasse))).', { Hauteur : 225, Largeur : 450, Modal : 1, BoutonFermer : 0}) ;">' ;
 				if($this->InclureIconeLiens)
 				{
-					$ctn .= '<img src="'.$this->CheminIconeLienChMP.'" border="0" /><br />' ;
+					$ctn .= '<div><img src="'.$this->CheminIconeLienChMP.'" border="0" /></div>' ;
 				}
-				$ctn .= $this->LibelleLienChMP ;
+				$ctn .= '<div class="btn-princ">'.$this->LibelleLienChMP.'</div>' ;
 				$ctn .= '</a></div>' ;
 				$ctn .= '</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
@@ -1117,13 +1254,11 @@
 		class SymboleAft
 		{
 			public $Id ;
-			public $LeftCurrency ;
-			public $RightCurrency ;
-			public function __construct($id, $leftCurrency, $rightCurrency)
+			public $InstrumentName ;
+			public function __construct($id, $instrumentName)
 			{
 				$this->Id = $id ;
-				$this->LeftCurrency = $leftCurrency ;
-				$this->RightCurrency = $rightCurrency ;
+				$this->InstrumentName = $instrumentName ;
 			}
 		}
 		class ReferenceNotationsMdgm
@@ -1134,20 +1269,70 @@
 			{
 				if(ReferenceNotationsMdgm::$SymbolesCharges == 1)
 					return ;
-				ReferenceNotationsMdgm::$Symboles[1390634] = new SymboleAft(1390634, 'EUR', 'USD') ;
-				ReferenceNotationsMdgm::$Symboles[3895009] = new SymboleAft(1390634, 'EUR', 'GBP') ;
-				ReferenceNotationsMdgm::$Symboles[1619898] = new SymboleAft(1619898, 'EUR', 'CHF') ;
-				ReferenceNotationsMdgm::$Symboles[1171295] = new SymboleAft(1171295, 'EUR', 'CAD') ;
-				ReferenceNotationsMdgm::$Symboles[991341] = new SymboleAft(991341, 'EUR', 'JPY') ;
-				ReferenceNotationsMdgm::$Symboles[1292138] = new SymboleAft(1292138, 'EUR', 'ZAR') ;
-				ReferenceNotationsMdgm::$Symboles[415007] = new SymboleAft(415007, 'EUR', 'SAR') ;
-				ReferenceNotationsMdgm::$Symboles[1361925] = new SymboleAft(1361925, 'USD', 'NGN') ;
+				ReferenceNotationsMdgm::$Symboles[1390634] = new SymboleAft(1390634, 'EUR / USD') ;
+				ReferenceNotationsMdgm::$Symboles[3895009] = new SymboleAft(1390634, 'EUR / GBP') ;
+				ReferenceNotationsMdgm::$Symboles[1619898] = new SymboleAft(1619898, 'EUR / CHF') ;
+				ReferenceNotationsMdgm::$Symboles[1171295] = new SymboleAft(1171295, 'EUR / CAD') ;
+				ReferenceNotationsMdgm::$Symboles[991341] = new SymboleAft(991341, 'EUR / JPY') ;
+				ReferenceNotationsMdgm::$Symboles[1292138] = new SymboleAft(1292138, 'EUR / ZAR') ;
+				ReferenceNotationsMdgm::$Symboles[415007] = new SymboleAft(415007, 'EUR / SAR') ;
+				ReferenceNotationsMdgm::$Symboles[1361925] = new SymboleAft(1361925, 'USD / NGN') ;
+				ReferenceNotationsMdgm::$Symboles[356488] = new SymboleAft(356488, 'EURIBOR FIXING (ACT/360) 10M') ;
+				ReferenceNotationsMdgm::$Symboles[8326535] = new SymboleAft(8326535, 'CHF LIBOR FIXING 1M') ;
+				ReferenceNotationsMdgm::$Symboles[8326536] = new SymboleAft(8326536, 'CHF LIBOR FIXING 2M') ;
+				ReferenceNotationsMdgm::$Symboles[8326537] = new SymboleAft(8326537, 'CHF LIBOR FIXING 3M') ;
+				ReferenceNotationsMdgm::$Symboles[8326540] = new SymboleAft(8326540, 'CHF LIBOR FIXING 6M') ;
+				ReferenceNotationsMdgm::$Symboles[8326546] = new SymboleAft(8326546, 'CHF LIBOR FIXING SN') ;
+				ReferenceNotationsMdgm::$Symboles[8326547] = new SymboleAft(8326547, 'CHF LIBOR FIXING 1W') ;
+				ReferenceNotationsMdgm::$Symboles[8326549] = new SymboleAft(8326549, 'CHF LIBOR FIXING 12M') ;
+				ReferenceNotationsMdgm::$Symboles[8326976] = new SymboleAft(8326976, 'GBP LIBOR FIXING 1M') ;
+				ReferenceNotationsMdgm::$Symboles[8326977] = new SymboleAft(8326977, 'GBP LIBOR FIXING 2M') ;
+				ReferenceNotationsMdgm::$Symboles[8326978] = new SymboleAft(8326978, 'GBP LIBOR FIXING 3M') ;
+				ReferenceNotationsMdgm::$Symboles[8326981] = new SymboleAft(8326981, 'GBP LIBOR FIXING 6M') ;
+				ReferenceNotationsMdgm::$Symboles[8326988] = new SymboleAft(8326988, 'GBP LIBOR FIXING 1W') ;
+				ReferenceNotationsMdgm::$Symboles[8326990] = new SymboleAft(8326990, 'GBP LIBOR FIXING 12M') ;
+				ReferenceNotationsMdgm::$Symboles[8327199] = new SymboleAft(8327199, 'EUR LIBOR FIXING 1M') ;
+				ReferenceNotationsMdgm::$Symboles[8327200] = new SymboleAft(8327200, 'EUR LIBOR FIXING 2M') ;
+				ReferenceNotationsMdgm::$Symboles[8327201] = new SymboleAft(8327201, 'EUR LIBOR FIXING 3M') ;
+				ReferenceNotationsMdgm::$Symboles[8327204] = new SymboleAft(8327204, 'EUR LIBOR FIXING 6M') ;
+				ReferenceNotationsMdgm::$Symboles[8327211] = new SymboleAft(8327211, 'EUR LIBOR FIXING 1W') ;
+				ReferenceNotationsMdgm::$Symboles[8327213] = new SymboleAft(8327213, 'EUR LIBOR FIXING 12M') ;
+				ReferenceNotationsMdgm::$Symboles[8327379] = new SymboleAft(8327379, 'JPY LIBOR FIXING 1M') ;
+				ReferenceNotationsMdgm::$Symboles[8327380] = new SymboleAft(8327380, 'JPY LIBOR FIXING 2M') ;
+				ReferenceNotationsMdgm::$Symboles[8327381] = new SymboleAft(8327381, 'JPY LIBOR FIXING 3M') ;
+				ReferenceNotationsMdgm::$Symboles[8327384] = new SymboleAft(8327384, 'JPY LIBOR FIXING 6M') ;
+				ReferenceNotationsMdgm::$Symboles[8327390] = new SymboleAft(8327390, 'JPY LIBOR FIXING SN') ;
+				ReferenceNotationsMdgm::$Symboles[8327391] = new SymboleAft(8327391, 'JPY LIBOR FIXING 1W') ;
+				ReferenceNotationsMdgm::$Symboles[8327393] = new SymboleAft(8327393, 'JPY LIBOR FIXING 12M') ;
+				ReferenceNotationsMdgm::$Symboles[8327854] = new SymboleAft(8327854, 'USD LIBOR FIXING 1M') ;
+				ReferenceNotationsMdgm::$Symboles[8327855] = new SymboleAft(8327855, 'USD LIBOR FIXING 2M') ;
+				ReferenceNotationsMdgm::$Symboles[8327856] = new SymboleAft(8327856, 'USD LIBOR FIXING 3M') ;
+				ReferenceNotationsMdgm::$Symboles[8327859] = new SymboleAft(8327859, 'USD LIBOR FIXING 6M') ;
+				ReferenceNotationsMdgm::$Symboles[8327866] = new SymboleAft(8327866, 'USD LIBOR FIXING 1W') ;
+				ReferenceNotationsMdgm::$Symboles[8327868] = new SymboleAft(8327868, 'USD LIBOR FIXING 12M') ;
+				ReferenceNotationsMdgm::$Symboles[8354343] = new SymboleAft(8354343, 'UNITED KINGDOM BANK RATE (SINCE 06.03.2009)') ;
+				ReferenceNotationsMdgm::$Symboles[8354344] = new SymboleAft(8354344, 'HONG KONG PRIME RATE') ;
+				ReferenceNotationsMdgm::$Symboles[8354345] = new SymboleAft(8354345, 'JAPAN OVERNIGHT CALL RATE') ;
+				ReferenceNotationsMdgm::$Symboles[8354346] = new SymboleAft(8354346, 'CANADA OVERNIGHT RATE (SINCE 21.01.2015)') ;
+				ReferenceNotationsMdgm::$Symboles[8354349] = new SymboleAft(8354349, 'SOUTH AFRICA PRIME RATE (18.07.2014)') ;
+				ReferenceNotationsMdgm::$Symboles[8354350] = new SymboleAft(8354350, 'SINGAPORE PRIME RATE') ;
+				ReferenceNotationsMdgm::$Symboles[8354352] = new SymboleAft(8354352, 'UNITED STATES DISCOUNT RATE') ;
+				ReferenceNotationsMdgm::$Symboles[8354593] = new SymboleAft(8354593, 'GERMANY') ;
+				ReferenceNotationsMdgm::$Symboles[8354597] = new SymboleAft(8354597, 'FRANCE') ;
+				ReferenceNotationsMdgm::$Symboles[8354598] = new SymboleAft(8354598, 'GREAT BRITAIN') ;
+				ReferenceNotationsMdgm::$Symboles[8354601] = new SymboleAft(8354601, 'JAPAN') ;
+				ReferenceNotationsMdgm::$Symboles[8327189] = new SymboleAft(8327189, 'EURIBOR FIXING (ACT/360) 6M') ;
+				ReferenceNotationsMdgm::$Symboles[1031430] = new SymboleAft(1031430, 'PLATINUM / US DOLLAR (XPT/USD)') ;
+				ReferenceNotationsMdgm::$Symboles[1031431] = new SymboleAft(1031431, 'PALLADIUM / US DOLLAR (XPD/USD)') ;
+				ReferenceNotationsMdgm::$Symboles[1326189] = new SymboleAft(1326189, 'GOLD / US DOLLAR (XAU/USD)') ;
+				ReferenceNotationsMdgm::$Symboles[4062566] = new SymboleAft(4062566, 'BRENT CRUDE OIL SPOT') ;
+				ReferenceNotationsMdgm::$Symboles[8328001] = new SymboleAft(8328001, 'WTI SPOT') ;
 				ReferenceNotationsMdgm::$SymbolesCharges = 1 ;
 			}
 		}
 		class TablNotationsMdgm extends PvComposantIUBase
 		{
-			public $IdNotations = array(1390634, 3895009, 1619898, 1171295, 991341, 1292138, 415007, 1361925) ;
+			public $IdNotations = array() ;
 			protected $Client ;
 			protected function InitClient()
 			{
@@ -1167,11 +1352,10 @@
 					$ctn .= '<table width="100%" cellspacing="0" cellpadding="4" class="ui-widget ui-content">'.PHP_EOL ;
 					$ctn .= '<tr class="ui-widget ui-widget-content ui-state-active">' ;
 					$ctn .= '<th>DATE</th>' ;
-					$ctn .= '<th>DEVISE 1</th>' ;
-					$ctn .= '<th>DEVISE 2</th>' ;
-					$ctn .= '<th>PRIX NORMAL</th>' ;
-					$ctn .= '<th>PRIX MIN.</th>' ;
-					$ctn .= '<th>PRIX MAX.</th>' ;
+					$ctn .= '<th>PAIRE DE DEVISE</th>' ;
+					$ctn .= '<th>COURS</th>' ;
+					$ctn .= '<th>BAS</th>' ;
+					$ctn .= '<th>HAUT</th>' ;
 					$ctn .= '</tr>'.PHP_EOL ;
 					foreach($this->IdNotations as $i => $id)
 					{
@@ -1179,8 +1363,7 @@
 						$classeAlt = ($i % 2 == 0) ? "ui-priority-primary" : "ui-priority-secondary" ;
 						$ctn .= '<tr class="ui-widget ui-widget-content '.$classeAlt.'">' ;
 						$ctn .= '<td align="center">'.htmlentities($this->ExtraitDate($not->DATETIME_PRICE)).'</td>' ;
-						$ctn .= '<td align="center">'.htmlentities(ReferenceNotationsMdgm::$Symboles[$id]->LeftCurrency).'</td>' ;
-						$ctn .= '<td align="center">'.htmlentities(ReferenceNotationsMdgm::$Symboles[$id]->RightCurrency).'</td>' ;
+						$ctn .= '<td align="center">'.htmlentities(ReferenceNotationsMdgm::$Symboles[$id]->InstrumentName).'</td>' ;
 						$ctn .= '<td align="center">'.htmlentities($not->PRICE).'</td>' ;
 						$ctn .= '<td align="center">'.htmlentities($not->LOW).'</td>' ;
 						$ctn .= '<td align="center">'.htmlentities($not->HIGH).'</td>' ;
@@ -1193,6 +1376,8 @@
 			protected function ExtraitDate($dateBrute)
 			{
 				$timestamp = strtotime(str_replace("T", "", $dateBrute)) ;
+				if($timestamp == 0)
+					return '' ;
 				return date("d/m/Y H:i:s", $timestamp) ;
 			}
 		}

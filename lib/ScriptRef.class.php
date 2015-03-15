@@ -39,8 +39,10 @@
 				$this->TablTypesEntites->DefinitionsColonnes[] = $col ;
 				$optsOnglet = array("Hauteur" => "200", 'Modal' => 1, 'BoutonFermer' => 0) ;
 				$colActs = $this->TablTypesEntites->InsereDefColActions("Actions") ;
-				$lienModif = $this->TablTypesEntites->InsereLienOuvreOngletAction($colActs, '?appelleScript=modifTypeEntite&idEnCours=${idtype_entite}', 'Modifier', 'modif_type_entite_${idtype_entite}', 'Modifier type entite', $optsOnglet) ;
-				$lienModif = $this->TablTypesEntites->InsereLienOuvreOngletAction($colActs, '?appelleScript=supprTypeEntite&idEnCours=${idtype_entite}', 'Supprimer', 'suppr_type_entite_${idtype_entite}', 'Supprimer type entite', $optsOnglet) ;
+				$lienModif = $this->TablTypesEntites->InsereLienOuvreFenetreAction($colActs, '?appelleScript=modifTypeEntite&idEnCours=${idtype_entite}', 'Modifier', 'modif_type_entite_${idtype_entite}', 'Modifier type entite', $optsOnglet) ;
+				$lienModif->ClasseCSS = "lien-act-001" ;
+				$lienSuppr = $this->TablTypesEntites->InsereLienOuvreFenetreAction($colActs, '?appelleScript=supprTypeEntite&idEnCours=${idtype_entite}', 'Supprimer', 'suppr_type_entite_${idtype_entite}', 'Supprimer type entite', $optsOnglet) ;
+				$lienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->TablTypesEntites->InsereCmdOuvreFenetreScript("cmdAjoutTypeEntite", "?appelleScript=ajoutTypeEntite", "Ajouter", "ajout_type_entite", "Ajouter type entite", $optsOnglet) ;
 			}
 			public function RenduSpecifique()
@@ -107,7 +109,7 @@
 				$this->TablPrinc->FournisseurDonnees->BaseDonnees = $this->ApplicationParent->BDPrincipale ;
 				// Requête de sélection
 				$this->TablPrinc->FournisseurDonnees->RequeteSelection = "devise" ;
-				$optsOnglet = array("Hauteur" => "300", 'Modal' => 1) ;
+				$optsOnglet = array("Hauteur" => "300", 'Modal' => 1, 'BoutonFermer' => 0) ;
 				$this->TablPrinc->InsereDefColCachee("id_devise") ;
 				$defCol1 = $this->TablPrinc->InsereDefCol("code_devise", "Code") ;
 				$defCol1->Largeur = "25%" ;
@@ -115,8 +117,10 @@
 				$defCol2->Largeur = "40%" ;
 				$colActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$colActs->Largeur = "*" ;
-				$lienModif = $this->TablPrinc->InsereLienOuvreOngletAction($colActs, '?appelleScript=modifDevise&idEnCours=${id_devise}', 'Modifier', 'modif_devise_${id_devise}', 'Modifier devise', $optsOnglet) ;
-				$lienModif = $this->TablPrinc->InsereLienOuvreOngletAction($colActs, '?appelleScript=supprDevise&idEnCours=${id_devise}', 'Supprimer', 'suppr_devise_${id_devise}', 'Supprimer devise', $optsOnglet) ;
+				$lienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=modifDevise&idEnCours=${id_devise}', 'Modifier', 'modif_devise_${id_devise}', 'Modifier devise', $optsOnglet) ;
+				$lienModif->ClasseCSS = "lien-act-001" ;
+				$lienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=supprDevise&idEnCours=${id_devise}', 'Supprimer', 'suppr_devise_${id_devise}', 'Supprimer devise', $optsOnglet) ;
+				$lienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->TablPrinc->InsereCmdOuvreFenetreScript("cmdAjoutDevise", "?appelleScript=ajoutDevise", "Ajouter", "ajout_devise", "Ajouter devise", $optsOnglet) ;
 			}
 			public function RenduSpecifique()
@@ -183,7 +187,7 @@
 				$this->TablPrinc->FournisseurDonnees->BaseDonnees = $this->ApplicationParent->BDPrincipale ;
 				// Requête de sélection
 				$this->TablPrinc->FournisseurDonnees->RequeteSelection = "(select t1.*, t2.libelle libelle_region from pays t1 left join region_pays t2 on t1.id_region = t2.id)" ;
-				$optsOnglet = array("Hauteur" => "300", 'Modal' => 1) ;
+				$optsOnglet = array("Hauteur" => "300", 'Modal' => 1, 'BoutonFermer' => 0) ;
 				$this->TablPrinc->InsereDefColCachee("idpays") ;
 				$defCol1 = $this->TablPrinc->InsereDefCol("codepays", "Code") ;
 				$defCol1->Largeur = "20%" ;
@@ -193,8 +197,10 @@
 				$defCol3->Largeur = "30%" ;
 				$colActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$colActs->Largeur = "*" ;
-				$lienModif = $this->TablPrinc->InsereLienOuvreOngletAction($colActs, '?appelleScript=modifPays&idEnCours=${idpays}', 'Modifier', 'modif_pays_${idpays}', 'Modifier pays', $optsOnglet) ;
-				$lienModif = $this->TablPrinc->InsereLienOuvreOngletAction($colActs, '?appelleScript=supprPays&idEnCours=${idpays}', 'Supprimer', 'suppr_pays_${idpays}', 'Supprimer pays', $optsOnglet) ;
+				$lienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=modifPays&idEnCours=${idpays}', 'Modifier', 'modif_pays_${idpays}', 'Modifier pays', $optsOnglet) ;
+				$lienModif->ClasseCSS = "lien-act-001" ;
+				$lienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=supprPays&idEnCours=${idpays}', 'Supprimer', 'suppr_pays_${idpays}', 'Supprimer pays', $optsOnglet) ;
+				$lienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->TablPrinc->InsereCmdOuvreFenetreScript("cmdAjoutPays", "?appelleScript=ajoutPays", "Ajouter", "ajout_pays", "Ajouter pays", $optsOnglet) ;
 			}
 			public function RenduSpecifique()
@@ -267,8 +273,10 @@
 				$defCol1->Largeur = "60%" ;
 				$colActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$colActs->Largeur = "*" ;
-				$lienModif = $this->TablPrinc->InsereLienOuvreOngletAction($colActs, '?appelleScript=modifZonePays&idEnCours=${id}', 'Modifier', 'modif_zone_devise_${id}', 'Modifier zone de pays', $optsOnglet) ;
-				$lienModif = $this->TablPrinc->InsereLienOuvreOngletAction($colActs, '?appelleScript=supprZonePays&idEnCours=${id}', 'Supprimer', 'suppr_region_pays_${id}', 'Supprimer zone de pays', $optsOnglet) ;
+				$lienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=modifZonePays&idEnCours=${id}', 'Modifier', 'modif_zone_devise_${id}', 'Modifier zone de pays', $optsOnglet) ;
+				$lienModif->ClasseCSS = "lien-act-001" ;
+				$lienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=supprZonePays&idEnCours=${id}', 'Supprimer', 'suppr_region_pays_${id}', 'Supprimer zone de pays', $optsOnglet) ;
+				$lienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->TablPrinc->InsereCmdOuvreFenetreScript("cmdAjoutZonePays", "?appelleScript=ajoutZonePays", "Ajouter", "ajout_region_pays", "Ajouter zone de pays", $optsOnglet) ;
 			}
 			public function RenduSpecifique()

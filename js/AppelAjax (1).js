@@ -324,9 +324,6 @@ function BlocAjax(id, methode) {
 	this.TexteMsgSurExpirationAtteint = "La page a mis trop de temps pour repondre !!!" ;
 	this.AlignMsgSurExpirationAtteint = "center" ;
 	this.IntegreScriptsJs = true ;
-	this.AutoRafraich = false ;
-	this.EstRempli = false ;
-	this.DelaiRafraich = 0 ;
 	this.RequeteAjax = this.AppelAjax.CreeRequeteGET() ;
 	this.RequeteAjax.Methode = (methode.toUpperCase() != METHODE_APPEL_AJAX_GET) ? METHODE_APPEL_AJAX_POST : METHODE_APPEL_AJAX_GET ;
 	this.AssigneContenuHtml = function (contenu) {
@@ -340,23 +337,8 @@ function BlocAjax(id, methode) {
 			}
 		}
 	}
-	this.RemplitEncore = function () {
-		if(this.AutoRafraich && this.DelaiRafraich > 0)
-		{
-			var luiMeme = this ;
-			window.setTimeout(function () { luiMeme.Remplit() ; }, this.DelaiRafraich * 1000) ;
-		}
-	}
-	this.Remplit = function () {
-		var msgChargement = '<div class="msgChargement" align="' + this.AlignMsgSurChargement + '">' + this.TexteMsgSurChargement + '</div>' ;
-		if(! this.EstRempli)
-			this.AssigneContenuHtml(msgChargement) ;
-		this.AppelAjax.Execute(this.RequeteAjax) ;
-	}
 	this.RequeteAjax.SurSucces = function (reponse, xmlHttp) {
 		blocAjax.AssigneContenuHtml(reponse.ContenuCorps) ;
-		blocAjax.EstRempli = true  ;
-		blocAjax.RemplitEncore() ;
 	}
 	this.RequeteAjax.SurDelaiExpirationAtteint = function (reponse, xmlHttp) {
 		blocAjax.AssigneContenuHtml(blocAjax.TexteMsgSurExpirationAtteint) ;
@@ -377,11 +359,13 @@ function BlocAjax(id, methode) {
 		}
 		return blocHtml ;
 	}
+	this.Remplit = function () {
+		var msgChargement = '<div class="msgChargement" align="' + this.AlignMsgSurChargement + '">' + this.TexteMsgSurChargement + '</div>' ;
+		this.AssigneContenuHtml(msgChargement) ;
+		this.AppelAjax.Execute(this.RequeteAjax) ;
+	}
 	this.DefinitUrl = function (url) {
 		this.RequeteAjax.Url = url ;
-	}
-	this.AjouteParametre = function (nom, valeur) {
-		this.RequeteAjax.AjouteParametres(nom, valeur) ;
 	}
 	this.DefinitParametres = function (objet, valeur) {
 		this.RequeteAjax.AjouteParametres(objet, valeur) ;
@@ -392,16 +376,13 @@ function EvalScriptsDansBloc(blocHtml)
 {
 	var scripts = blocHtml.getElementsByTagName("script") ;
 	var scriptDoc = document.createElement("script") ;
-	scriptDoc.type = "text/javascript" ;
 	for(var i=0; i<scripts.length; i++)
 	{
-		if(scripts[i].text != "")
+		if(scripts[i] != "")
 		{
-			var content = scripts[i].text ;
-			scriptDoc.appendChild(document.createTextNode(content)) ;
-			// scripts[i].parentNode.removeChild(scripts[i]) ;
+			scriptDoc.text += scripts[i].text + "\r\n" ;
+			scripts[i].parentNode.removeChild(scripts[i]) ;
 		}
 	}
-	// alert(scriptDoc.innerHTML) ;
-	document.body.appendChild(scriptDoc) ;
+	document.documentElement.appendChild(scriptDoc) ;
 }

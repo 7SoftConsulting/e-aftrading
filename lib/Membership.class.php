@@ -28,6 +28,8 @@
 			public $OptsOngletProfil = array('Largeur' => 420, 'Hauteur' => 372, 'Modal' => 1, "BoutonFermer" => 0) ;
 			public $OptsOngletRole = array('Largeur' => 420, 'Hauteur' => 372, 'Modal' => 1, "BoutonFermer" => 0) ;
 			public $CmdAjoutMembre ;
+			public $DefColEntiteMembre ;
+			public $DefColFonctionMembre ;
 			public function RemplitFiltresEditionFormMembre(& $form)
 			{
 				parent::RemplitFiltresEditionFormMembre($form) ;
@@ -137,8 +139,10 @@
 			{
 				parent::RemplitDefinitionsColonneTableauMembre($table) ;
 				$membership = $table->ZoneParent->Membership ;
-				$table->InsereDefCol('NOM_ENTITE_MEMBRE', 'Entite') ;
-				$table->InsereDefCol('FONCTION_MEMBRE', 'Fonction') ;
+				$this->DefColEntiteMembre = $table->InsereDefCol('NOM_ENTITE_MEMBRE', 'Entite') ;
+				$this->DefColEntiteMembre->Largeur = "12%" ;
+				$this->DefColFonctionMembre = $table->InsereDefCol('FONCTION_MEMBRE', 'Fonction') ;
+				$this->DefColFonctionMembre->Largeur = "10%" ;
 			}
 			public function RemplitFiltresTableauMembre(& $table)
 			{
@@ -161,6 +165,9 @@
 					$lien = & $table->DefinitionsColonnes[$indiceColActs]->Formatteur->Liens[$i] ;
 					$lien->OptionsOnglet = array_merge($lien->OptionsOnglet, $this->OptsOngletMembre) ;
 				}
+				$table->DefinitionsColonnes[$indiceColActs]->Formatteur->Liens[0]->ClasseCSS = "lien-act-001" ;
+				$table->DefinitionsColonnes[$indiceColActs]->Formatteur->Liens[1]->ClasseCSS = "lien-act-005" ;
+				$table->DefinitionsColonnes[$indiceColActs]->Formatteur->Liens[1]->FormatLibelle = "Mot de passe" ;
 				$table->DefinitionsColonnes[$indiceColActs]->Formatteur->Liens[count($table->DefinitionsColonnes[$indiceColActs]->Formatteur->Liens) - 1]->Visible = 0 ;
 				$this->CmdAjoutMembre = new PvCommandeOuvreFenetreAdminDirecte() ;
 				$this->CmdAjoutMembre->Libelle = "Ajouter" ;
@@ -195,6 +202,11 @@
 					$lien = & $table->DefinitionsColonnes[$indiceColActs]->Formatteur->Liens[$i] ;
 					$lien->OptionsOnglet = array_merge($lien->OptionsOnglet, $this->OptsOngletRole) ;
 				}
+			}
+			public function InitFormulaireMembre(& $form)
+			{
+				parent::InitFormulaireMembre($form) ;
+				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
 			}
 			public function InitFormulaireRole(& $form)
 			{

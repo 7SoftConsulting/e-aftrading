@@ -91,7 +91,7 @@
 				$this->DefColDateOp->Libelle = "Date Op." ;
 				$this->DefColDateOp->NomDonnees = "date_operation" ;
 				$this->DefColDateOp->AliasDonnees = $bd->SqlDateToStrFr("date_operation") ;
-				$this->DefColDateOp->Largeur = "12%" ;
+				$this->DefColDateOp->Largeur = "8%" ;
 				$this->DefColDateOp->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColDateOp ;
 				// Date valeur
@@ -99,28 +99,28 @@
 				$this->DefColDateValeur->Libelle = "Date valeur" ;
 				$this->DefColDateValeur->NomDonnees = "date_valeur" ;
 				$this->DefColDateValeur->AliasDonnees = $bd->SqlDateToStrFr("date_valeur") ;
-				$this->DefColDateValeur->Largeur = "12%" ;
+				$this->DefColDateValeur->Largeur = "8%" ;
 				$this->DefColDateValeur->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColDateValeur ;
 				$this->DefColDateEcheance = new PvDefinitionColonneDonnees() ;
 				$this->DefColDateEcheance->Libelle = "Date &eacute;ch&eacute;ance" ;
 				$this->DefColDateEcheance->NomDonnees = "date_echeance" ;
 				$this->DefColDateEcheance->AliasDonnees = $bd->SqlDateToStrFr("date_echeance") ;
-				$this->DefColDateEcheance->Largeur = "12%" ;
+				$this->DefColDateEcheance->Largeur = "8%" ;
 				$this->DefColDateEcheance->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColDateEcheance ;
 				$this->DefColMontant = new PvDefinitionColonneDonnees() ;
 				$this->DefColMontant->Libelle = "Montant" ;
 				$this->DefColMontant->NomDonnees = "montant_change" ;
 				$this->DefColMontant->AliasDonnees = $bd->SqlToDouble("montant_change") ;
-				$this->DefColMontant->Largeur = "15%" ;
+				$this->DefColMontant->Largeur = "10%" ;
 				$this->DefColMontant->Formatteur = new PvFormatteurColonneMonnaie() ;
 				$this->DefColMontant->AlignElement = "right" ;
 				$this->DefinitionsColonnes[] = & $this->DefColMontant ;
 				$this->DefColLibDevise = new PvDefinitionColonneDonnees() ;
 				$this->DefColLibDevise->Libelle = "Devise" ;
 				$this->DefColLibDevise->NomDonnees = "devise_change" ;
-				$this->DefColLibDevise->Largeur = "12%" ;
+				$this->DefColLibDevise->Largeur = "8%" ;
 				$this->DefColLibDevise->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColLibDevise ;
 				$this->DefColTaux = new PvDefinitionColonneDonnees() ;
@@ -139,18 +139,20 @@
 				$this->DefColActions->DeclareFormatteurLiens() ;
 				$this->FmtModif = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtModif->NomDonneesValid = "peut_modif" ;
+				$this->FmtModif->ClasseCSS = "lien-act-001" ;
 				$this->FmtModif->FormatLibelle = "Modifier" ;
 				$this->FmtModif->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtModif->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtModif->OptionsOnglet["Largeur"] = 600 ;
 				$this->FmtModif->OptionsOnglet["Hauteur"] = 535 ;
-				$this->FmtSuppr->FormatIdOnglet = 'modif_op_inter_${num_op_inter}' ;
+				$this->FmtModif->FormatIdOnglet = 'modif_op_inter_${num_op_inter}' ;
 				$this->FmtModif->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Modifier placement' : 'Modifier emprunt' ;
 				$this->FmtModif->FormatCheminIcone = 'images/icones/modif.png' ;
 				$this->FmtModif->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'modifPlacement' : 'modifEmprunt').'&idEnCours=${num_op_inter}' ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtModif ;
 				$this->FmtSuppr = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtSuppr->NomDonneesValid = "peut_modif" ;
+				$this->FmtSuppr->ClasseCSS = "lien-act-002" ;
 				$this->FmtSuppr->FormatLibelle = "Supprimer" ;
 				$this->FmtSuppr->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtSuppr->OptionsOnglet["BoutonFermer"] = 0 ;
@@ -163,6 +165,7 @@
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtSuppr ;
 				$this->FmtPostuls = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtPostuls->NomDonneesValid = "peut_modif" ;
+				$this->FmtPostuls->ClasseCSS = "lien-act-004" ;
 				$this->FmtPostuls->FormatLibelle = "Negociations" ;
 				$this->FmtPostuls->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtPostuls->OptionsOnglet["BoutonFermer"] = 0 ;
@@ -175,6 +178,7 @@
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtPostuls ;
 				$this->FmtRepondre = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtRepondre->NomDonneesValid = "peut_repondre" ;
+				$this->FmtRepondre->ClasseCSS = "lien-act-003" ;
 				$this->FmtRepondre->FormatLibelle = $this->ZoneParent->FournExprs->LibLienDemarrNegoc ;
 				$this->FmtRepondre->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtRepondre->OptionsOnglet["BoutonFermer"] = 0 ;
@@ -860,7 +864,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn .= '<td width="*">'.htmlentities($composant->FltRefChange->Etiquette()).'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td>'.(($composant->FltTypeChange ->Lie() == 1) ? 'Achat devise' : 'Vente devise').'</td>'.PHP_EOL ;
+				$ctn .= '<td>'.(($composant->FltTypeChange ->Lie() == 1) ? 'Placement' : 'Emprunt').'</td>'.PHP_EOL ;
 				$ctn .= '<td>'.htmlentities($composant->FltLibDevise->Etiquette()).'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
@@ -883,7 +887,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn = '' ;
 				$ctn .= '<table width="100%" cellspacing="0" cellpadding="2">'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td width="60%">'.(($composant->FltTypeChange ->Lie() == 1) ? 'Achat devise' : 'Vente devise').'</td>'.PHP_EOL ;
+				$ctn .= '<td width="60%">'.(($composant->FltTypeChange ->Lie() == 1) ? 'Placement' : 'Emprunt').'</td>'.PHP_EOL ;
 				$ctn .= '<td width="*">'.htmlentities($composant->FltLibDevise->Etiquette()).'</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
@@ -1598,8 +1602,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 		}
 		class ScriptAjoutPlacementTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
-			public $TitreDocument = "Nouvel placement" ;
-			public $Titre = "Nouvel placement" ;
+			public $TitreDocument = "Nouveau placement" ;
+			public $Titre = "Nouveau placement" ;
 			public $FormOpInter ;
 			public $NecessiteMembreConnecte = 1 ;
 			public $TypeOpInter = 1 ;
@@ -2136,7 +2140,7 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 		}
 		class CritereEcheanceInvalideOpInter extends PvCritereBase
 		{
-			public $FormatMessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre inferieure &agrave; la date actuelle' ;
+			public $FormatMessageErreur = 'La date d\'&eacute;ch&eacute;ance ne doit pas &ecirc;tre anterieure &agrave; la date actuelle' ;
 			public function EstRespecte()
 			{
 				$valDateOper = $this->FormulaireDonneesParent->FltDateOper->Lie() ;
