@@ -10,6 +10,10 @@
 		{
 			include dirname(__FILE__)."/../../_PVIEW/Pv/IHM/AdminDirecte.class.php" ;
 		}
+		if(! defined('CONSTS_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/Consts.class.php" ;
+		}
 		if(! defined('VUE_SQL_TRAD_PLATF'))
 		{
 			include dirname(__FILE__)."/VuesSql.class.php" ;
@@ -30,10 +34,10 @@
 			public function InitConnectionParams()
 			{
 				parent::InitConnectionParams() ;
-				$this->ConnectionParams["server"] = "localhost" ;
-				$this->ConnectionParams["user"] = "root" ;
-				$this->ConnectionParams["password"] = "" ;
-				$this->ConnectionParams["schema"] = "trading_platform_v2" ;
+				$this->ConnectionParams["server"] = HOTE_BD_PRINC_TRAD_PLATF ;
+				$this->ConnectionParams["user"] = USER_BD_PRINC_TRAD_PLATF ;
+				$this->ConnectionParams["password"] = PWD_BD_PRINC_TRAD_PLATF ;
+				$this->ConnectionParams["schema"] = SCHEMA_BD_PRINC_TRAD_PLATF ;
 			}
 		}
 		
@@ -51,13 +55,14 @@
 			protected function ChargeIHMs()
 			{
 				$this->ZonePublTradPlatf = new ZonePublTradPlatf() ;
-				$this->ZonePublTradPlatf->CheminFichierRelatif = "trading-platform-v2/index.php" ;
+				$this->ZonePublTradPlatf->CheminFichierRelatif = CHEM_REL_ZONE_PUBL_TRAD_PLATF ;
 				$this->InscritIHM("zonePublique", $this->ZonePublTradPlatf) ;
 			}
 			protected function ChargeMdlTransacts()
 			{
 				$this->MdlTransacts[] = new MdlOpChangeTradPlatf() ;
 				$this->MdlTransacts[] = new MdlOpInterTradPlatf() ;
+				$this->MdlTransacts[] = new MdlRelEntrepriseTradPlatf() ;
 			}
 			public function & ObtientMdlTransact($id)
 			{

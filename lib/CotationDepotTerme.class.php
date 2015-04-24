@@ -44,7 +44,7 @@
 			}
 			protected function CreeTablPrinc()
 			{
-				return new TableauDonneesBaseTradPlatf() ;
+				return new TableauDonneesOperationTradPlatf() ;
 			}
 			protected function ChargeTablPrinc()
 			{
@@ -183,9 +183,12 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifCotationDepotTerme&id=${id}', 'Modifier', 'modif_emiss_obligation_${id}', 'Modifier cotation transfert de devise #${id}', $this->OptsFenetreEdit) ;
 				$this->LienModif->ClasseCSS = "lien-act-001" ;
+				$this->LienModif->DefinitScriptOnglActifSurFerm($this) ;
 				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprCotationDepotTerme&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer cotation transfert de devise #${id}', $this->OptsFenetreEdit) ;
 				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
+				$this->LienSuppr->DefinitScriptOnglActifSurFerm($this) ;
 				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutCotationDepotTerme", '?appelleScript=ajoutCotationDepotTerme', 'Ajouter', 'ajoutCotationDepotTerme', "Poster une cotation depot a terme", $this->OptsFenetreEdit) ;
+				$this->CmdAjout->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
 			{
@@ -207,10 +210,17 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $FltDateDebut ;
 			public $FltDateFin ;
 			public $FltNumOpPubl ;
+			public $FltNumOpRep ;
+			public $FltRelActive ;
 			protected function ChargeTablPrinc()
 			{
 				parent::ChargeTablPrinc() ;
 				$bd = $this->BDPrinc() ;
+				$this->FltNumOpRep = $this->TablPrinc->InsereFltSelectFixe("fltNumOpRep", $this->ZoneParent->IdMembreConnecte(), "numop_repondeur = <self>") ;
+				if(! $this->ZoneParent->PossedePrivilege("super_admin"))
+				{
+					$this->FltRelActive = $this->TablPrinc->InsereFltSelectFixe("fltRelActive", 1, "top_active = <self>") ;
+				}
 				$this->FltDateDebut = $this->TablPrinc->InsereFltSelectHttpGet("dateDebut", "date_mise_place >= <self>") ;
 				$this->FltDateFin = $this->TablPrinc->InsereFltSelectHttpGet("dateFin", "date_mise_place <= <self>") ;
 				$this->FltNumOpPubl = $this->TablPrinc->InsereFltSelectFixe("numOpPublieur", $this->ZoneParent->IdMembreConnecte(), "numop_publieur <> <self>") ;
@@ -229,13 +239,16 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColDateMisePlace->AliasDonnees = $bd->SqlDateToStrFr("date_mise_place", 0) ;
 				$this->DefColDateMaturite = $this->TablPrinc->InsereDefCol('date_maturite', 'Date maturit&eacute;') ;
 				$this->DefColDateMaturite->AliasDonnees = $bd->SqlDateToStrFr("date_maturite", 0) ;
-				$this->FournDonneesPrinc->RequeteSelection = '(SELECT t1.*, d1.code_devise, o1.login
+				$this->FournDonneesPrinc->RequeteSelection = '(SELECT distinct t1.*, d1.code_devise, o1.login, t4.numop numop_repondeur, t4.id_entite, t3.top_active
 FROM cotation_depot_terme t1
 left join devise d1 on t1.id_devise = d1.id_devise
-left join operateur o1 on t1.numop_publieur = o1.numop)' ;
+left join operateur o1 on t1.numop_publieur = o1.numop
+left join rel_entreprise t3 on o1.id_entite = t3.id_entite_source
+left join operateur t4 on t3.id_entite_dest = t4.id_entite)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationDepotTerme&id_cotation=${id}', 'R&eacute;ponse', 'reserv_cotation_depot_terme_${id}', 'Cotation depot a terme #${id}', $this->OptsFenetreDetail) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
+				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
 			{
@@ -284,6 +297,7 @@ on t1.id = t2.id_cotation
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservCotationDepotTerme&id=${id}', 'Consultation', 'list_reserv_cotation_depot_terme_${id}', 'Liste r&eacute;servations cotation depot de terme #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 			}
 			protected function DefinitExprs()
@@ -430,7 +444,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			}
 			protected function CreeTablSecond()
 			{
-				return new TableauDonneesBaseTradPlatf() ;
+				return new TableauDonneesOperationTradPlatf() ;
 			}
 			protected function DetermineTableSecond()
 			{
@@ -496,7 +510,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			}
 			protected function CreeTablSecond()
 			{
-				return new TableauDonneesBaseTradPlatf() ;
+				return new TableauDonneesOperationTradPlatf() ;
 			}
 			protected function DetermineTableSecond()
 			{

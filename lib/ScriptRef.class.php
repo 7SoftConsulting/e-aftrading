@@ -41,8 +41,10 @@
 				$colActs = $this->TablTypesEntites->InsereDefColActions("Actions") ;
 				$lienModif = $this->TablTypesEntites->InsereLienOuvreFenetreAction($colActs, '?appelleScript=modifTypeEntite&idEnCours=${idtype_entite}', 'Modifier', 'modif_type_entite_${idtype_entite}', 'Modifier type entite', $optsOnglet) ;
 				$lienModif->ClasseCSS = "lien-act-001" ;
+				/*
 				$lienSuppr = $this->TablTypesEntites->InsereLienOuvreFenetreAction($colActs, '?appelleScript=supprTypeEntite&idEnCours=${idtype_entite}', 'Supprimer', 'suppr_type_entite_${idtype_entite}', 'Supprimer type entite', $optsOnglet) ;
 				$lienSuppr->ClasseCSS = "lien-act-002" ;
+				*/
 				$this->TablTypesEntites->InsereCmdOuvreFenetreScript("cmdAjoutTypeEntite", "?appelleScript=ajoutTypeEntite", "Ajouter", "ajout_type_entite", "Ajouter type entite", $optsOnglet) ;
 			}
 			public function RenduSpecifique()
@@ -260,7 +262,7 @@
 				$this->TablPrinc = new TableauDonneesBaseTradPlatf() ;
 				// Initialisation des propriétés
 				$this->TablPrinc->AdopteScript("tablePrinc", $this) ;
-				$this->TablPrinc->Largeur = "450" ;
+				$this->TablPrinc->Largeur = "600" ;
 				$this->ChargeConfig() ;
 				// Renseigner la source de données
 				$this->TablPrinc->FournisseurDonnees = new PvFournisseurDonneesSql() ;
@@ -275,8 +277,10 @@
 				$colActs->Largeur = "*" ;
 				$lienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=modifZonePays&idEnCours=${id}', 'Modifier', 'modif_zone_devise_${id}', 'Modifier zone de pays', $optsOnglet) ;
 				$lienModif->ClasseCSS = "lien-act-001" ;
+				/*
 				$lienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=supprZonePays&idEnCours=${id}', 'Supprimer', 'suppr_region_pays_${id}', 'Supprimer zone de pays', $optsOnglet) ;
 				$lienSuppr->ClasseCSS = "lien-act-002" ;
+				*/
 				$this->TablPrinc->InsereCmdOuvreFenetreScript("cmdAjoutZonePays", "?appelleScript=ajoutZonePays", "Ajouter", "ajout_region_pays", "Ajouter zone de pays", $optsOnglet) ;
 			}
 			public function RenduSpecifique()
@@ -321,6 +325,11 @@
 				parent::DetermineEnvironnement() ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueFormZonePays($this->ComposantFormulaireDonnees) ;
 			}
+		}
+		
+		class ScriptAccueilStatsTradPlatf extends PvScriptWebSimple
+		{
+			public $Titre = "Statistiques" ;
 		}
 		
 	}

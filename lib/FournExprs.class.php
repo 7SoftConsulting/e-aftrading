@@ -19,8 +19,8 @@
 			public $TitrFenDemarrNegocVenteDevise = "N&eacute;gocier vente de devise" ;
 			public $MsgInteretAchatDevise = 'Voulez-vous confirmer votre int&eacute;r&ecirc;t pour cet achat de devise ?' ;
 			public $MsgInteretVenteDevise = 'Voulez-vous confirmer votre int&eacute;r&ecirc;t pour cette vente de devise ?' ;
-			public $TitrFenDemarrNegocPlacement = "N&eacute;gocier achat de devise" ;
-			public $TitrFenDemarrNegocEmprunt = "N&eacute;gocier vente de devise" ;
+			public $TitrFenDemarrNegocPlacement = "N&eacute;gocier placement" ;
+			public $TitrFenDemarrNegocEmprunt = "N&eacute;gocier emprunt" ;
 			public $MsgInteretPlacement = 'Voulez-vous confirmer votre int&eacute;r&ecirc;t pour ce placement ?' ;
 			public $MsgInteretEmprunt = 'Voulez-vous confirmer votre int&eacute;r&ecirc;t pour cet emprunt ?' ;
 			public $TitrFenPublierEmissBonTresor = 'Publication &eacute;mission obligation' ;

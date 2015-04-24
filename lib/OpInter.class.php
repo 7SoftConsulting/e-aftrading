@@ -8,7 +8,7 @@
 		}
 		define('OP_INTER_TRAD_PLATF', 1) ;
 		
-		class TablConsultOpInterTradPlatf extends TableauDonneesBaseTradPlatf
+		class TablConsultOpInterTradPlatf extends TableauDonneesOperationTradPlatf
 		{
 			public $DefColPeutModif ;
 			public $DefColPeutRep ;
@@ -149,6 +149,7 @@
 				$this->FmtModif->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Modifier placement' : 'Modifier emprunt' ;
 				$this->FmtModif->FormatCheminIcone = 'images/icones/modif.png' ;
 				$this->FmtModif->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'modifPlacement' : 'modifEmprunt').'&idEnCours=${num_op_inter}' ;
+				$this->FmtModif->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtModif ;
 				$this->FmtSuppr = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtSuppr->NomDonneesValid = "peut_modif" ;
@@ -162,6 +163,7 @@
 				$this->FmtSuppr->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Supprimer placement' : 'Supprimer emprunt' ;
 				$this->FmtSuppr->FormatCheminIcone = 'images/icones/suppr.png' ;
 				$this->FmtSuppr->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'supprPlacement' : 'supprEmprunt').'&idEnCours=${num_op_inter}' ;
+				$this->FmtSuppr->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtSuppr ;
 				$this->FmtPostuls = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtPostuls->NomDonneesValid = "peut_modif" ;
@@ -171,10 +173,12 @@
 				$this->FmtPostuls->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtPostuls->OptionsOnglet["Hauteur"] = 600 ;
 				$this->FmtPostuls->OptionsOnglet["Largeur"] = 750 ;
+				$this->FmtPostuls->ClasseCSS = "lien-act-004" ;
 				$this->FmtPostuls->FormatIdOnglet = 'postuls_op_inter_${num_op_inter}' ;
 				$this->FmtPostuls->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Negociations placement' : 'Negociations emprunt' ;
 				$this->FmtPostuls->FormatCheminIcone = 'images/icones/postulations.png' ;
 				$this->FmtPostuls->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'postulsPlacement' : 'postulsEmprunt').'&idEnCours=${num_op_inter}' ;
+				$this->FmtPostuls->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtPostuls ;
 				$this->FmtRepondre = new PvConfigFormatteurColonneOuvreFenetre() ;
 				$this->FmtRepondre->NomDonneesValid = "peut_repondre" ;
@@ -183,10 +187,12 @@
 				$this->FmtRepondre->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtRepondre->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtRepondre->OptionsOnglet["Hauteur"] = 525 ;
+				$this->FmtRepondre->ClasseCSS = "lien-act-003" ;
 				$this->FmtRepondre->FormatIdOnglet = 'negoc_op_inter_${num_op_inter}' ;
 				$this->FmtRepondre->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? $this->ZoneParent->FournExprs->TitrFenDemarrNegocPlacement : $this->ZoneParent->FournExprs->TitrFenDemarrNegocEmprunt ;
 				$this->FmtRepondre->FormatCheminIcone = 'images/icones/repondre.png' ;
 				$this->FmtRepondre->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpInter == 1) ? 'interetPlacement' : 'interetEmprunt').'&idEnCours=${num_op_inter}' ;
+				$this->FmtRepondre->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtRepondre ;
 				$this->DefinitionsColonnes[] = & $this->DefColActions ;
 			}
@@ -263,6 +269,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 					$this->CmdAjout->Libelle = "Ajouter" ;
 					$this->CmdAjout->NomScript = ($this->ScriptParent->TypeOpInter == 1) ? "ajoutPlacement" : "ajoutEmprunt" ;
 					$this->CmdAjout->OptionsOnglet = array("Largeur" => "670", "Hauteur" => "545", "Modal" => 1, "BoutonFermer" => 0, "LibelleFermer" => "Fermer") ;
+					$this->CmdAjout->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 					$this->InscritCommande("cmdAjout", $this->CmdAjout) ;
 				}
 				$bd = $this->ApplicationParent->BDPrincipale ;
@@ -353,7 +360,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FmtPostuls->Visible = 1 ;
 			}
 		}
-		class TablPostulsOpInterTradPlatf extends TableauDonneesBaseTradPlatf
+		class TablPostulsOpInterTradPlatf extends TableauDonneesOperationTradPlatf
 		{
 			protected function ObtientNomClsCSSElem($index, & $elem)
 			{
@@ -366,7 +373,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			}
 		}
 		
-		class TablReservOpInterTradPlatf extends TableauDonneesBaseTradPlatf
+		class TablReservOpInterTradPlatf extends TableauDonneesOperationTradPlatf
 		{
 			public $FltNumOpSoumis ;
 			public $FltTypeChange ;
@@ -418,6 +425,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 					$this->ZoneParent->FournExprs->TitrFenAjustNegoc, 
 					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 525)
 				) ;
+				$this->LienModif->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 				$this->LienModif->NomDonneesValid = "peut_ajuster" ;
 				if($this->ValeurConfirme == 1)
 				{
@@ -652,7 +660,10 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				if(! $this->PourReponse && ! $this->PourNegoc && $this->Editable)
 				{
 					$this->CritrEcheanceInvalide = $this->CommandeExecuter->InsereNouvCritere(new CritereEcheanceInvalideOpInter()) ;
-					$this->CritrDejaPostee = $this->CommandeExecuter->InsereNouvCritere(new CritrOpInterDejaPostee()) ;
+					if($this->InclureElementEnCours == 0)
+					{
+						$this->CritrDejaPostee = $this->CommandeExecuter->InsereNouvCritere(new CritrOpInterDejaPostee()) ;
+					}
 				}
 				if($this->PourNegoc && $this->PourAjust)
 				{
@@ -1366,7 +1377,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$this->FltLoginSoumis = $this->InsereFltEditHttpPost("login_soumis", "login_soumis") ;
 				$this->FltLoginSoumis->Libelle = "Login" ;
 				$this->FltLoginSoumis->EstEtiquette = 1 ;
-				$this->FltCodeEntiteSoumis = $this->InsereFltEditHttpPost("nom_entite_soumis", "nom_entite_soumis") ;
+				$this->FltCodeEntiteSoumis = $this->InsereFltEditHttpPost("code_entite_soumis", "code_entite_soumis") ;
 				$this->FltCodeEntiteSoumis->Libelle = "Code banque emettrice" ;
 				$this->FltCodeEntiteSoumis->EstEtiquette = 1 ;
 				$this->FltNomEntiteSoumis = $this->InsereFltEditHttpPost("nom_entite_soumis", "nom_entite_soumis") ;
@@ -1640,6 +1651,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			public $TitreDocument = "Negociations placement" ;
 			public $Titre = "Negociations placement" ;
 			public $FltIdEnCours ;
+			public $LienAjustNegoc ;
+			public $LienConfirmNegoc ;
 			protected function EstConfirme()
 			{
 				$id = $this->FltIdEnCours->Lie() ;
@@ -1674,12 +1687,16 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$colConfirm->AlignElement = "center" ;
 				$colActions = $this->TablPostuls->InsereDefColActions("Actions") ;
 				$colActions->Largeur = "*" ;
-				// $lienAjuster = $this->TablPostuls->InsereLienAction($colActions, $this->ZoneParent->ScriptAjustEmprunt->ObtientUrl().'&idEnCours=${idEnCours}', 'Ajuster') ;
-				$lienAjuster = $this->TablPostuls->InsereLienOuvreFenetreAction($colActions, $this->ZoneParent->ScriptAjustEmprunt->ObtientUrl().'&idEnCours=${idEnCours}', 'N&eacute;gocier', 'ajuster_${idEnCours}', 'N&eacute;gocier', array('Modal' => 1, 'Largeur' => '450', 'Hauteur' => 525, 'BoutonFermer' => 0)) ;
-				$lienAjuster->NomDonneesValid = "peut_ajuster" ;
-				$lienConfirm = $this->TablPostuls->InsereLienAction($colActions, $this->ZoneParent->ScriptValPostulEmprunt->ObtientUrl().'&id=${idEnCours}', 'Confimer') ;
-				$lienConfirm->NomDonneesValid = "peut_ajuster" ;
-				// $lienConfirm->Visible = ! $this->EstConfirme() ;
+				// $this->LienAjustNegoc = $this->TablPostuls->InsereLienAction($colActions, $this->ZoneParent->ScriptAjustEmprunt->ObtientUrl().'&idEnCours=${idEnCours}', 'Ajuster') ;
+				$this->LienAjustNegoc = $this->TablPostuls->InsereLienOuvreFenetreAction($colActions, $this->ZoneParent->ScriptAjustEmprunt->ObtientUrl().'&idEnCours=${idEnCours}', 'N&eacute;gocier', 'ajuster_${idEnCours}', 'N&eacute;gocier', array('Modal' => 1, 'Largeur' => '450', 'Hauteur' => 525, 'BoutonFermer' => 0)) ;
+				$this->LienAjustNegoc->ClasseCSS = "lien-act-004" ;
+				$this->LienAjustNegoc->UrlOnglActifSurFerm = "?appelleScript=".urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
+				$this->LienAjustNegoc->NomDonneesValid = "peut_ajuster" ;
+				$this->LienConfirmNegoc = $this->TablPostuls->InsereLienOuvreFenetreAction($colActions, $this->ZoneParent->ScriptValPostulEmprunt->ObtientUrl().'&id=${idEnCours}', 'Confimer') ;
+				$this->LienConfirmNegoc->NomDonneesValid = "peut_ajuster" ;
+				$this->LienConfirmNegoc->ClasseCSS = "lien-act-003" ;
+				$this->LienConfirmNegoc->UrlOnglActifSurFerm = "?appelleScript=".urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
+				// $this->LienConfirmNegoc->Visible = ! $this->EstConfirme() ;
 				$this->TablPostuls->ToujoursAfficher = 1 ;
 				$this->TablPostuls->CacherFormulaireFiltres = 1 ;
 			}
@@ -1936,7 +1953,7 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 		}
 	}) ;
 </script>' ;
-					$ctn .= '<p><a href="?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($nomScript).'&idEnCours='.urlencode($this->LgnOpInterSelect["num_op_inter_dem"]).'">Retour a la transaction</a></p>' ;
+					$ctn .= '<p><a href="javascript:;" onclick="window.top.fermeFenetreActive();">Retour a la transaction</a></p>' ;
 				}
 				return $ctn ;
 			}
@@ -1955,7 +1972,7 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 			public $NomScriptSoumiss = "soumissEmprunt" ;
 		}
 		
-		class TablNegocOpInterTradPlatf extends TableauDonneesBaseTradPlatf
+		class TablNegocOpInterTradPlatf extends TableauDonneesOperationTradPlatf
 		{
 			public $DefColTypeTransact ;
 			public $DefColId ;
@@ -1995,7 +2012,7 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 				$this->InsereDefsColCachee("date_change", "num_op_inter", "id_emetteur", "id_devise1", "id_devise2", "lib_devise1", "lib_devise2", "bool_confirme", "bool_valide") ;
 				$this->DefColConfirm = $this->InsereDefColCachee('bool_confirme') ;
 				$this->DefColRefChange = $this->InsereDefCol('ref_change', 'Ref change') ;
-				$this->DefColDevise = $this->InsereDefColHtml('${lib_devise1}', 'Devise') ;
+				$this->DefColDevise = $this->InsereDefCol('lib_devise2', 'Devise') ;
 				$this->DefColLoginOp = $this->InsereDefCol('login_operateur', 'Auteur') ;
 				$this->DefColNomEntiteOp = $this->InsereDefCol('nom_entite_operateur', 'Banque') ;
 				$this->DefColDateOp = $this->InsereDefCol('date_operation', 'Date Op.', $bd->SqlDateToStrFr('date_operation')) ;
@@ -2015,7 +2032,8 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 					$this->ZoneParent->FournExprs->TitrFenAjustNegocOpInter, 
 					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 525)
 				) ;
-				$this->LienNegocConsult->RafraichOnglActifSurFerm = 1 ;
+				$this->LienNegocConsult->UrlOnglActifSurFerm = "?appelleScript=".urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
+				$this->LienNegocConsult->ClasseCSS = "lien-act-004" ;
 				// Lien confirmation
 				$this->LienConfirmConsult = $this->InsereLienOuvreFenetreAction(
 					$this->DefColActions, $this->ZoneParent->ScriptValPostulEmprunt->ObtientUrl().'&id=${num_op_inter}',
@@ -2023,6 +2041,8 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 					$this->ZoneParent->FournExprs->TitrFenAjustNegocOpInter, 
 					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 300)
 				) ;
+				$this->LienConfirmConsult->ClasseCSS = "lien-act-003" ;
+				$this->LienConfirmConsult->UrlOnglActifSurFerm = "?appelleScript=".urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 				$this->LienConfirmConsult->DefinitValidite("id_emetteur", $this->ZoneParent->IdMembreConnecte()) ;
 			}
 			protected function ChargeFournDonnees()

@@ -87,6 +87,21 @@
 				$this->DefColActions->Formatteur = new PvFormatteurColonneLiens() ;
 				if($this->PourLiaison)
 				{
+					if(count($this->MdlTransact->IdsTypeEntiteSource) > 0)
+					{
+						$exprTypeEntites = '' ;
+						$paramsTypeEntites = array() ;
+						foreach($this->MdlTransact->IdsTypeEntiteSource as $i => $idEntite)
+						{
+							if($i > 0)
+								$exprTypeEntites .= ' or ' ;
+							$exprTypeEntites .= 'idtype_entite = :idEntiteSrc'.$i ;
+							$paramsTypeEntites['idEntiteSrc'.$i] = $idEntite ;
+						}
+						$this->TablEntites->FournisseurDonnees->RequeteSelection = "(select * from (".TXT_SQL_SELECT_ENTITE_TRAD_PLATF.") t1 where ".$exprTypeEntites.")" ;
+						$this->TablEntites->FournisseurDonnees->ParamsSelection = $paramsTypeEntites ;
+						// echo $this->TablEntites->FournisseurDonnees->RequeteSelection ;
+					}
 					$this->FmtLienRattach = new PvConfigFormatteurColonneOuvreFenetre() ;
 					$this->FmtLienRattach->FormatLibelle = "Rattacher" ;
 					$this->FmtLienRattach->OptionsOnglet["Largeur"] = 750 ;
@@ -183,6 +198,10 @@
 		class ScriptParamOpInterTradPlatf extends ScriptParamOpChangeTradPlatf
 		{
 			public $IdMdlTransact = 2 ;
+		}
+		class ScriptParamRelEntrepriseTradPlatf extends ScriptParamOpChangeTradPlatf
+		{
+			public $IdMdlTransact = 3 ;
 		}
 		
 		class ScriptListeBanquesTradPlatf extends ScriptListeEntitesTradPlatf
@@ -323,21 +342,12 @@
 					$ctn .= $this->FormMdlTransacts->RenduDispositif() ;
 					$ctn .= '<div>&nbsp;</div>' ;
 					$ctn .= $this->FormEditLiaisons->RenduDispositif() ;
+					// $ctn .= print_r($this->FormEditLiaisons->FltEntitesPossibles->Composant->FournisseurDonnees, true) ;
 				}
 				return $ctn ;
 			}
 		}
-		class ScriptRattachOpInterTradPlatf extends ScriptRattachEntiteTradPlatf
-		{
-			public $TitreDocument = "Rattachements operations inter." ;
-			public $Titre = "Rattachements operations inter" ;
-			protected function CreeFormMdlTransact()
-			{
-				$form = new FormMdlTransactsTradPlatf() ;
-				$form->IdMdlTransact = 2 ;
-				return $form ;
-			}
-		}
+		
 		class ScriptLiaisonsEntiteTradPlatf extends ScriptModifEntiteTradPlatf
 		{
 			public $TitreDocument = "Consultation operations de change" ;
@@ -402,7 +412,7 @@
 				$this->TablLiaisons->FournisseurDonnees->BaseDonnees = & $this->ApplicationParent->BDPrincipale ;
 				$this->TablLiaisons->FournisseurDonnees->RequeteSelection = '(select t1.id_entite_source, t2.*, t3.lib_type_entite nom_type_entite, t4.libpays nom_pays
 from '.$this->MdlTransact->NomTableLiaison.' t1
-inner join entite t2 on t1.id_entite_dest = t2.id_entite
+left join entite t2 on t1.id_entite_dest = t2.id_entite
 left join type_entite t3 on t2.idtype_entite = t3.idtype_entite
 left join pays t4 on t4.idpays = t2.idpays where top_active=1)' ;
 			}
@@ -414,11 +424,40 @@ left join pays t4 on t4.idpays = t2.idpays where top_active=1)' ;
 				return $ctn ;
 			}
 		}
+		class ScriptRattachOpInterTradPlatf extends ScriptRattachEntiteTradPlatf
+		{
+			public $TitreDocument = "Rattachements operations inter." ;
+			public $Titre = "Rattachements operations inter" ;
+			protected function CreeFormMdlTransact()
+			{
+				$form = new FormMdlTransactsTradPlatf() ;
+				$form->IdMdlTransact = 2 ;
+				return $form ;
+			}
+		}
 		class ScriptLiaisonsOpInterTradPlatf extends ScriptLiaisonsEntiteTradPlatf
 		{
 			public $TitreDocument = "Consultation operations inter." ;
 			public $Titre = "Consultation operations inter." ;
 			public $IdMdlTransact = 2 ;
+		}
+		
+		class ScriptRattachRelEntrepriseTradPlatf extends ScriptRattachEntiteTradPlatf
+		{
+			public $TitreDocument = "Rattachements entreprise" ;
+			public $Titre = "Rattachements entreprise" ;
+			protected function CreeFormMdlTransact()
+			{
+				$form = new FormMdlTransactsTradPlatf() ;
+				$form->IdMdlTransact = 3 ;
+				return $form ;
+			}
+		}
+		class ScriptLiaisonsRelEntrepriseTradPlatf extends ScriptLiaisonsEntiteTradPlatf
+		{
+			public $TitreDocument = "Consultation entreprise" ;
+			public $Titre = "Consultation entreprise" ;
+			public $IdMdlTransact = 3 ;
 		}
 		
 		class ScriptActivationMembrePublTradPlatf extends PvScriptWebSimple

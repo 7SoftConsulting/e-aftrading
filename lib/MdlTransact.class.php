@@ -13,6 +13,11 @@ left join entite t3 on t2.id_entite_source = t3.id_entite)") ;
 FROM entite t1
 left join oper_b_inter t2 on t1.id_entite = t2.id_entite_dest
 left join entite t3 on t2.id_entite_source = t3.id_entite)") ;
+		
+		define("TXT_SQL_SELECT_LIAISON_ENTREPRISE_TRAD_PLATF", "(SELECT t1.*, t2.*
+FROM entite t1
+left join rel_entreprise t2 on t1.id_entite = t2.id_entite_dest
+left join entite t3 on t2.id_entite_source = t3.id_entite)") ;
 		define("TXT_SQL_SELECT_TOUS_ACHAT_DEVISE_TRAD_PLATF", "select t1.*, t2.lib_devise lib_devise1, t3.lib_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre
 from op_change t1
 left join devise t2
@@ -37,6 +42,10 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 		{
 			public $ToujoursAfficher = 1 ;
 			public $TitreBoutonSoumettreFormulaireFiltres = "Valider" ;
+		}
+		class TableauDonneesOperationTradPlatf extends TableauDonneesBaseTradPlatf
+		{
+			public $InclureCmdRafraich = 0 ;
 		}
 		
 		class MdlTransactBaseTradPlatf
@@ -103,6 +112,18 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $IdsTypeEntiteDest = array(1, 2) ;
 			public $NomScriptRattach = 'rattachOpInter' ;
 			public $NomScriptLiaisons = 'liaisonsOpInter' ;
+		}
+		
+		class MdlRelEntrepriseTradPlatf extends MdlTransactBaseTradPlatf
+		{
+			public $Id = 3 ;
+			public $Titre = "Entreprise" ;
+			public $NomTableLiaison = "rel_entreprise" ;
+			public $RequeteSelection = TXT_SQL_SELECT_LIAISON_ENTREPRISE_TRAD_PLATF ;
+			public $IdsTypeEntiteSource = array(4) ;
+			public $IdsTypeEntiteDest = array(1, 2) ;
+			public $NomScriptRattach = 'rattachRelEntreprise' ;
+			public $NomScriptLiaisons = 'liaisonsRelEntreprise' ;
 		}
 		
 		class ScriptTransactBaseTradPlatf extends PvScriptWebSimple

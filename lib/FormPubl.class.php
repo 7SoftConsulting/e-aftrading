@@ -65,6 +65,16 @@
 			public $CmdDesactiveRegion ;
 			public function ChargeConfig()
 			{
+				$mdlTransact = & $this->ScriptParent->FormMdlTransacts->MdlTransactSelect ;
+				$paramsTypeEntite = array() ;
+				$exprTypeEntite = "" ;
+				foreach($mdlTransact->IdsTypeEntiteDest as $i => $idEntite)
+				{
+					if($i > 0)
+						$exprTypeEntite .= ', ' ;
+					$exprTypeEntite .= ':idTypeEntiteDest'.$i ;
+					$paramsTypeEntite['idTypeEntiteDest'.$i] = $idEntite ;
+				}
 				// print get_class($this->ScriptParent->FormEntite->FiltresLigneSelection[0]) ;
 				$this->FltMdlTransactRef = $this->ScriptParent->CreeFiltreHttpPost("mdlDoc") ;
 				$this->FltMdlTransactRef->ValeurParDefaut = $this->ScriptParent->FormMdlTransacts->FltMdlTransact->ValeurParametre ;
@@ -91,7 +101,9 @@
 				$this->FltIdEntiteRef->ExpressionDonnees = 'id_entite_source = <self>' ;
 				$comp->FiltresSelection[] = & $this->FltIdEntiteRef ;
 				$comp->FournisseurDonnees = new PvFournisseurDonneesSql() ;
-				$comp->FournisseurDonnees->RequeteSelection = $this->ScriptParent->FormMdlTransacts->MdlTransactSelect->RequeteSelection ;
+				$comp->FournisseurDonnees->RequeteSelection = '(select * from '.$this->ScriptParent->FormMdlTransacts->MdlTransactSelect->RequeteSelection.' t1 where idtype_entite in ('.$exprTypeEntite.'))' ;
+				// print_r($comp->FournisseurDonnees) ;
+				$comp->FournisseurDonnees->ParamsSelection = $paramsTypeEntite ;
 				$comp->FournisseurDonnees->BaseDonnees = & $this->ApplicationParent->BDPrincipale ;
 				$this->FiltresEdition[] = & $this->FltEntitesPossibles ;
 				$this->LibelleCommandeExecuter = "Appliquer" ;
@@ -121,7 +133,7 @@
 					return '<p>'.htmlentities('-- Veuillez selectionner un modèle de transaction --').'</p>' ;
 				}
 				$ctn = parent::RenduDispositif() ;
-				// print_r($this->FournisseurDonnees->BaseDonnees) ;
+				// print_r($this->ApplicationParent->BDPrincipale) ;
 				return $ctn ;
 			}
 		}
@@ -140,6 +152,7 @@
 			}
 			public function Execute()
 			{
+				$mdlTransact = $this->ScriptParent->FormMdlTransacts->MdlTransactSelect ;
 				$bd = $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
 				$idEntiteEnCours = $this->FormulaireDonneesParent->FltIdEntiteRef->Lie() ;
 				$idPaysDoc = $this->FormulaireDonneesParent->FltPaysDocRef->Lie() ;
@@ -148,7 +161,11 @@
 				$lignes = $bd->FetchSqlRows('select * from entite where idpays='.$bd->ParamPrefix.'idPays', array('idPays' => $idPaysDoc)) ;
 				foreach($lignes as $i => $ligne)
 				{
-					if($i > 0)
+					if(! in_array($ligne["idtype_entite"], $mdlTransact->IdsTypeEntiteDest))
+					{
+						continue ;
+					}
+					if($chaineEntites != '')
 					{
 						$chaineEntites .= ', ' ;
 					}
@@ -283,14 +300,13 @@
 				if($this->StatutExecution == 1)
 				{
 					$bd = & $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
-					$ok = $bd->RunSql('insert into oper_b_change (id_entite_source, id_entite_dest, top_active)
-select distinct t1.id_src, t1.id_dest, 0 from (select t1.id_entite id_src, t2.id_entite id_dest from entite t1, entite t2) t1 left join oper_b_change t2
+					foreach($this->ApplicationParent->MdlTransacts as $i => $mdlTransact)
+					{
+						$ok = $bd->RunSql('insert into '.$mdlTransact->NomTableLiaison.' (id_entite_source, id_entite_dest, top_active)
+select distinct t1.id_src, t1.id_dest, 0 from (select t1.id_entite id_src, t2.id_entite id_dest from entite t1, entite t2) t1 left join '.$mdlTransact->NomTableLiaison.' t2
 on t1.id_src = t2.id_entite_source and t1.id_dest = t2.id_entite_dest
 where t2.id_entite_source is null') ;
-					$ok = $bd->RunSql('insert into oper_b_inter (id_entite_source, id_entite_dest, top_active)
-select distinct t1.id_src, t1.id_dest, 0 from (select t1.id_entite id_src, t2.id_entite id_dest from entite t1, entite t2) t1 left join oper_b_inter t2
-on t1.id_src = t2.id_entite_source and t1.id_dest = t2.id_entite_dest
-where t2.id_entite_source is null') ;
+					}
 				}
 			}
 		}
