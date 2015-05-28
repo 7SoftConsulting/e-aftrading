@@ -130,21 +130,8 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 		{
 			protected function ArchiveAncTransacts()
 			{
-				$bd = $this->ApplicationParent->BDPrincipale ;
-				$sql = array() ;
-				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
-				$sqls[] = 'insert into arch_op_change select op_change.*, '.$bd->SqlNow().' from op_change where '.$condArch ;
-				$sqls[] = 'delete from op_change where '.$condArch ;
-				$sqls[] = 'ALTER TABLE op_change auto_increment = 1' ;
-				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
-				$sqls[] = 'insert into arch_op_inter select op_inter.*, '.$bd->SqlNow().' from op_inter where '.$condArch ;
-				$sqls[] = 'delete from op_inter where '.$condArch ;
-				$sqls[] = 'ALTER TABLE op_inter auto_increment = 1' ;
-				foreach($sqls as $i => $sql)
-				{
-					$bd->RunSql($sql) ;
-				}
 				// echo $sql1 ;
+				$this->ZoneParent->ArchiveAncTransacts() ;
 			}
 			protected function EstPeriodeTransact()
 			{
@@ -174,6 +161,25 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 		}
 		class ScriptFormTransactBaseTradPlatf extends ScriptTransactBaseTradPlatf
 		{
+			protected function NotifieAccuseLecture($nomTable)
+			{
+				$bd = $this->ApplicationParent->BDPrincipale ;
+				$bd->DeleteRow(
+					$nomTable,
+					'num_op_change=:num_op_change and numop=:numop',
+					array(
+						'num_op_change' => intval(_GET_def('idEnCours')),
+						'numop' => $this->ZoneParent->IdMembreConnecte()
+					)
+				) ;
+				$bd->InsertRow(
+					$nomTable,
+					array(
+						'num_op_change' => intval(_GET_def('idEnCours')),
+						'numop' => $this->ZoneParent->IdMembreConnecte()
+					)
+				) ;
+			}
 		}
 		
 		class ScriptListBaseOpChange extends ScriptListTransactBaseTradPlatf

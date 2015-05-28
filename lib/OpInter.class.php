@@ -528,6 +528,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltTauxTransact = $this->ScriptParent->CreeFiltreHttpPost("taux_transact") ;
 				$this->FltTauxTransact->NomParametreDonnees = 'taux_transact' ;
 				$this->FltTauxTransact->Libelle = "Taux / Commission" ;
+				$this->FltTauxTransact->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->FiltresEdition[] = & $this->FltTauxTransact ;
 				// Devise 1
 				$this->FltDevise1 = $this->ScriptParent->CreeFiltreHttpPost("devise1") ;
@@ -561,6 +562,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltMttComiss = $this->ScriptParent->CreeFiltreHttpPost("mtt_commiss") ;
 				$this->FltMttComiss->DefinitColLiee("mtt_commiss") ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueCompMttComiss($this->FltMttComiss) ;
+				$this->FltMttComiss->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->FiltresEdition[] = & $this->FltMttComiss ;
 				// Type taux ou commission ?
 				$this->FltTypeTaux = $this->ScriptParent->CreeFiltreHttpPost("type_taux") ;
@@ -575,12 +577,14 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltMontant = $this->ScriptParent->CreeFiltreHttpPost("montant") ;
 				$this->FltMontant->DefinitColLiee("montant_change") ;
 				$this->FltMontant->Libelle = "Montant" ;
+				$this->FltMontant->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->FiltresEdition[] = & $this->FltMontant ;
 				// Taux / Commission
 				$this->FltMttTaux = $this->ScriptParent->CreeFiltreHttpPost("taux_change") ;
 				$this->FltMttTaux->DefinitColLiee("taux_change") ;
 				$this->FltMttTaux->Libelle = "Taux / Commission" ;
 				$this->FltMttTaux->ValeurParDefaut = 0 ;
+				$this->FltMttTaux->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueCompValeurTaux($this->FltMttTaux) ;
 				$this->FiltresEdition[] = & $this->FltMttTaux ;
 				// Ecran Taux
@@ -620,9 +624,11 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				// Montant soumis
 				$this->FltMttSoumis = $this->InsereFltEditHttpPost('montant_soumis', 'montant_soumis') ;
 				$this->FltMttSoumis->NePasIntegrerParametre = 1 ;
+				$this->FltMttSoumis->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				// Taux soumis
 				$this->FltTauxSoumis = $this->InsereFltEditHttpPost('taux_soumis', 'taux_soumis') ;
 				$this->FltTauxSoumis->NePasIntegrerParametre = 1 ;
+				$this->FltTauxSoumis->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				// Commentaire
 				$this->FltCommentaire = $this->ScriptParent->CreeFiltreHttpPost("commentaire") ;
 				$comp0 = $this->FltCommentaire->DeclareComposant("PvZoneMultiligneHtml") ;
@@ -792,6 +798,14 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				if($this->StatutExecution == 1)
 				{
 					$this->FormulaireDonneesParent->CacherFormulaireFiltres = 1 ;
+					$idEnCours = $this->FormulaireDonneesParent->FltIdEnCours->Lie() ;
+					// echo "ID : $idEnCours" ;
+					if($this->FormulaireDonneesParent->InclureElementEnCours == 0)
+					{
+						$bd = $this->ApplicationParent->BDPrincipale ;
+						$idEnCours = $bd->FetchSqlValue('select num_op_inter from op_inter where numop=:numOperateur and num_op_inter_dem=:numOpInter', array('numOperateur' => $this->ZoneParent->Membership->MemberLogged->Id, 'numOpInter' => $idEnCours), 'num_op_inter') ;
+					}
+					$this->ZoneParent->ActualiseAccusesOpInter($idEnCours, $this) ;
 				}
 			}
 		}
@@ -1907,19 +1921,57 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			public $MsgNonAutorise = 'Vous ne pouvez pas acceder a cette transaction' ;
 			public $MsgExec = '' ;
 			public $LgnOpInterSelect = array() ;
+			protected function SujetMsgEmail()
+			{
+				return 'Confirmation de l\'offre ${ref_change} de ${login_soumis}' ;
+			}
+			protected function CorpsMsgEmail()
+			{
+				$ctn = '' ;
+				$ctn .= 'L\'operation internationale suivante vient d\'etre validee :
+------------------------------
+Emetteur
+------------------------------
+Reference : ${ref_change} 
+Login : ${login_dem} 
+Code Banque : ${code_entite_dem} 
+Nom Banque : ${nom_entite_dem}
+Devise : ${code_devise1}
+Montant demande : ${montant_dem}
+Taux demande : ${taux_dem}
+------------------------------
+Negociateur
+------------------------------
+Login : ${login_soumis}
+Code Banque : ${code_entite_soumis} 
+Nom Banque : ${nom_entite_soumis} 
+Montant possible : ${montant_soumis}
+Taux possible : ${taux_soumis}'."\r\n" ;
+				return $ctn ;
+			}
 			public function DetermineEnvironnement()
 			{
 				$bd = $this->ApplicationParent->BDPrincipale ;
 				$id = (isset($_GET["id"])) ? $_GET["id"] : 0 ;
-				$this->LgnOpInterSelect = $bd->FetchSqlRow('select t1.*, t2.numop numop_dem, t2.type_change type_change_dem,
+				$this->LgnOpInterSelect = $bd->FetchSqlRow('select t2.ref_change,  t2.numop numop_dem, t2.type_change type_change_dem,
 t2.id_devise1 id_devise1_dem, t2.id_devise2 id_devise2_dem,
-t2.montant_change montant_change_dem, t2.taux_change taux_change_dem,
-t2.date_operation date_operation_dem, t2.date_valeur date_valeur_dem
-from op_inter t1 inner join op_inter t2
-on t1.num_op_inter_dem=t2.num_op_inter
+t1.montant_change montant_dem, t1.taux_change taux_dem,
+t1.date_operation date_operation_dem, t1.date_valeur date_valeur_dem, t1.montant_soumis,
+t1.taux_soumis
+, op1.login login_soumis, op1.email_op email_soumis, ent1.name nom_entite_soumis, ent1.code code_entite_soumis
+, op2.login login_dem, op2.email_op email_dem, ent2.name nom_entite_dem, ent2.code code_entite_dem,
+d2.code_devise code_devise1, d1.code_devise code_devise2
+from op_inter t1
+inner join op_inter t2 on t1.num_op_inter_dem=t2.num_op_inter
+left join operateur op1 on t1.numop=op1.numop
+left join entite ent1 on op1.id_entite=ent1.id_entite
+left join operateur op2 on t2.numop=op2.numop
+left join entite ent2 on op2.id_entite=ent2.id_entite
+left join devise d1 on d1.id_devise = t1.id_devise1
+left join devise d2 on d2.id_devise = t1.id_devise2
 where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'numOp', array(
 					'id' => $id,
-					'numOp' => $this->ZoneParent->Membership->MemberLogged->Id
+					'numOp' => $this->ZoneParent->IdMembreConnecte()
 				)) ;
 				if(count($this->LgnOpInterSelect) > 0)
 				{
@@ -1927,6 +1979,7 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 					if($succes)
 					{
 						$this->MsgExec = $this->MsgSucces ;
+						$this->EnvoieMailSucces() ;
 					}
 					else
 					{
@@ -1937,6 +1990,15 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 				{
 					$this->MsgExec = $this->MsgNonAutorise ;
 				}
+			}
+			protected function EnvoieMailSucces()
+			{
+				$msg = _parse_pattern($this->CorpsMsgEmail(), $this->LgnOpInterSelect) ;
+				$sujet = _parse_pattern($this->SujetMsgEmail(), $this->LgnOpInterSelect) ;
+				@send_plain_mail($this->LgnOpInterSelect["email_dem"], $sujet, $msg, $this->LgnOpInterSelect["email_dem"]) ;
+				@send_plain_mail($this->LgnOpInterSelect["email_soumis"], $sujet, $msg, $this->LgnOpInterSelect["email_dem"]) ;
+				// echo "<pre>$msg</pre>" ;
+				return $msg ;
 			}
 			public function RenduSpecifique()
 			{

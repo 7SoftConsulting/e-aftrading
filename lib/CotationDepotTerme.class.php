@@ -187,7 +187,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprCotationDepotTerme&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer cotation transfert de devise #${id}', $this->OptsFenetreEdit) ;
 				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->LienSuppr->DefinitScriptOnglActifSurFerm($this) ;
-				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutCotationDepotTerme", '?appelleScript=ajoutCotationDepotTerme', 'Ajouter', 'ajoutCotationDepotTerme', "Poster une cotation depot a terme", $this->OptsFenetreEdit) ;
+				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutCotationDepotTerme", '?appelleScript=ajoutCotationDepotTerme', 'Ajouter', 'ajoutCotationDepotTerme', "Poster une Cotation D&eacute;p&ocirc;t &agrave; terme", $this->OptsFenetreEdit) ;
 				$this->CmdAjout->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
@@ -246,7 +246,7 @@ left join operateur o1 on t1.numop_publieur = o1.numop
 left join rel_entreprise t3 on o1.id_entite = t3.id_entite_source
 left join operateur t4 on t3.id_entite_dest = t4.id_entite)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationDepotTerme&id_cotation=${id}', 'R&eacute;ponse', 'reserv_cotation_depot_terme_${id}', 'Cotation depot a terme #${id}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationDepotTerme&id_cotation=${id}', 'R&eacute;ponse', 'reserv_cotation_depot_terme_${id}', 'Cotation D&eacute;p&ocirc;t &agrave; terme #${id}', $this->OptsFenetreDetail) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
@@ -343,6 +343,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltNumOp = $this->FormPrinc->InsereFltEditFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop_publieur') ;
 				$this->FltMontant = $this->FormPrinc->InsereFltEditHttpPost('montant', 'montant') ;
 				$this->FltMontant->Libelle = "Montant" ;
+				$this->FltMontant->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->FltDateMisePlace = $this->FormPrinc->InsereFltEditHttpPost('date_mise_place', 'date_mise_place') ;
 				$this->FltDateMisePlace->Libelle = "Date mise en place" ;
 				$this->FltDateMisePlace->DeclareComposant("PvCalendarDateInput") ;
@@ -533,8 +534,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite', "Entit&eacute;") ;
 				$this->DefColTauxTablSecond = $this->TablSecond->InsereDefColMoney('taux', "Taux") ;
 				$this->DefColTaxeTransfTablSecond = $this->TablSecond->InsereDefColMoney('taxe_transfert', "Taxe transfert") ;
-				$this->DefColMontantTablSecond->AlignElement = "right" ;
 				/*
+				$this->DefColMontantTablSecond->AlignElement = "right" ;
 				$this->DefColActsTablSecond = $this->TablSecond->InsereDefColActions("Actions") ;
 				$this->LienDetailsTablSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=detailReservCotationDepotTerme&id=${id_cotation}&numop=${numop}', 'D&eacute;tails', 'details_reserv_emiss_obligation_${id}_${numop}', 'Details cotation transfert de devise #${login}', $this->OptsFenetreDetail) ;
 				*/

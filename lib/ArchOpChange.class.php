@@ -15,8 +15,8 @@
 	<br />
 				<div id="archives">
 	<ul>
-		<li><a href="#achat-devise">Achats de devise</a></li>
-		<li><a href="#vente-devise">Ventes de devise</a></li>
+		<li><a href="#achat-devise">Achat de devises</a></li>
+		<li><a href="#vente-devise">Vente de devises</a></li>
 	</ul>
 	<div id="achat-devise">
 		<iframe src="?appelleScript=consultArchAchatDevise" style="width:100%" height="'.$this->HauteurCadre.'"  frameborder="0"></iframe>

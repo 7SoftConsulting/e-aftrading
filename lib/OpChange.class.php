@@ -136,7 +136,7 @@
 				$this->FmtModif->OptionsOnglet["Largeur"] = 600 ;
 				$this->FmtModif->OptionsOnglet["Hauteur"] = 535 ;
 				$this->FmtModif->FormatIdOnglet = 'modif_op_change_${num_op_change}' ;
-				$this->FmtModif->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Modifier achat de devise' : 'Modifier vente de devise' ;
+				$this->FmtModif->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Modifier achat de devises' : 'Modifier vente de devises' ;
 				$this->FmtModif->FormatCheminIcone = 'images/icones/modif.png' ;
 				$this->FmtModif->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpChange == 1) ? 'modifAchatDevise' : 'modifVenteDevise').'&idEnCours=${num_op_change}' ;
 				$this->FmtModif->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpChange == 1) ? 'editAchatsDevise' : 'editVentesDevise') ;
@@ -150,7 +150,7 @@
 				$this->FmtSuppr->OptionsOnglet["Largeur"] = 600 ;
 				$this->FmtSuppr->OptionsOnglet["Hauteur"] = 535 ;
 				$this->FmtSuppr->FormatIdOnglet = 'suppr_op_change_${num_op_change}' ;
-				$this->FmtSuppr->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Supprimer achat de devise' : 'Supprimer vente de devise' ;
+				$this->FmtSuppr->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Supprimer achat de devises' : 'Supprimer vente de devises' ;
 				$this->FmtSuppr->FormatCheminIcone = 'images/icones/suppr.png' ;
 				$this->FmtSuppr->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpChange == 1) ? 'editAchatsDevise' : 'editVentesDevise') ;
 				$this->FmtSuppr->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpChange == 1) ? 'supprAchatDevise' : 'supprVenteDevise').'&idEnCours=${num_op_change}' ;
@@ -164,7 +164,7 @@
 				$this->FmtPostuls->OptionsOnglet["Hauteur"] = 600 ;
 				$this->FmtPostuls->OptionsOnglet["Largeur"] = 750 ;
 				$this->FmtPostuls->FormatIdOnglet = 'postuls_op_change_${num_op_change}' ;
-				$this->FmtPostuls->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Negociations achat de devise' : 'Negociations vente de devise' ;
+				$this->FmtPostuls->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Negociations achat de devises' : 'Negociations vente de devises' ;
 				$this->FmtPostuls->FormatCheminIcone = 'images/icones/postulations.png' ;
 				$this->FmtPostuls->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpChange == 1) ? 'postulsAchatDevise' : 'postulsVenteDevise').'&idEnCours=${num_op_change}' ;
 				$this->FmtPostuls->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpChange == 1) ? 'reservAchatsDevise' : 'reservVentesDevise') ;
@@ -283,7 +283,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$ctn = '' ;
 				if($this->RestrOps && ! $this->PeutVoirOps())
 				{
-					$args = array('nomOffre' => ($this->ScriptParent->TypeOpChange == 1) ? 'une vente de devise' : 'un achat de devise') ;
+					$args = array('nomOffre' => ($this->ScriptParent->TypeOpChange == 1) ? 'une vente de devises' : 'un achat de devises') ;
 					$ctn .= _parse_pattern($this->MsgConsultInterdit, $args) ;
 				}
 				else
@@ -638,6 +638,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltTauxTransact = $this->ScriptParent->CreeFiltreHttpPost("taux_transact") ;
 				$this->FltTauxTransact->NomParametreDonnees = 'taux_transact' ;
 				$this->FltTauxTransact->Libelle = "Taux / Commission" ;
+				$this->FltTauxTransact->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->FiltresEdition[] = & $this->FltTauxTransact ;
 				// Devise 1
 				$this->FltDevise1 = $this->ScriptParent->CreeFiltreHttpPost("devise1") ;
@@ -670,6 +671,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				// Montant commission
 				$this->FltMttComiss = $this->ScriptParent->CreeFiltreHttpPost("mtt_commiss") ;
 				$this->FltMttComiss->DefinitColLiee("mtt_commiss") ;
+				$this->FltMttComiss->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueCompMttComiss($this->FltMttComiss) ;
 				$this->FiltresEdition[] = & $this->FltMttComiss ;
 				// Type taux ou commission ?
@@ -685,17 +687,20 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltMontant = $this->ScriptParent->CreeFiltreHttpPost("montant") ;
 				$this->FltMontant->DefinitColLiee("montant_change") ;
 				$this->FltMontant->Libelle = "Montant" ;
+				$this->FltMontant->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->FiltresEdition[] = & $this->FltMontant ;
 				// Taux / Commission
 				$this->FltMttTaux = $this->ScriptParent->CreeFiltreHttpPost("taux_change") ;
 				$this->FltMttTaux->DefinitColLiee("taux_change") ;
 				$this->FltMttTaux->Libelle = "Taux / Commission" ;
 				$this->FltMttTaux->ValeurParDefaut = 0 ;
+				$this->FltMttTaux->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueCompValeurTaux($this->FltMttTaux) ;
 				$this->FiltresEdition[] = & $this->FltMttTaux ;
 				// Ecran Taux
 				$this->FltEcranTaux = $this->ScriptParent->CreeFiltreHttpPost("ecran_taux") ;
 				$this->FltEcranTaux->DefinitColLiee("ecran_taux") ;
+				$this->FltEcranTaux->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueCompEcranTaux($this->FltEcranTaux) ;
 				$this->FiltresEdition[] = & $this->FltEcranTaux ;
 				// Date operation
@@ -722,9 +727,11 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				// Montant soumis
 				$this->FltMttSoumis = $this->InsereFltEditHttpPost('montant_soumis', 'montant_soumis') ;
 				$this->FltMttSoumis->NePasIntegrerParametre = 1 ;
+				$this->FltMttSoumis->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				// Taux soumis
 				$this->FltTauxSoumis = $this->InsereFltEditHttpPost('taux_soumis', 'taux_soumis') ;
 				$this->FltTauxSoumis->NePasIntegrerParametre = 1 ;
+				$this->FltTauxSoumis->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				// Commentaire
 				$this->FltCommentaire = $this->ScriptParent->CreeFiltreHttpPost("commentaire") ;
 				$comp0 = $this->FltCommentaire->DeclareComposant("PvZoneMultiligneHtml") ;
@@ -873,6 +880,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				{
 					$this->StatutExecution = 1 ;
 					$this->MessageExecution = $this->MessageSuccesExecution ;
+					$idEnCours = $bd->FetchSqlValue('select num_op_change from op_change where numop=:numOperateur and num_op_change_dem=:numOpChange', array('numOperateur' => $this->ZoneParent->Membership->MemberLogged->Id, 'numOpChange' => $numOpChange), 'num_op_change') ;
+					$this->ZoneParent->ActualiseAccusesOpChange($idEnCours, $this) ;
 				}
 				else
 				{
@@ -894,6 +903,14 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				if($this->StatutExecution == 1)
 				{
 					$this->FormulaireDonneesParent->CacherFormulaireFiltres = 1 ;
+					$idEnCours = $this->FormulaireDonneesParent->FltIdEnCours->Lie() ;
+					// echo "ID : $idEnCours" ;
+					if($this->FormulaireDonneesParent->InclureElementEnCours == 0)
+					{
+						$bd = $this->ApplicationParent->BDPrincipale ;
+						$idEnCours = $bd->FetchSqlValue('select num_op_change from op_change where numop=:numOperateur and num_op_change_dem=:numOpChange', array('numOperateur' => $this->ZoneParent->Membership->MemberLogged->Id, 'numOpChange' => $idEnCours), 'num_op_change') ;
+					}
+					$this->ZoneParent->ActualiseAccusesOpChange($idEnCours, $this) ;
 				}
 			}
 		}
@@ -1632,6 +1649,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		
 		class ScriptSoumissOpChangeTradPlatf extends ScriptListBaseOpChange
 		{
+			public $Titre = "Negociations" ;
+			public $TitreDocument = "Negociations" ;
 			protected function DetermineTablPrinc()
 			{
 				$this->TablPrinc = new TablNegocOpChangeTradPlatf() ;
@@ -1698,6 +1717,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptModifOpChangeSoumisTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
+			public $Titre = "Negociations" ;
+			public $TitreDocument = "Negociations" ;
 			public $FormPrinc ;
 			protected function DetermineFormPrinc()
 			{
@@ -1720,8 +1741,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		class ScriptListeAchatsDeviseTradPlatf extends ScriptListBaseOpChange
 		{
 			public $TypeOpChange = 1 ;
-			public $Titre = "Liste achats de devise" ;
-			public $TitreDocument = "Liste achats de devise" ;
+			public $Titre = "Liste achat de devises" ;
+			public $TitreDocument = "Liste achat de devises" ;
 			protected function CreeTableau()
 			{
 				return new TablAchatsDeviseBaseTradPlatf() ;
@@ -1737,8 +1758,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptEditAchatsDeviseTradPlatf extends ScriptListeAchatsDeviseTradPlatf
 		{
-			public $Titre = "Publication achats de devise" ;
-			public $TitreDocument = "Publication achats de devise" ;
+			public $Titre = "Publication achat de devises" ;
+			public $TitreDocument = "Publication achat de devises" ;
 			protected function CreeTableau()
 			{
 				return new TablEditOpChangeTradPlatf() ;
@@ -1746,8 +1767,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptReservAchatsDeviseTradPlatf extends ScriptListeAchatsDeviseTradPlatf
 		{
-			public $Titre = "R&eacute;servations achats de devise" ;
-			public $TitreDocument = "R&eacute;servations achats de devise" ;
+			public $Titre = "R&eacute;servations achat de devises" ;
+			public $TitreDocument = "R&eacute;servations achat de devises" ;
 			protected function CreeTableau()
 			{
 				return new TablReservOpChangeTradPlatf() ;
@@ -1755,8 +1776,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptAjoutAchatDeviseTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
-			public $TitreDocument = "Nouvel achat de devise" ;
-			public $Titre = "Nouvel achat de devise" ;
+			public $TitreDocument = "Nouvel achat de devises" ;
+			public $Titre = "Nouvel achat de devises" ;
 			public $FormOpChange ;
 			public $NecessiteMembreConnecte = 1 ;
 			public $TypeOpChange = 1 ;
@@ -1781,8 +1802,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptModifAchatDeviseTradPlatf extends ScriptAjoutAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "Modif. achat de devise" ;
-			public $Titre = "Modif. achat de devise" ;
+			public $TitreDocument = "Modif. achat de devises" ;
+			public $Titre = "Modif. achat de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormModifAchatDeviseTradPlatf() ;
@@ -1790,8 +1811,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptPostulsAchatDeviseTradPlatf extends ScriptModifAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "Negociations achat de devise" ;
-			public $Titre = "Negociations achat de devise" ;
+			public $TitreDocument = "Negociations achat de devises" ;
+			public $Titre = "Negociations achat de devises" ;
 			public $FltIdEnCours ;
 			protected function EstConfirme()
 			{
@@ -1853,8 +1874,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptReponseAchatDeviseTradPlatf extends ScriptAjoutAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "Reponse achat de devise" ;
-			public $Titre = "Reponse achat de devise" ;
+			public $TitreDocument = "Reponse achat de devises" ;
+			public $Titre = "Reponse achat de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormReponseAchatDeviseTradPlatf() ;
@@ -1862,18 +1883,27 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptInteretAchatDeviseTradPlatf extends ScriptAjoutAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "N&eacute;gociation achat de devise" ;
-			public $Titre = "N&eacute;gociation achat de devise" ;
+			public $TitreDocument = "N&eacute;gociation achat de devises" ;
+			public $Titre = "N&eacute;gociation achat de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormInteretAchatDeviseTradPlatf() ;
 				// return new FormAjustAchatDeviseTradPlatf() ;
 			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = parent::RenduDispositifBrut() ;
+				if($this->FormOpChange->ElementEnCoursTrouve)
+				{
+					$this->NotifieAccuseLecture("accuse_op_change") ;
+				}
+				return $ctn ;
+			}
 		}
 		class ScriptNegocAchatDeviseTradPlatf extends ScriptAjoutAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "N&eacute;gociation achat de devise" ;
-			public $Titre = "N&eacute;gociation achat de devise" ;
+			public $TitreDocument = "N&eacute;gociation achat de devises" ;
+			public $Titre = "N&eacute;gociation achat de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormNegocAchatDeviseTradPlatf() ;
@@ -1882,8 +1912,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptAjustAchatDeviseTradPlatf extends ScriptAjoutAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "Ajustement achat de devise" ;
-			public $Titre = "Ajustement achat de devise" ;
+			public $TitreDocument = "Ajustement achat de devises" ;
+			public $Titre = "Ajustement achat de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormAjustAchatDeviseTradPlatf() ;
@@ -1891,9 +1921,9 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptSupprAchatDeviseTradPlatf extends ScriptAjoutAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "Suppr. achat de devise" ;
-			public $Titre = "Suppr. achat de devise" ;
-			public $Description = "Vous vous appr&ecirc;tez &agrave; supprimer cet achat de devise :" ;
+			public $TitreDocument = "Suppr. achat de devises" ;
+			public $Titre = "Suppr. achat de devises" ;
+			public $Description = "Vous vous appr&ecirc;tez &agrave; supprimer cet achat de devises :" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormSupprAchatDeviseTradPlatf() ;
@@ -1919,8 +1949,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		class ScriptListeVentesDeviseTradPlatf extends ScriptListBaseVenteDevise
 		{
 			public $TypeOpChange = 2 ;
-			public $Titre = "Liste ventes de devise" ;
-			public $TitreDocument = "Liste ventes de devise" ;
+			public $Titre = "Liste vente de devises" ;
+			public $TitreDocument = "Liste vente de devises" ;
 			protected function CreeTableau()
 			{
 				return new TablVentesDeviseBaseTradPlatf() ;
@@ -1936,8 +1966,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptEditVentesDeviseTradPlatf extends ScriptListeVentesDeviseTradPlatf
 		{
-			public $Titre = "Publications ventes de devise" ;
-			public $TitreDocument = "Publications ventes de devise" ;
+			public $Titre = "Publications vente de devises" ;
+			public $TitreDocument = "Publications vente de devises" ;
 			protected function CreeTableau()
 			{
 				return new TablEditOpChangeTradPlatf() ;
@@ -1945,8 +1975,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptReservVentesDeviseTradPlatf extends ScriptListeVentesDeviseTradPlatf
 		{
-			public $Titre = "R&eacute;servations ventes de devise" ;
-			public $TitreDocument = "R&eacute;servations ventes de devise" ;
+			public $Titre = "R&eacute;servations vente de devises" ;
+			public $TitreDocument = "R&eacute;servations vente de devises" ;
 			protected function CreeTableau()
 			{
 				return new TablReservOpChangeTradPlatf() ;
@@ -1954,8 +1984,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptAjoutVenteDeviseTradPlatf extends ScriptFormTransactBaseTradPlatf
 		{
-			public $TitreDocument = "Nouvelle vente de devise" ;
-			public $Titre = "Nouvelle vente de devise" ;
+			public $TitreDocument = "Nouvelle vente de devises" ;
+			public $Titre = "Nouvelle vente de devises" ;
 			public $FormOpChange ;
 			public $TypeOpChange = 2 ;
 			public $NecessiteMembreConnecte = 1 ;
@@ -1980,8 +2010,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptModifVenteDeviseTradPlatf extends ScriptAjoutVenteDeviseTradPlatf
 		{
-			public $TitreDocument = "Modif. vente de devise" ;
-			public $Titre = "Modif. vente de devise" ;
+			public $TitreDocument = "Modif. vente de devises" ;
+			public $Titre = "Modif. vente de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormModifVenteDeviseTradPlatf() ;
@@ -1989,14 +2019,14 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptPostulsVenteDeviseTradPlatf extends ScriptPostulsAchatDeviseTradPlatf
 		{
-			public $TitreDocument = "Negociations vente de devise" ;
+			public $TitreDocument = "Negociations vente de devises" ;
 			public $TypeOpChange = 2 ;
-			public $Titre = "Negociations vente de devise" ;
+			public $Titre = "Negociations vente de devises" ;
 		}
 		class ScriptReponseVenteDeviseTradPlatf extends ScriptAjoutVenteDeviseTradPlatf
 		{
-			public $TitreDocument = "Reponse vente de devise" ;
-			public $Titre = "Reponse vente de devise" ;
+			public $TitreDocument = "Reponse vente de devises" ;
+			public $Titre = "Reponse vente de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormReponseVenteDeviseTradPlatf() ;
@@ -2008,17 +2038,26 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptInteretVenteDeviseTradPlatf extends ScriptAjoutVenteDeviseTradPlatf
 		{
-			public $TitreDocument = "Negociation vente de devise" ;
-			public $Titre = "Negociation vente de devise" ;
+			public $TitreDocument = "Negociation vente de devises" ;
+			public $Titre = "Negociation vente de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormInteretVenteDeviseTradPlatf() ;
 			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = parent::RenduDispositifBrut() ;
+				if($this->FormOpChange->ElementEnCoursTrouve)
+				{
+					$this->NotifieAccuseLecture("accuse_op_change") ;
+				}
+				return $ctn ;
+			}
 		}
 		class ScriptNegocVenteDeviseTradPlatf extends ScriptAjoutVenteDeviseTradPlatf
 		{
-			public $TitreDocument = "Negociation vente de devise" ;
-			public $Titre = "Negociation vente de devise" ;
+			public $TitreDocument = "Negociation vente de devises" ;
+			public $Titre = "Negociation vente de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormNegocVenteDeviseTradPlatf() ;
@@ -2026,8 +2065,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptAjustVenteDeviseTradPlatf extends ScriptAjoutVenteDeviseTradPlatf
 		{
-			public $TitreDocument = "Ajustement vente de devise" ;
-			public $Titre = "Ajustement vente de devise" ;
+			public $TitreDocument = "Ajustement vente de devises" ;
+			public $Titre = "Ajustement vente de devises" ;
 			protected function CreeFormOpChange()
 			{
 				return new FormAjustVenteDeviseTradPlatf() ;
@@ -2035,9 +2074,9 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		}
 		class ScriptSupprVenteDeviseTradPlatf extends ScriptAjoutVenteDeviseTradPlatf
 		{
-			public $TitreDocument = "Suppr. vente de devise" ;
-			public $Titre = "Suppr. vente de devise" ;
-			public $Description = "Vous vous appr&ecirc;tez &agrave; supprimer cette vente de devise :" ;
+			public $TitreDocument = "Suppr. vente de devises" ;
+			public $Titre = "Suppr. vente de devises" ;
+			public $Description = "Vous vous appr&ecirc;tez &agrave; supprimer cette vente de devises :" ;
 			protected function RenduDispositifBrut()
 			{
 				$ctn = '' ;
@@ -2097,9 +2136,9 @@ t2.id_devise1 id_devise1_dem, t2.id_devise2 id_devise2_dem,
 t1.montant_change montant_dem, t1.taux_change taux_dem,
 t1.date_operation date_operation_dem, t1.date_valeur date_valeur_dem, t1.montant_soumis,
 t1.taux_soumis
-, op1.login login_dem, op1.email_op email_dem, ent1.name nom_entite_dem, ent1.code code_entite_dem
-, op2.login login_soumis, op2.email_op email_soumis, ent2.name nom_entite_soumis, ent2.code code_entite_soumis
-, d1.code_devise code_devise1, d2.code_devise code_devise2
+, op1.login login_soumis, op1.email_op email_soumis, ent1.name nom_entite_soumis, ent1.code code_entite_soumis
+, op2.login login_dem, op2.email_op email_dem, ent2.name nom_entite_dem, ent2.code code_entite_dem,
+d2.code_devise code_devise1, d1.code_devise code_devise2
 from op_change t1
 inner join op_change t2 on t1.num_op_change_dem=t2.num_op_change
 left join operateur op1 on t1.numop=op1.numop

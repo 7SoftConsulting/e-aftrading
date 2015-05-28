@@ -132,11 +132,13 @@
 					$this->FmtLienModif->FormatCheminIcone = 'images/icones/modif.png' ;
 					$this->FmtLienModif->ClasseCSS = 'lien-act-001' ;
 					$this->FmtLienModif->OptionsOnglet = array('Hauteur' => '300', 'Modal' => 1, 'BoutonFermer' => 0) ;
+					$this->FmtLienModif->DefinitScriptOnglActifSurFerm($this) ;
 					$this->FmtLienModif->FormatURL = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'=modifEntite&idEnCours=${id_entite}' ;
 					$this->DefColActions->Formatteur->Liens[] = & $this->FmtLienModif ;
 					$this->FmtLienSuppr = new PvConfigFormatteurColonneOuvreFenetre() ;
 					$this->FmtLienSuppr->FormatIdOnglet = 'suppr_entite_${id_entite}' ;
 					$this->FmtLienSuppr->FormatLibelle = "Supprimer" ;
+					$this->FmtLienSuppr->DefinitScriptOnglActifSurFerm($this) ;
 					$this->FmtLienSuppr->FormatTitreOnglet = 'Supprimer ${nom_type_entite} ${code}' ;
 					$this->FmtLienSuppr->OptionsOnglet = array('Hauteur' => '300', 'Modal' => 1, 'BoutonFermer' => 0) ;
 					$this->FmtLienSuppr->FormatCheminIcone = 'images/icones/suppr.png' ;
@@ -180,7 +182,8 @@
 					{
 						$this->CmdLienAjout->Parametres = array("idTypeEntite" => $this->IdTypeEntiteParDefaut) ;
 					}
-					$this->CmdLienAjout->OptionsOnglet = array("Hauteur" => "245", "Modal" => 1, "BoutonFermer" => 0, "BoutonExecuter" => 0) ;
+					$this->CmdLienAjout->DefinitScriptOnglActifSurFerm($this) ;
+					$this->CmdLienAjout->OptionsOnglet = array("Hauteur" => "300", "Modal" => 1, "BoutonFermer" => 0, "BoutonExecuter" => 0) ;
 					$this->TablEntites->InscritCommande("cmdAjoutEntite", $this->CmdLienAjout) ;
 				}
 			}

@@ -38,6 +38,22 @@
 		{
 			include dirname(__FILE__)."/EmissBonTresor.class.php" ;
 		}
+		if(! defined('RACHAT_BON_TRESOR_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/RachatBonTresor.class.php" ;
+		}
+		if(! defined('RACHAT_OBLIGATION_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/RachatObligation.class.php" ;
+		}
+		if(! defined('REVENTE_BON_TRESOR_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/ReventeBonTresor.class.php" ;
+		}
+		if(! defined('REVENTE_OBLIGATION_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/ReventeObligation.class.php" ;
+		}
 		if(! defined('EMISS_OBLIGATION_TRAD_PLATF'))
 		{
 			include dirname(__FILE__)."/EmissObligation.class.php" ;
@@ -67,6 +83,7 @@
 			public $LibelleMenuListeProfils = "Profils tr&eacute;soriers" ;
 			public $LibelleMenuAjoutProfil = "Ajouter un profil" ;
 			public $InscrireMenuDeconnexion = 0 ;
+			public $NomClasseScriptDeconnexion = "ScriptDeconnexionTradPlatf" ;
 			public $InscrireMenuChangeMotPasse = 0 ;
 			public $InscrireMenuAjoutMembre = 0 ;
 			public $ContenuRenduEntete = '<table style="background:white" align="center"><tr><td><img src="images/logo.png" height="60" /></td></tr></table>' ;
@@ -173,8 +190,18 @@
 			public $MenuListeZonesPays ;
 			public $MenuActivationMembre ;
 			public $MenuListePlacements ;
-			public $MenuTresorier ;
+			public $MenuUMOATitre ;
 			public $MenuEmissBonTresor ;
+			public $MenuTresorsPubl ;
+			public $MenuUMOATitres ;
+			public $MenuAvisAppelOffres ;
+			public $MenuMarcheSecondaire ;
+			public $MenuAchatTitre ;
+			public $MenuRachatBonTresor ;
+			public $MenuRachatObligation ;
+			public $MenuVenteTitre ;
+			public $MenuReventeBonTresor ;
+			public $MenuReventeObligation ;
 			public $MenuEmissObligation ;
 			public $ScriptSoumissPlacement ;
 			public $ScriptInteretPlacement ;
@@ -208,6 +235,7 @@
 			public $ScriptConsultEmissBonTresor ;
 			public $ScriptPublierEmissBonTresor ;
 			public $ScriptAjoutEmissBonTresor ;
+			public $ScriptDetailEmissBonTresor ;
 			public $ScriptModifEmissBonTresor ;
 			public $ScriptSupprEmissBonTresor ;
 			public $ScriptProposEmissBonTresor ;
@@ -221,6 +249,7 @@
 			public $ScriptPublierEmissObligation ;
 			public $ScriptAjoutEmissObligation ;
 			public $ScriptModifEmissObligation ;
+			public $ScriptDetailEmissObligation ;
 			public $ScriptSupprEmissObligation ;
 			public $ScriptProposEmissObligation ;
 			public $ScriptDetailProposEmissObligation ;
@@ -241,11 +270,31 @@
 			public $ScriptAjoutReservCotationTransfDev ;
 			public $ScriptModifReservCotationTransfDev ;
 			public $ScriptSupprReservCotationTransfDev ;
+			public $ScriptListeAlerteTransacts ;
+			public $ScriptConsultRachatBonTresor ;
+			public $ScriptPublierRachatBonTresor ;
+			public $ScriptAjoutRachatBonTresor ;
+			public $ScriptDetailRachatBonTresor ;
+			public $ScriptModifRachatBonTresor ;
+			public $ScriptSupprRachatBonTresor ;
+			public $ScriptConsultRachatObligation ;
+			public $ScriptPublierRachatObligation ;
+			public $ScriptAjoutRachatObligation ;
+			public $ScriptDetailRachatObligation ;
+			public $ScriptModifRachatObligation ;
+			public $ScriptSupprRachatObligation ;
+			public $ScriptConsultReventeBonTresor ;
+			public $ScriptPublierReventeBonTresor ;
+			public $ScriptAjoutReventeBonTresor ;
+			public $ScriptDetailReventeBonTresor ;
+			public $ScriptModifReventeBonTresor ;
+			public $ScriptSupprReventeBonTresor ;
 			public $RemplisseurConfig ;
 			public $DetectIconeCorresp = 1 ;
 			public $FournExprs ;
 			public $PrivilegesMenuMembership = array("admin_operator", "admin_members") ;
 			public $PrivilegesPassePartout = array("admin_members") ;
+			public $ActAlerteTransacts ;
 			protected function InitConfig()
 			{
 				parent::InitConfig() ;
@@ -272,7 +321,7 @@
 				$this->MenuTresorsPubl->Titre = "SGI" ;
 				$this->MenuParamTransactEntites = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("paramOpInter") ;
 				$this->MenuParamTransactEntites->Privileges[] = "admin_operator" ;
-				$this->MenuParamTransactEntites->Titre = "Param&eacute;trage transaction entre entit&eacute;" ;
+				$this->MenuParamTransactEntites->Titre = "Param&eacute;trage transaction" ;
 				$this->MenuParamTransactEntites->CheminIcone = "images/icones/paramEtabFinanc.png" ;
 				if($this->PossedePrivilege('admin_members'))
 				{
@@ -332,9 +381,9 @@
 				$this->MenuOpChangeDevise = $this->MenuListeTransacts->InscritSousMenuFige("transactsOpChangeDevise") ;
 				$this->MenuOpChangeDevise->Titre = "Op&eacute;ration change devise" ;
 				$this->MenuListeAchatsDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("listeAchatsDevise") ;
-				$this->MenuListeAchatsDevise->Titre = "Achat de devise" ;
+				$this->MenuListeAchatsDevise->Titre = "Achat de devises" ;
 				$this->MenuListeVentesDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("listeVentesDevise") ;
-				$this->MenuListeVentesDevise->Titre = "Vente de devise" ;
+				$this->MenuListeVentesDevise->Titre = "Vente de devises" ;
 				$this->MenuArchOpChange = $this->MenuOpChangeDevise->InscritSousMenuScript("consultArchOpChange") ;
 				$this->MenuArchOpChange->Titre = "Archives" ;
 				$this->MenuOpInterbancaire = $this->MenuListeTransacts->InscritSousMenuFige("transactsOpInterbancaires") ;
@@ -355,6 +404,24 @@
 					$this->MenuOpCotationDepotTerme = $this->MenuOpEntreprise->InscritSousMenuScript("consultCotationDepotTerme") ;
 					$this->MenuOpCotationDepotTerme->Titre = "Cotation d&eacute;p&ocirc;t &agrave; terme" ;
 				}
+				$this->MenuMarcheSecondaire = $this->MenuListeTransacts->InscritSousMenuFige('MarcheSecondaire') ;
+				$this->MenuMarcheSecondaire->Titre = "March&eacute; secondaire" ;
+				$this->MenuAchatTitre = $this->MenuMarcheSecondaire->InscritSousMenuFige('AchatTitre') ;
+				$this->MenuAchatTitre->Titre = "Achat Titre" ;
+				$this->MenuRachatBonTresor = $this->MenuAchatTitre->InscritSousMenuScript(($this->PossedePrivilege('post_doc_tresorier')) ? "publierRachatBonTresor" : "consultRachatBonTresor") ;
+				$this->MenuRachatBonTresor->Titre = "Bon de Tr&eacute;sor" ;
+				$this->MenuRachatBonTresor->TitreOnglet = "Rachat Bon de Tr&eacute;sor" ;
+				$this->MenuRachatObligation = $this->MenuAchatTitre->InscritSousMenuScript(($this->PossedePrivilege('post_doc_tresorier')) ? "publierRachatObligation" : "consultRachatObligation") ;
+				$this->MenuRachatObligation->Titre = "Obligation" ;
+				$this->MenuRachatObligation->TitreOnglet = "Rachat Obligation" ;
+				$this->MenuVenteTitre = $this->MenuMarcheSecondaire->InscritSousMenuFige('VenteTitre') ;
+				$this->MenuVenteTitre->Titre = "Vente Titre" ;
+				$this->MenuReventeBonTresor = $this->MenuVenteTitre->InscritSousMenuScript(($this->PossedePrivilege('post_doc_tresorier')) ? "publierReventeBonTresor" : "consultReventeBonTresor") ;
+				$this->MenuReventeBonTresor->Titre = "Bon de Tr&eacute;sor" ;
+				$this->MenuReventeBonTresor->TitreOnglet = "Revente Bon de Tr&eacute;sor" ;
+				$this->MenuReventeObligation = $this->MenuVenteTitre->InscritSousMenuScript(($this->PossedePrivilege('post_doc_tresorier')) ? "publierReventeObligation" : "consultReventeObligation") ;
+				$this->MenuReventeObligation->Titre = "Obligation" ;
+				$this->MenuReventeObligation->TitreOnglet = "Revente Obligation" ;
 				$this->MenuNegociations = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('negociations') ;
 				$this->MenuNegociations->Privileges[] = "post_op_change" ;
 				$this->MenuNegociations->Titre = "N&eacute;gociations" ;
@@ -364,11 +431,13 @@
 				$this->MenuSoumissOpInter = $this->MenuNegociations->InscritSousMenuScript("soumissOpInter") ;
 				$this->MenuSoumissOpInter->Titre = "Op&eacute;rations interbancaires" ;
 				$this->MenuSoumissOpInter->Privileges[] = "post_op_change" ;
-				$this->MenuTresorier = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('tresorier') ;
-				$this->MenuTresorier->Titre = "SGI" ;
-				$this->MenuEmissBonTresor = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
-				$this->MenuEmissBonTresor->Titre = "Bons de tresor" ;
-				$this->MenuEmissObligation = $this->MenuTresorier->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissObligation' : 'publierEmissObligation') ;
+				$this->MenuUMOATitres = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('UEMOATitres') ;
+				$this->MenuUMOATitres->Titre = "UMOA-Titres" ;
+				$this->MenuAvisAppelOffres = $this->MenuUMOATitres->InscritSousMenuFige('AvisAppelsOffreUMOA') ;
+				$this->MenuAvisAppelOffres->Titre = "Avis d'Appel d'Offre" ;
+				$this->MenuEmissBonTresor = $this->MenuAvisAppelOffres->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
+				$this->MenuEmissBonTresor->Titre = "Bons du Tr&eacute;sor" ;
+				$this->MenuEmissObligation = $this->MenuAvisAppelOffres->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissObligation' : 'publierEmissObligation') ;
 				$this->MenuEmissObligation->Titre = "Obligations" ;
 				if($this->PossedePrivilege('post_doc_entreprise'))
 				{
@@ -417,12 +486,17 @@
 			{
 				$this->MenuActivationMembre = $this->MenuAuthentification->InscritSousMenuScript("activationMembre") ;
 			}
+			protected function ChargeCompsSpec()
+			{
+				$this->CompAvantEspaceTravail = new CompBarreInfosMembreTradPlatf() ;
+				$this->CompAvantEspaceTravail->AdopteZone("barreInfosMembre", $this) ;
+				$this->CompAvantEspaceTravail->ChargeConfig() ;
+			}
 			public function ChargeScripts()
 			{
 				$this->RemplisseurConfig = new RemplisseurConfigPublTradPlatf() ;
 				parent::ChargeScripts() ;
-				$this->CompAvantEspaceTravail = new CompBarreInfosMembreTradPlatf() ;
-				$this->CompAvantEspaceTravail->AdopteZone("barreInfosMembre", $this) ;
+				$this->ChargeCompsSpec() ;
 				$this->ScriptActivationMembre = new ScriptActivationMembrePublTradPlatf() ;
 				$this->InscritScript("activationMembre", $this->ScriptActivationMembre) ;
 				$this->ScriptChStatutMembre = new ScriptChStatutMembreTradPlatf() ;
@@ -632,6 +706,7 @@
 				$this->ScriptProposEmissBonTresor = $this->InsereScript('proposEmissBonTresor', new ScriptProposEmissBonTresorTradPlatf()) ;
 				$this->ScriptAjoutEmissBonTresor = $this->InsereScript('ajoutEmissBonTresor', new ScriptAjoutEmissBonTresorTradPlatf()) ;
 				$this->ScriptModifEmissBonTresor = $this->InsereScript('modifEmissBonTresor', new ScriptModifEmissBonTresorTradPlatf()) ;
+				$this->ScriptDetailEmissBonTresor = $this->InsereScript('detailEmissBonTresor', new ScriptDetailEmissBonTresorTradPlatf()) ;
 				$this->ScriptSupprEmissBonTresor = $this->InsereScript('supprEmissBonTresor', new ScriptSupprEmissBonTresorTradPlatf()) ;
 				$this->ScriptDetailProposEmissBonTresor = $this->InsereScript('detailProposEmissBonTresor', new ScriptDetailProposEmissBonTresorTradPlatf()) ;
 				$this->ScriptListReservEmissBonTresor = $this->InsereScript('listReservEmissBonTresor', new ScriptListReservEmissBonTresorTradPlatf()) ;
@@ -644,6 +719,7 @@
 				$this->ScriptProposEmissObligation = $this->InsereScript('proposEmissObligation', new ScriptProposEmissObligationTradPlatf()) ;
 				$this->ScriptAjoutEmissObligation = $this->InsereScript('ajoutEmissObligation', new ScriptAjoutEmissObligationTradPlatf()) ;
 				$this->ScriptModifEmissObligation = $this->InsereScript('modifEmissObligation', new ScriptModifEmissObligationTradPlatf()) ;
+				$this->ScriptDetailEmissObligation = $this->InsereScript('detailEmissObligation', new ScriptDetailEmissObligationTradPlatf()) ;
 				$this->ScriptSupprEmissObligation = $this->InsereScript('supprEmissObligation', new ScriptSupprEmissObligationTradPlatf()) ;
 				$this->ScriptDetailProposEmissObligation = $this->InsereScript('detailProposEmissObligation', new ScriptDetailProposEmissObligationTradPlatf()) ;
 				$this->ScriptListReservEmissObligation = $this->InsereScript('listReservEmissObligation', new ScriptListReservEmissObligationTradPlatf()) ;
@@ -685,6 +761,35 @@
 				$this->ScriptConsultArchPlacement = $this->InsereScript('consultArchPlacement', new ScriptConsultArchPlacementTradPlatf()) ;
 				$this->ScriptConsultArchEmprunt = $this->InsereScript('consultArchEmprunt', new ScriptConsultArchEmpruntTradPlatf()) ;
 				$this->ScriptDetailArchOpInter = $this->InsereScript('detailArchOpInter', new ScriptDetailArchOpInterTradPlatf()) ;
+				$this->ScriptListeAlerteTransacts = $this->InsereScript("listeAlerteTransacts", new ScriptListeAlerteTransactsTradPlatf()) ;
+				// Rachats bon de tresor
+				$this->ScriptPublierRachatBonTresor = $this->InsereScript('publierRachatBonTresor', new ScriptPublierRachatBonTresorTradPlatf()) ;
+				$this->ScriptConsultRachatBonTresor = $this->InsereScript('consultRachatBonTresor', new ScriptConsultRachatBonTresorTradPlatf()) ;
+				$this->ScriptAjoutRachatBonTresor = $this->InsereScript('ajoutRachatBonTresor', new ScriptAjoutRachatBonTresorTradPlatf()) ;
+				$this->ScriptModifRachatBonTresor = $this->InsereScript('modifRachatBonTresor', new ScriptModifRachatBonTresorTradPlatf()) ;
+				$this->ScriptDetailRachatBonTresor = $this->InsereScript('detailRachatBonTresor', new ScriptDetailRachatBonTresorTradPlatf()) ;
+				$this->ScriptSupprRachatBonTresor = $this->InsereScript('supprRachatBonTresor', new ScriptSupprRachatBonTresorTradPlatf()) ;
+				// Reventes bon de tresor
+				$this->ScriptPublierReventeBonTresor = $this->InsereScript('publierReventeBonTresor', new ScriptPublierReventeBonTresorTradPlatf()) ;
+				$this->ScriptConsultReventeBonTresor = $this->InsereScript('consultReventeBonTresor', new ScriptConsultReventeBonTresorTradPlatf()) ;
+				$this->ScriptAjoutReventeBonTresor = $this->InsereScript('ajoutReventeBonTresor', new ScriptAjoutReventeBonTresorTradPlatf()) ;
+				$this->ScriptModifReventeBonTresor = $this->InsereScript('modifReventeBonTresor', new ScriptModifReventeBonTresorTradPlatf()) ;
+				$this->ScriptDetailReventeBonTresor = $this->InsereScript('detailReventeBonTresor', new ScriptDetailReventeBonTresorTradPlatf()) ;
+				$this->ScriptSupprReventeBonTresor = $this->InsereScript('supprReventeBonTresor', new ScriptSupprReventeBonTresorTradPlatf()) ;
+				// Rachats obligation
+				$this->ScriptPublierRachatObligation = $this->InsereScript('publierRachatObligation', new ScriptPublierRachatObligationTradPlatf()) ;
+				$this->ScriptConsultRachatObligation = $this->InsereScript('consultRachatObligation', new ScriptConsultRachatObligationTradPlatf()) ;
+				$this->ScriptAjoutRachatObligation = $this->InsereScript('ajoutRachatObligation', new ScriptAjoutRachatObligationTradPlatf()) ;
+				$this->ScriptModifRachatObligation = $this->InsereScript('modifRachatObligation', new ScriptModifRachatObligationTradPlatf()) ;
+				$this->ScriptDetailRachatObligation = $this->InsereScript('detailRachatObligation', new ScriptDetailRachatObligationTradPlatf()) ;
+				$this->ScriptSupprRachatObligation = $this->InsereScript('supprRachatObligation', new ScriptSupprRachatObligationTradPlatf()) ;
+				// Reventes obligation
+				$this->ScriptPublierReventeObligation = $this->InsereScript('publierReventeObligation', new ScriptPublierReventeObligationTradPlatf()) ;
+				$this->ScriptConsultReventeObligation = $this->InsereScript('consultReventeObligation', new ScriptConsultReventeObligationTradPlatf()) ;
+				$this->ScriptAjoutReventeObligation = $this->InsereScript('ajoutReventeObligation', new ScriptAjoutReventeObligationTradPlatf()) ;
+				$this->ScriptModifReventeObligation = $this->InsereScript('modifReventeObligation', new ScriptModifReventeObligationTradPlatf()) ;
+				$this->ScriptDetailReventeObligation = $this->InsereScript('detailReventeObligation', new ScriptDetailReventeObligationTradPlatf()) ;
+				$this->ScriptSupprReventeObligation = $this->InsereScript('supprReventeObligation', new ScriptSupprReventeObligationTradPlatf()) ;
 				// $this->ScriptBienvenue->Titre = "Trading Platform" ;
 				$this->ScriptAccueil->TitreDocument = "Trading Platform" ;
 				// $this->ChargeScriptsMembershipSuppl() ;
@@ -699,6 +804,17 @@
 					$this->ScriptAjoutProfil->DeclarePrivileges($privsEditMembership) ;
 					$this->ScriptListeRoles->DeclarePrivileges($privsEditMembership) ;
 					$this->ScriptAjoutRole->DeclarePrivileges($privsEditMembership) ;
+					if($this->ValeurParamScriptAppele == "")
+					{
+						/*
+						$this->ActAlerteNouvAchatDevise = new ActAlerteNouvAchatDeviseTradPlatf() ;
+						$this->InscritActionAvantRendu('totalNouvsAchatsDevises', $this->ActAlerteNouvAchatDevise) ;
+						$this->ActAlerteNouvVenteDevise = new ActAlerteNouvVenteDeviseTradPlatf() ;
+						$this->InscritActionAvantRendu('totalNouvsVentesDevises', $this->ActAlerteNouvVenteDevise) ;
+						*/
+						$this->ActAlerteTransacts = new ActAlerteTransactsTradPlatf() ;
+						$this->InscritActionAvantRendu('alerteTransacts', $this->ActAlerteTransacts) ;
+					}
 				}
 				// print get_class($this->ScriptListeProfils) ;
 			}
@@ -788,6 +904,51 @@
 	.btn-princ { background-image:url(images/btn-princ-moyen.png) ; background-repeat:no-repeat ; background-position:center top ; width : 140px ; height:22px; color:white ; padding-top : 4px; }
 </style>' ;
 				return $ctn ;
+			}
+			public function ArchiveAncTransacts()
+			{
+				$bd = $this->ApplicationParent->BDPrincipale ;
+				$sql = array() ;
+				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
+				$sqls[] = 'insert into arch_op_change select op_change.*, '.$bd->SqlNow().' from op_change where '.$condArch ;
+				$sqls[] = 'delete from op_change where '.$condArch ;
+				$sqls[] = 'ALTER TABLE op_change auto_increment = 1' ;
+				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
+				$sqls[] = 'insert into arch_op_inter select op_inter.*, '.$bd->SqlNow().' from op_inter where '.$condArch ;
+				$sqls[] = 'delete from op_inter where '.$condArch ;
+				$sqls[] = 'ALTER TABLE op_inter auto_increment = 1' ;
+				$sqls[] = 'delete from accuse_op_change where '.$condArch ;
+				$sqls[] = 'ALTER TABLE accuse_op_change auto_increment = 1' ;
+				foreach($sqls as $i => $sql)
+				{
+					$bd->RunSql($sql) ;
+				}
+			}
+			public function ActualiseAccusesOpChange($idEnCours, & $cmd)
+			{
+				$bd = $cmd->ApplicationParent->BDPrincipale ;
+				$form = & $cmd->FormulaireDonneesParent ;
+				$idMembre = $cmd->ZoneParent->IdMembreConnecte() ;
+				$lgn = $bd->FetchSqlRow('select t1.*, t2.numop numop_dem from op_change t1 inner join op_change t2 on t1.num_op_change_dem=t2.num_op_change where t1.num_op_change=:numOpChange', array('numOpChange' => $idEnCours)) ;
+				if(count($lgn) > 0)
+				{
+					$bd->RunSql('delete from accuse_op_change where num_op_change=:numOpChange and numop=:numOp', array('numOpChange' => $lgn["num_op_change"], "numOp" => ($lgn["numop"] != $idMembre) ? $lgn["numop"] : $lgn["numop_dem"])) ;
+					$bd->RunSql('insert into accuse_op_change (num_op_change, numop) values (:numOpChange, :numOp)', array('numOpChange' => $lgn["num_op_change"], "numOp" => $idMembre)) ;
+					// print_r($bd) ;
+				}
+			}
+			public function ActualiseAccusesOpInter($idEnCours, & $cmd)
+			{
+				$bd = $cmd->ApplicationParent->BDPrincipale ;
+				$form = & $cmd->FormulaireDonneesParent ;
+				$idMembre = $cmd->ZoneParent->IdMembreConnecte() ;
+				$lgn = $bd->FetchSqlRow('select t1.*, t2.numop numop_dem from op_inter t1 inner join op_inter t2 on t1.num_oop_inter_dem=t2.num_op_inter where t1.num_op_inter=:numOpInter', array('numOpInter' => $idEnCours)) ;
+				if(count($lgn) > 0)
+				{
+					$bd->RunSql('delete from accuse_op_inter where num_op_inter=:numOpInter and numop=:numOp', array('numOpInter' => $lgn["num_op_inter"], "numOp" => ($lgn["numop"] != $idMembre) ? $lgn["numop"] : $lgn["numop_dem"])) ;
+					$bd->RunSql('insert into accuse_op_inter (num_op_inter, numop) values (:numOpInter, :numOp)', array('numOpInter' => $lgn["num_op_inter"], "numOp" => $idMembre)) ;
+					// print_r($bd) ;
+				}
 			}
 		}
 		
@@ -1006,6 +1167,7 @@
 				{
 					$this->FltTypeEntite = $form->ScriptParent->CreeFiltreHttpPost("idtype_entite") ;
 					$this->FltTypeEntite->Libelle = "Type entit&eacute;" ;
+					$this->FltTypeEntite->ValeurParDefaut = $form->ScriptParent->IdTypeEntiteParDefaut ;
 					$this->FltTypeEntite->DeclareComposant("PvZoneBoiteSelectHtml") ;
 					$comp = & $this->FltTypeEntite->Composant ;
 					$comp->FournisseurDonnees = new PvFournisseurDonneesSql() ;
@@ -1234,7 +1396,7 @@
 				parent::DetermineEnvironnement() ;
 				$this->TablNotations1Mdgm = new TablNotationsMdgm() ;
 				$this->TablNotations1Mdgm->AdopteScript("tabl", $this) ;
-				$this->TablNotations1Mdgm->IdNotations = array(1390634, 3895009, 1619898, 1171295, 991341, 1292138, 415007, 1361925) ;
+				$this->TablNotations1Mdgm->IdNotations = array(1390634, 1619898, 1171295, 991341, 1292138, 415007, 1361925) ;
 				$this->BlocNotations1Mdgm = new PvBlocAjax() ;
 				$this->BlocNotations1Mdgm->AdopteScript("brr", $this) ;
 				$this->BlocNotations1Mdgm->DelaiRafraich = 10 ;
@@ -1300,17 +1462,47 @@
 				return $ctn ;
 			}
 		}
+		class ScriptDeconnexionTradPlatf extends PvScriptDeconnexionWeb
+		{
+			protected function RenduDispositifBrut()
+			{
+				$ctn = '' ;
+				if($this->MessageDeconnexionReussie != '')
+				{
+					$ctn .= '<p style="color:white; font-weight:bold;">'.$this->MessageDeconnexionReussie.'</p>' ;
+				}
+				$ctn .= '<p align="center"><a href="'.$this->ZoneParent->ObtientUrl().'"><img height="55" src="images/btn-retour-accueil.png" /></a></p>' ;
+				return $ctn ;
+			}
+		}
 		
 		class CompBarreInfosMembreTradPlatf extends PvComposantIUBase
 		{
 			public $InclureIconeLiens = 1 ;
-			public $CheminIconeLienDecnx = "images/miniatures/deconnexion.png" ;
-			public $LibelleLienDecnx = "Deconnexion" ;
+			public $CheminIconeLienAlerts = "images/miniatures/alertes.png" ;
+			public $LibelleLienAlerts = "Alertes" ;
 			public $CheminIconeLienChMP = "images/miniatures/changeMP.png" ;
 			public $LibelleLienChMP = "Changer mot de passe" ;
+			public $CheminIconeLienDecnx = "images/miniatures/deconnexion.png" ;
+			public $LibelleLienDecnx = "Deconnexion" ;
+			public $DelaiRafraichAlertes = 30 ;
+			public $LienNouvAchatDevise ;
+			public function ChargeConfig()
+			{
+				// $this->ChargeLiensAlertes() ;
+			}
+			protected function ChargeLiensAlertes()
+			{
+				$this->LienNouvAchatDevise = new LienAlerteNouvPublTradPlatf() ;
+				$this->LienNouvAchatDevise->AdopteZone("nouvAchatDevise", $this->ZoneParent) ;
+				$this->LienNouvAchatDevise->ChargeConfig() ;
+				$this->LienNouvAchatDevise->Titre = "Nouveaux achats devise" ;
+				$this->LienNouvAchatDevise->NomAction = "totalNouvsAchatsDevises" ;
+			}
 			protected function RenduDispositifBrut()
 			{
 				$membreConnecte = $this->ZoneParent->ObtientMembreConnecte() ;
+				$urlAction = "?appelleAction=alerteTransacts" ;
 				if($membreConnecte == null)
 					return '' ;
 				$ctn = '' ;
@@ -1320,6 +1512,7 @@
 				$ctn .= '<td width="50%">Utilisateur : '.htmlentities($membreConnecte->FirstName.' '.$membreConnecte->LastName).' ('.htmlentities($membreConnecte->Login).') / '.htmlentities($membreConnecte->Profile->Title).PHP_EOL ;
 				$ctn .= '</td>'.PHP_EOL ;
 				$ctn .= '<td width="*" align="right" rowspan="2">'.PHP_EOL ;
+				// $ctn .= $this->LienNouvAchatDevise->RenduDispositif().PHP_EOL ;
 				$ctn .= '<div align="center" style="float:right"><a href="'.$this->ZoneParent->ObtientUrlScript($this->ZoneParent->NomScriptDeconnexion).'">' ;
 				if($this->InclureIconeLiens)
 				{
@@ -1333,6 +1526,13 @@
 					$ctn .= '<div><img src="'.$this->CheminIconeLienChMP.'" border="0" /></div>' ;
 				}
 				$ctn .= '<div class="btn-princ">'.$this->LibelleLienChMP.'</div>' ;
+				$ctn .= '</a></div>' ;
+				$ctn .= '<div align="center" style="float:right; padding-right:16px; display:none" id="lien_alertes"><a href="javascript:ouvreFenetreCadre(\'alerteTransacts\', \'\',\'Alertes\', '.htmlentities(svc_json_encode($this->ZoneParent->ObtientUrlScript('listeAlerteTransacts'))).', { Hauteur : 225, Largeur : 450, Modal : 1, BoutonFermer : 0}) ;">' ;
+				if($this->InclureIconeLiens)
+				{
+					$ctn .= '<div><img src="'.$this->CheminIconeLienAlerts.'" border="0" /></div>' ;
+				}
+				$ctn .= '<div class="btn-princ">'.$this->LibelleLienAlerts.'</div>' ;
 				$ctn .= '</a></div>' ;
 				$ctn .= '</td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
@@ -1349,6 +1549,38 @@
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '</table>'.PHP_EOL ;
 				$ctn .= '</div>'.PHP_EOL ;
+				$ctn .= '<script type="text/javascript">
+	'.$this->IDInstanceCalc.' = {
+		actualiseAlertes : function() {
+			jQuery.ajax('.svc_json_encode($urlAction).', { success : function(data, textStatus, jqXHR) {
+					var infosAlerte = new Object() ;
+					try { eval("infosAlerte = " + data + " ;") } catch(ex) { alert(ex) ; } ;
+					// alert(data) ;
+					'.$this->IDInstanceCalc.'.definitAlertes(infosAlerte) ;
+					setTimeout("'.$this->IDInstanceCalc.'.actualiseAlertes()", '.($this->DelaiRafraichAlertes * 1000).') ;
+				}
+			}) ;
+		},
+		definitAlertes : function (infosAlerte) {
+			var affichLien = false ;
+			for(var nomAlerte in infosAlerte) {
+				var totalPubls = parseInt(infosAlerte[nomAlerte]) ;
+				if(! isNaN(totalPubls) && totalPubls > 0) {
+					affichLien = true ;
+					break ;
+				}
+			}
+			// alert(affichLien) ;
+			if(affichLien)
+				jQuery("#lien_alertes").show() ;
+			else
+				jQuery("#lien_alertes").hide() ;
+		}
+	}
+	jQuery(function() {
+		'.$this->IDInstanceCalc.'.actualiseAlertes() ;
+	}) ;
+</script>'.PHP_EOL ;
 				return $ctn ;
 			}
 		}
@@ -1482,6 +1714,46 @@
 				if($timestamp == 0)
 					return '' ;
 				return date("d/m/Y H:i:s", $timestamp) ;
+			}
+		}
+		
+		class LienAlerteNouvPublTradPlatf extends PvComposantIUBase
+		{
+			public $DelaiRafraich = 2 ;
+			public $NomAction ;
+			public $Titre ;
+			protected function RenduDispositifBrut()
+			{
+				$urlAction = "?appelleAction=".urlencode($this->NomAction) ;
+				$ctn = '' ;
+				$ctn .= '<div id="'.$this->IDInstanceCalc.'" style="display:none"><a>'.$this->Titre.'</a></div>'.PHP_EOL ;
+				$ctn .= '<script language="javascript">
+	function '.$this->IDInstanceCalc.'_Process(i) {
+		// alert(i) ;
+		if(isNaN(i))
+		{
+			jQuery("#'.$this->IDInstanceCalc.'").hide() ;
+		}
+		else
+		{
+			if(i <= 0)
+				jQuery("#'.$this->IDInstanceCalc.'").hide() ;
+			else
+				jQuery("#'.$this->IDInstanceCalc.'").show() ;
+		}
+	}
+	function '.$this->IDInstanceCalc.'_Refresh() {
+		jQuery.ajax('.svc_json_encode($urlAction).', { success : function(data, textStatus, jqXHR) {
+				'.$this->IDInstanceCalc.'_Process(parseInt(data)) ;
+				setTimeout("'.$this->IDInstanceCalc.'_Refresh()", '.($this->DelaiRafraich * 1000).') ;
+			}
+		}) ;
+	}
+	jQuery(function () {
+		'.$this->IDInstanceCalc.'_Refresh() ;
+	}) ;
+</script>' ;
+				return $ctn ;
 			}
 		}
 		

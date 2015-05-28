@@ -6,7 +6,7 @@
 		
 		class ScriptBaseEmissObligationTradPlatf extends ScriptTransactBaseTradPlatf
 		{
-			public $OptsFenetreEdit = array("Largeur" => 450, 'Hauteur' => 325, 'Modal' => 1, "BoutonFermer" => 0) ;
+			public $OptsFenetreEdit = array("Largeur" => 525, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
 			public $OptsFenetreDetail = array("Largeur" => 675, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
 			protected function BDPrinc()
 			{
@@ -142,7 +142,7 @@
 		
 		class ScriptPublierEmissObligationTradPlatf extends Script1EmissObligationTradPlatf
 		{
-			public $Titre = "Emission obligation" ;
+			public $Titre = "Emission d'Obligations" ;
 			public $Privileges = array('post_doc_tresorier') ;
 			public $CmdAjout ;
 			public $LienModif ;
@@ -203,10 +203,11 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		}
 		class ScriptConsultEmissObligationTradPlatf extends Script1EmissObligationTradPlatf
 		{
-			public $Titre = "Consulter Emission obligation" ;
-			public $TitreDocument = "Consulter Emission obligation" ;
+			public $Titre = "Consulter Emission d'Obligations" ;
+			public $TitreDocument = "Consulter Emission d'Obligations" ;
 			public $Privileges = array('post_op_change') ;
 			public $LienReserv ;
+			public $LienDetail ;
 			public $FournDonneesPrinc ;
 			public $DefColId ;
 			public $DefColNumOp ;
@@ -247,7 +248,9 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 FROM emission_obligation t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissObligation&id=${id}', 'souscription', 'detail_emiss_obligation_${id}', 'D&eacute;tails obligation #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienDetail = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=detailEmissObligation&id=${id}', 'detail', 'detail_emiss_obligation_${id}', 'D&eacute;tails obligation #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienDetail->ClasseCSS = "lien-act-003" ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissObligation&id=${id}', 'souscription', 'souscription_emiss_obligation_${id}', 'D&eacute;tails obligation #${ref_transact}', $this->OptsFenetreDetail) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
@@ -312,7 +315,16 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		
 		class ScriptLgn1EmissObligationTradPlatf extends ScriptEditEmissObligationTradPlatf
 		{
+			public $InclureTitreFormPrinc = 1 ;
+			public $TitreFormPrinc = "Caract&eacute;ristiques Emission d'Obligations Assimilable du Tr&eacute;sor" ;
 			public $FltId ;
+			public $FltEmetteur ;
+			public $CompEmetteur ;
+			public $FltValNominaleUnit ;
+			public $FltDuree ;
+			public $FltDiffere ;
+			public $FltPrix ;
+			public $FltCodeISIN ;
 			public $FltRefTransact ;
 			public $FltMontant ;
 			public $FltTaux ;
@@ -327,6 +339,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $PourAjout = 1 ;
 			public $PourDetail = 0 ;
 			public $FormPrincEditable = 1 ;
+			public $InscrireCmdExecFormPrinc = 1 ;
 			public $CritrNonVidePrinc ;
 			public $CritrValidPrinc ;
 			protected function DefinitExprs()
@@ -340,18 +353,39 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FormPrinc->InclureElementEnCours = ($this->PourAjout) ? 0 : 1 ;
 				$this->FormPrinc->InclureTotalElements = ($this->PourAjout) ? 0 : 1 ;
 				$this->FormPrinc->Editable = $this->FormPrincEditable ;
+				$this->FormPrinc->InscrireCommandeExecuter = $this->InscrireCmdExecFormPrinc ;
 			}
 			protected function ChargeFormPrinc()
 			{
 				parent::ChargeFormPrinc() ;
 				$this->FltId = $this->FormPrinc->InsereFltLgSelectHttpGet('id', 'id = <self>') ;
 				$this->FltNumOp = $this->FormPrinc->InsereFltEditFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop_publieur') ;
+				$this->FltEmetteur = $this->FormPrinc->InsereFltEditHttpPost('emetteur', 'emetteur') ;
+				$this->FltEmetteur->Libelle = "Emetteur" ;
+				$this->CompEmetteur = $this->FltEmetteur->DeclareComposant("PvZoneBoiteSelectHtml") ;
+				$this->CompEmetteur->FournisseurDonnees = $this->CreeFournDonneesPrinc() ;
+				$this->CompEmetteur->FournisseurDonnees->RequeteSelection = "(select * from pays where id_region=1)" ;
+				$this->CompEmetteur->NomColonneLibelle = "libpays" ;
+				$this->CompEmetteur->NomColonneValeur = "idpays" ;
 				$this->FltRefTransact = $this->FormPrinc->InsereFltEditHttpPost('ref_transact', 'ref_transact') ;
 				$this->FltRefTransact->Libelle = "No Reference" ;
 				$this->FltMontant = $this->FormPrinc->InsereFltEditHttpPost('montant', 'montant') ;
-				$this->FltMontant->Libelle = "Montant emission" ;
+				$this->FltMontant->Libelle = "Montant" ;
+				$this->FltMontant->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
+				$this->FltValNominaleUnit = $this->FormPrinc->InsereFltEditHttpPost('val_nominale_unit', 'val_nominale_unit') ;
+				$this->FltValNominaleUnit->Libelle = "Valeur nominale unitaire" ;
+				$this->FltValNominaleUnit->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
+				if($this->FormPrinc->InclureElementEnCours)
+				{
+					$this->FltDuree = $this->FormPrinc->InsereFltEditHttpPost('duree_emission', 'duree_emission') ;
+					$this->FltDuree->Libelle = "Dur&eacute;e" ;
+				}
 				$this->FltTaux = $this->FormPrinc->InsereFltEditHttpPost('taux', 'taux') ;
-				$this->FltTaux->Libelle = "Taux" ;
+				$this->FltTaux->Libelle = "Taux int&eacute;r&ecirc;t" ;
+				$this->FltDiffere = $this->FormPrinc->InsereFltEditHttpPost('differe', 'differe') ;
+				$this->FltDiffere->Libelle = "Differ&eacute;" ;
+				$this->FltPrix = $this->FormPrinc->InsereFltEditHttpPost('prix', 'prix') ;
+				$this->FltPrix->Libelle = "Prix" ;
 				$this->FltDevise = $this->FormPrinc->InsereFltEditHttpPost('id_devise', 'id_devise') ;
 				$this->FltDevise->Libelle = "Devise" ;
 				$this->CompDevise = $this->FltDevise->DeclareComposant("PvZoneBoiteSelectHtml") ;
@@ -360,12 +394,14 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->CompDevise->NomColonneValeur = 'id_devise' ;
 				$this->CompDevise->NomColonneLibelle = 'code_devise' ;
 				$this->FltDateEmission = $this->FormPrinc->InsereFltEditHttpPost('date_emission', 'date_emission') ;
-				$this->FltDateEmission->Libelle = "Date émission" ;
+				$this->FltDateEmission->Libelle = "Date valeur" ;
 				$this->CompDateEmission = $this->FltDateEmission->DeclareComposant("PvCalendarDateInput") ;
 				$this->FltDateEcheance = $this->FormPrinc->InsereFltEditHttpPost('date_echeance', 'date_echeance') ;
-				$this->FltDateEcheance->Libelle = "Date echeance" ;
+				$this->FltDateEcheance->Libelle = "Date &eacute;cheance" ;
 				$this->CompDateEcheance = $this->FltDateEcheance->DeclareComposant("PvCalendarDateInput") ;
-				$this->FournDonneesPrinc->RequeteSelection = "emission_obligation" ;
+				$this->FltCodeISIN = $this->FormPrinc->InsereFltEditHttpPost('code_isin', 'code_isin') ;
+				$this->FltCodeISIN->Libelle = "Code ISIN" ;
+				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) + 1 duree_emission from emission_obligation t1)" ;
 				$this->FournDonneesPrinc->TableEdition = "emission_obligation" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
 				if($this->FormPrinc->Editable == 1)
@@ -396,6 +432,11 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$ctn = '' ;
 				if($this->AccesPossibleFormPrinc())
 				{
+					if($this->InclureTitreFormPrinc)
+					{
+						$ctn .= '<div align="center" class="ui-widget ui-widget-content ui-state-active ui-corner-all">'.$this->TitreFormPrinc.'</div>'.PHP_EOL ;
+						$ctn .= '<br />' ;
+					}
 					$ctn .= parent::RenduDispositifBrut() ;
 				}
 				else
@@ -429,6 +470,12 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			{
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenSupprEmissObligation ;
 			}
+		}
+		class ScriptDetailEmissObligationTradPlatf extends ScriptModifEmissObligationTradPlatf
+		{
+			public $PourDetail = 1 ;
+			public $FormPrincEditable = 0 ;
+			public $InscrireCmdExecFormPrinc = 0 ;
 		}
 		
 		class ScriptDetailProposEmissObligationTradPlatf extends ScriptModifEmissObligationTradPlatf

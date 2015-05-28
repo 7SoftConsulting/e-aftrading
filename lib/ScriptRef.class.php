@@ -8,6 +8,155 @@
 		}
 		define('SCRIPT_REF_TRAD_PLATF', 1) ;
 		
+		define('VW_OP_CHANGE_ACCESSIBLE', '(select `t1`.`num_op_change` AS `num_op_change`,`t1`.`type_change` AS `type_change`,`t1`.`id_ctrl` AS `id_ctrl`,`t1`.`ref_change` AS `ref_change`,`t1`.`montant_change` AS `montant_change`,`t1`.`date_change` AS `date_change`,`t1`.`taux_change` AS `taux_change`,`t1`.`id_devise1` AS `id_devise1`,`t1`.`id_devise2` AS `id_devise2`,`t1`.`numop` AS `numop`,`t1`.`date_valeur` AS `date_valeur`,`t1`.`date_operation` AS `date_operation`,`t1`.`bool_valide` AS `bool_valide`,`t1`.`bool_confirme` AS `bool_confirme`,`t1`.`bool_expire` AS `bool_expire`,`t1`.`num_op_change_dem` AS `num_op_change_dem`,`t1`.`commiss_ou_taux` AS `commiss_ou_taux`,`t1`.`mtt_commiss` AS `mtt_commiss`,`t1`.`date_commiss` AS `date_commiss`,`t1`.`type_taux` AS `type_taux`,`t1`.`ecran_taux` AS `ecran_taux`,`t1`.`commentaire` AS `commentaire`,`t1`.`montant_soumis` AS `montant_soumis`,`t1`.`taux_soumis` AS `taux_soumis`,(case when (`t1`.`commiss_ou_taux` = 0) then `t1`.`mtt_commiss` when (`t1`.`type_taux` = 0) then `t1`.`taux_change` else `t1`.`ecran_taux` end) AS `taux_transact`,`t7`.`shortname` AS `nom_court_entite`,`t7`.`name` AS `nom_entite`,`t2`.`code_devise` AS `lib_devise1`,`t3`.`code_devise` AS `lib_devise2`,`t4`.`login` AS `loginop`,`t4`.`nomop` AS `nomop`,`t4`.`prenomop` AS `prenomop`,`t5`.`id_entite_source` AS `id_entite_source`,`t5`.`id_entite_dest` AS `id_entite_dest`,`t5`.`top_active` AS `top_active`,`t6`.`numop` AS `numrep`,`t6`.`login` AS `loginrep` from ((((((`op_change` `t1` left join `devise` `t2` on((`t1`.`id_devise1` = `t2`.`id_devise`))) left join `devise` `t3` on((`t1`.`id_devise2` = `t3`.`id_devise`))) left join `operateur` `t4` on((`t1`.`numop` = `t4`.`numop`))) left join `oper_b_change` `t5` on((`t5`.`id_entite_source` = `t4`.`id_entite`))) left join `entite` `t7` on((`t5`.`id_entite_source` = `t7`.`id_entite`))) left join `operateur` `t6` on((`t5`.`id_entite_dest` = `t6`.`id_entite`))) where ((`t5`.`id_entite_dest` is not null) and (`t7`.`id_entite` is not null) and (`t6`.`login` is not null) and (`t5`.`top_active` = 1) and (`t4`.`active_op` = 1) and (`t1`.`num_op_change_dem` = 0) and (`t1`.`numop` <> `t6`.`numop`)))') ;
+		
+		define('VW_OP_INTER_ACCESSIBLE', '(select `t1`.`num_op_inter` AS `num_op_inter`,`t1`.`type_change` AS `type_change`,`t1`.`id_ctrl` AS `id_ctrl`,`t1`.`ref_change` AS `ref_change`,`t1`.`montant_change` AS `montant_change`,`t1`.`date_change` AS `date_change`,`t1`.`taux_change` AS `taux_change`,`t1`.`id_devise1` AS `id_devise1`,`t1`.`id_devise2` AS `id_devise2`,`t1`.`numop` AS `numop`,`t1`.`date_valeur` AS `date_valeur`,`t1`.`date_operation` AS `date_operation`,`t1`.`bool_valide` AS `bool_valide`,`t1`.`bool_confirme` AS `bool_confirme`,`t1`.`bool_expire` AS `bool_expire`,`t1`.`num_op_inter_dem` AS `num_op_inter_dem`,`t1`.`commiss_ou_taux` AS `commiss_ou_taux`,`t1`.`mtt_commiss` AS `mtt_commiss`,`t1`.`date_commiss` AS `date_commiss`,`t1`.`type_taux` AS `type_taux`,`t1`.`ecran_taux` AS `ecran_taux`,`t1`.`commentaire` AS `commentaire`,`t1`.`montant_soumis` AS `montant_soumis`,`t1`.`taux_soumis` AS `taux_soumis`,(case when (`t1`.`commiss_ou_taux` = 0) then `t1`.`mtt_commiss` when (`t1`.`type_taux` = 0) then `t1`.`taux_change` else `t1`.`ecran_taux` end) AS `taux_transact`,`t7`.`shortname` AS `nom_court_entite`,`t7`.`name` AS `nom_entite`,`t2`.`code_devise` AS `lib_devise1`,`t3`.`code_devise` AS `lib_devise2`,`t4`.`login` AS `loginop`,`t4`.`nomop` AS `nomop`,`t4`.`prenomop` AS `prenomop`,`t5`.`id_entite_source` AS `id_entite_source`,`t5`.`id_entite_dest` AS `id_entite_dest`,`t5`.`top_active` AS `top_active`,`t6`.`numop` AS `numrep`,`t6`.`login` AS `loginrep` from ((((((`op_inter` `t1` left join `devise` `t2` on((`t1`.`id_devise1` = `t2`.`id_devise`))) left join `devise` `t3` on((`t1`.`id_devise2` = `t3`.`id_devise`))) left join `operateur` `t4` on((`t1`.`numop` = `t4`.`numop`))) left join `oper_b_change` `t5` on((`t5`.`id_entite_source` = `t4`.`id_entite`))) left join `entite` `t7` on((`t5`.`id_entite_source` = `t7`.`id_entite`))) left join `operateur` `t6` on((`t5`.`id_entite_dest` = `t6`.`id_entite`))) where ((`t5`.`id_entite_dest` is not null) and (`t7`.`id_entite` is not null) and (`t6`.`login` is not null) and (`t5`.`top_active` = 1) and (`t4`.`active_op` = 1) and (`t1`.`num_op_inter_dem` = 0) and (`t1`.`numop` <> `t6`.`numop`)))') ;
+		
+		class ActAlerteNouvPublBaseTradPlatf extends PvActionBaseZoneWebSimple
+		{
+			public $Resultat ;
+			protected function CalculeResultat()
+			{
+			}
+			protected function AfficheResultat()
+			{
+				// Header("Content-type:text/json; charset=utf-8") ;
+				echo svc_json_encode($this->Resultat) ;
+				exit ;
+			}
+			public function Execute()
+			{
+				$this->CalculeResultat() ;
+				$this->AfficheResultat() ;
+			}
+			protected function ObtientBD()
+			{
+				return $this->ZoneParent->ApplicationParent->BDPrincipale ;
+			}
+		}
+		class ActAlerteNouvAchatDeviseTradPlatf extends ActAlerteNouvPublBaseTradPlatf
+		{
+			public $TypeChange = 1 ;
+			protected function CalculeResultat()
+			{
+				$bd = $this->ObtientBD() ;
+				$this->Resultat = -1 ;
+				$lgn = $bd->FetchSqlRow("select count(0) total from vw_op_change_accessible t1
+left join accuse_op_change t2
+on t1.num_op_change = t2.num_op_change
+where t2.num_op_change is null and numrep=:numOp and t1.type_change=".$this->TypeChange, array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
+				if(is_array($lgn))
+				{
+					$this->Resultat = $lgn["total"] ;
+				}
+			}
+		}
+		class ActAlerteNouvVenteDeviseTradPlatf extends ActAlerteNouvAchatDeviseTradPlatf
+		{
+			public $TypeChange = 2 ;
+		}
+		
+		class ActAlerteTransactsTradPlatf extends ActAlerteNouvPublBaseTradPlatf
+		{
+			public $ReqsAlerte = array() ;
+			public function ObtientResulat()
+			{
+				$this->CalculeReqs() ;
+				$bd = $this->ObtientBD() ;
+				$resultat = new stdClass ;
+				$this->CalculeReqs() ;
+				foreach($this->ReqsAlerte as $nomReq => $reqAlerte)
+				{
+					$resultat->$nomReq = $bd->FetchSqlValue($reqAlerte->Contenu, $reqAlerte->Params, "total") ;
+				}
+				return $resultat ;
+			}
+			protected function CalculeReqs()
+			{
+				$this->ZoneParent->ArchiveAncTransacts() ;
+				$this->ReqsAlerte["negoc_op_change"] = new ReqAlerteTradPlatf("select t1.total + t2.total total from 
+(
+	select 1 cle, count(0) total from (
+		select t1.*, t2.numop numop_dem
+		from op_change t1
+		inner join op_change t2 on t1.num_op_change_dem = t2.num_op_change
+		where t1.num_op_change_dem <> 0 and t1.bool_confirme=0
+	) t1
+	left join (select * from accuse_op_change) t2
+	on t1.num_op_change = t2.num_op_change and t1.numop = t2.numop
+	where t2.num_op_change is null and t1.numop=:numOp
+) t1
+inner join
+(
+	select 1 cle, count(0) total from (
+		select t1.*, t2.numop numop_dem
+		from op_change t1
+		inner join op_change t2 on t1.num_op_change_dem = t2.num_op_change
+		where t1.num_op_change_dem <> 0 and t1.bool_confirme=0
+	) t1
+	left join (select * from accuse_op_change) t2
+	on t1.num_op_change = t2.num_op_change and t1.numop_dem = t2.numop
+	where t2.num_op_change is null and t1.numop_dem=:numOp
+) t2
+on t1.cle = t2.cle", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
+				$this->ReqsAlerte["negoc_op_inter"] = new ReqAlerteTradPlatf("select t1.total + t2.total total from 
+(
+	select 1 cle, count(0) total from (
+		select t1.*, t2.numop numop_dem
+		from op_inter t1
+		inner join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter
+		where t1.num_op_inter_dem <> 0 and t1.bool_confirme=0
+	) t1
+	left join (select * from accuse_op_inter) t2
+	on t1.num_op_inter = t2.num_op_inter and t1.numop = t2.numop
+	where t2.num_op_inter is null and t1.numop=:numOp
+) t1
+inner join
+(
+	select 1 cle, count(0) total from (
+		select t1.*, t2.numop numop_dem
+		from op_inter t1
+		inner join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter
+		where t1.num_op_inter_dem <> 0 and t1.bool_confirme=0
+	) t1
+	left join (select * from accuse_op_inter) t2
+	on t1.num_op_inter = t2.num_op_inter and t1.numop_dem = t2.numop
+	where t2.num_op_inter is null and t1.numop_dem=:numOp
+) t2
+on t1.cle = t2.cle", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
+				$this->ReqsAlerte["achat_devise"] = new ReqAlerteTradPlatf("select count(0) total from ".VW_OP_CHANGE_ACCESSIBLE." t1
+left join accuse_op_change t2
+on t1.num_op_change = t2.num_op_change
+where t2.num_op_change is null and numrep=:numOp and t1.type_change=1", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
+				$this->ReqsAlerte["vente_devise"] = new ReqAlerteTradPlatf("select count(0) total from ".VW_OP_CHANGE_ACCESSIBLE." t1
+left join accuse_op_change t2
+on t1.num_op_change = t2.num_op_change
+where t2.num_op_change is null and numrep=:numOp and t1.type_change=2", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
+				$this->ReqsAlerte["placement"] = new ReqAlerteTradPlatf("select count(0) total from ".VW_OP_INTER_ACCESSIBLE." t1
+left join accuse_op_inter t2
+on t1.num_op_inter = t2.num_op_inter
+where t2.num_op_inter is null and numrep=:numOp and t1.type_change=1", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
+				$this->ReqsAlerte["emprunt"] = new ReqAlerteTradPlatf("select count(0) total from ".VW_OP_INTER_ACCESSIBLE." t1
+left join accuse_op_inter t2
+on t1.num_op_inter = t2.num_op_inter
+where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
+			}
+			protected function CalculeResultat()
+			{
+				$this->Resultat = $this->ObtientResulat() ;
+			}
+		}
+		class ReqAlerteTradPlatf
+		{
+			public $Contenu ;
+			public $Params = array() ;
+			public function __construct($contenu, $params=array())
+			{
+				$this->Contenu = $contenu ;
+				$this->Params = $params ;
+			}
+		}
+		
 		class ScriptListeTypesEntiteTradPlatf extends PvScriptWebSimple
 		{
 			public $TitreDocument = "Liste des types d'entit&eacute;" ;
@@ -329,9 +478,67 @@
 		
 		class ScriptAccueilStatsTradPlatf extends PvScriptWebSimple
 		{
+			public $NecessiteMembreConnecte = 1 ;
 			public $Titre = "Statistiques" ;
 		}
-		
+		class CfgAlerteTransactTradPlatf
+		{
+			public $Nom ;
+			public $FormatMsg ;
+			public $NomScript ;
+			public function __construct($nom='', $formatMsg='', $nomScript='')
+			{
+				$this->Nom = $nom ;
+				$this->FormatMsg = $formatMsg ;
+				$this->NomScript = $nomScript ;
+			}
+		}
+		class ScriptListeAlerteTransactsTradPlatf extends PvScriptWebSimple
+		{
+			public $NecessiteMembreConnecte = 1 ;
+			protected $CfgsAlerte = array() ;
+			public function ChargeConfig()
+			{
+				$this->ChargeCfgsAlerte() ;
+			}
+			protected function ChargeCfgsAlerte()
+			{
+				$this->CfgsAlerte["achat_devise"] = new CfgAlerteTransactTradPlatf("achat_devise", "Vous avez \${0} achat de devises non lus", "consultAchatsDevise") ;
+				$this->CfgsAlerte["vente_devise"] = new CfgAlerteTransactTradPlatf("vente_devise", "Vous avez \${0} vente de devises non lues", "consultVentesDevise") ;
+				$this->CfgsAlerte["placement"] = new CfgAlerteTransactTradPlatf("placement", "Vous avez \${0} placements non lus", "consultPlacements") ;
+				$this->CfgsAlerte["emprunt"] = new CfgAlerteTransactTradPlatf("emprunt", "Vous avez \${0} emprunts non lus", "consultEmprunts") ;
+				$this->CfgsAlerte["negoc_op_change"] = new CfgAlerteTransactTradPlatf("emprunt", "Vous avez \${0} n&eacute;gociations de change non lues", "soumissOpChange") ;
+				$this->CfgsAlerte["negoc_op_change"] = new CfgAlerteTransactTradPlatf("negoc_op_inter", "Vous avez \${0} n&eacute;gociations internationales non lues", "soumissOpInter") ;
+			}
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$alerteTransacts = $this->ZoneParent->ActAlerteTransacts->ObtientResulat() ;
+				$ctn .= '<div class="ui-widget">'.PHP_EOL ;
+				$alerteTrouvee = 0 ;
+				// $ctn .= '<div class="ui-widget ui-widget-header">Alertes</div>'.PHP_EOL ;
+				foreach($alerteTransacts as $i => $total)
+				{
+					$alerte = $this->CfgsAlerte[$i] ;
+					if($total > 0)
+					{
+						$ctn .= '<div class="ui-widget ui-widget-content ui-state-active">'.PHP_EOL ;
+						$ctn .= '<a href="javascript:parent.'.htmlentities($this->ZoneParent->ContenuJsOuvreOngletScript($alerte->NomScript)).';">'._parse_pattern($alerte->FormatMsg, array($total)).'</a>'.PHP_EOL ;
+						$ctn .= '</div>'.PHP_EOL ;
+						$alerteTrouvee = 1 ;
+					}
+				}
+				if(! $alerteTrouvee)
+				{
+					$ctn .= '<div class="ui-widget ui-widget-content">-- Aucune alerte trouv&eacute;e --</div>'.PHP_EOL ;
+				}
+				$ctn .= '</div>' ;
+				// $ctn .= $sess->GetUrl($this->ZoneParent->ActAlerteTransacts->ObtientUrl()) ;
+				/*
+				*/
+				return $ctn ;
+			}
+		}
 	}
 	
 ?>
