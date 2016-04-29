@@ -73,6 +73,7 @@
 			public $MessageIntroduction = "Bienvenue sur Trading Platform, la plateforme d'echange de tresorerie. Pour acc&eacute;der à votre espace, veuillez vous connecter" ;
 			public $ContenuPiedDocument = "Trading Platform 2014 &copy; tous droits r&eacute;serv&eacute;s." ;
 			public $NomClasseMembership = "MembershipTradPlatf" ;
+			public $AutoriserInscription = 1 ;
 			public $NomClasseRemplisseurConfigMembership = "RemplisseurConfigMembershipTradPlatf" ;
 			public $LibelleMenuMembership = "Administration" ;
 			public $LibelleMenuChangeMotPasse = "Changer mot de passe" ;
@@ -84,6 +85,7 @@
 			public $LibelleMenuAjoutProfil = "Ajouter un profil" ;
 			public $InscrireMenuDeconnexion = 0 ;
 			public $NomClasseScriptDeconnexion = "ScriptDeconnexionTradPlatf" ;
+			public $NomClasseScriptInscription = "ScriptInscriptionTradPlatf" ;
 			public $InscrireMenuChangeMotPasse = 0 ;
 			public $InscrireMenuAjoutMembre = 0 ;
 			public $ContenuRenduEntete = '<table style="background:white" align="center"><tr><td><img src="images/logo.png" height="60" /></td></tr></table>' ;
@@ -107,6 +109,10 @@
 			public $ScriptAjoutTypeEntite ;
 			public $ScriptModifTypeEntite ;
 			public $ScriptSupprTypeEntite ;
+			public $ScriptListeMeresEntite ;
+			public $ScriptAjoutMereEntite ;
+			public $ScriptModifMereEntite ;
+			public $ScriptSupprMereEntite ;
 			public $ScriptListeBanques ;
 			public $ScriptListeEtabsFinanc ;
 			public $ScriptListeCiesAssurance ;
@@ -190,6 +196,7 @@
 			public $MenuListeZonesPays ;
 			public $MenuActivationMembre ;
 			public $MenuListePlacements ;
+			public $MenuListeMeresEntite ;
 			public $MenuUMOATitre ;
 			public $MenuEmissBonTresor ;
 			public $MenuTresorsPubl ;
@@ -290,6 +297,8 @@
 			public $ScriptModifReventeBonTresor ;
 			public $ScriptSupprReventeBonTresor ;
 			public $RemplisseurConfig ;
+			protected $LargeurFenInscription = 750 ;
+			protected $HauteurFenInscription = 525 ;
 			public $DetectIconeCorresp = 1 ;
 			public $FournExprs ;
 			public $PrivilegesMenuMembership = array("admin_operator", "admin_members") ;
@@ -300,12 +309,24 @@
 				parent::InitConfig() ;
 				$this->FournExprs = new FournExprsPublTradPlatf() ;
 			}
+			public function InclutLibrairiesExternes()
+			{
+				parent::InclutLibrairiesExternes() ;
+				if($this->PossedeMembreConnecte())
+				{
+					$this->InscritLienJS("js/jquery.filter_input.js") ;
+					$this->InscritContenuJS("jQuery(function() {
+	jQuery('.nombre').filter_input({regex:'[0-9\.]'}) ;
+}) ;") ;
+				}
+			}
 			protected function ChargeBarreMenuSuperfish()
 			{
 				if(! $this->PossedeMembreConnecte())
 				{
 					return ;
 				}
+				$this->MenuBanqEtabFinanc = $this->BarreMenuSuperfish->InclureRenduIcone = 0 ;
 				$this->MenuBanqEtabFinanc = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("etabFinanc") ;
 				$this->MenuBanqEtabFinanc->Privileges = array("admin_members") ;
 				$this->MenuBanqEtabFinanc->CheminIcone = "images/icones/listeEtabFinanc.png" ;
@@ -378,6 +399,7 @@
 				$this->MenuListeTransacts = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige("listeTransacts") ;
 				$this->MenuListeTransacts->Titre = "Op&eacute;rations bancaires" ;
 				$this->MenuListeTransacts->Privileges[] = "post_op_change" ;
+				$this->MenuListeTransacts->Privileges[] = "post_doc_tresorier" ;
 				$this->MenuOpChangeDevise = $this->MenuListeTransacts->InscritSousMenuFige("transactsOpChangeDevise") ;
 				$this->MenuOpChangeDevise->Titre = "Op&eacute;ration change devise" ;
 				$this->MenuListeAchatsDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("listeAchatsDevise") ;
@@ -466,6 +488,8 @@
 				$this->MenuListeZonesPays->Titre = "Zones" ;
 				$this->MenuListeTypesEntite = $this->MenuReference->InscritSousMenuScript("listeTypesEntite") ;
 				$this->MenuListeTypesEntite->Titre = "Types d'entit&eacute;" ;
+				$this->MenuListeMeresEntite = $this->MenuReference->InscritSousMenuScript("listeMeresEntite") ;
+				$this->MenuListeMeresEntite->Titre = "M&egrave;res d'entit&eacute;" ;
 			}
 			protected function ChargeAutresMenus()
 			{
@@ -549,6 +573,14 @@
 				$this->InscritScript("modifTypeEntite", $this->ScriptModifTypeEntite) ;
 				$this->ScriptSupprTypeEntite = new ScriptSupprTypeEntiteTradPlatf() ;
 				$this->InscritScript("supprTypeEntite", $this->ScriptSupprTypeEntite) ;
+				$this->ScriptListeMeresEntite = new ScriptListeMeresEntiteTradPlatf() ;
+				$this->InscritScript("listeMeresEntite", $this->ScriptListeMeresEntite) ;
+				$this->ScriptAjoutMereEntite = new ScriptAjoutMereEntiteTradPlatf() ;
+				$this->InscritScript("ajoutMereEntite", $this->ScriptAjoutMereEntite) ;
+				$this->ScriptModifMereEntite = new ScriptModifMereEntiteTradPlatf() ;
+				$this->InscritScript("modifMereEntite", $this->ScriptModifMereEntite) ;
+				$this->ScriptSupprMereEntite = new ScriptSupprMereEntiteTradPlatf() ;
+				$this->InscritScript("supprMereEntite", $this->ScriptSupprMereEntite) ;
 				$this->ScriptListePays = new ScriptListePaysTradPlatf() ;
 				$this->InscritScript("listePays", $this->ScriptListePays) ;
 				$this->ScriptAjoutPays = new ScriptAjoutPaysTradPlatf() ;
@@ -623,6 +655,8 @@
 				$this->InscritScript("postulsVenteDevise", $this->ScriptPostulsVenteDevise) ;
 				$this->ScriptValPostulVenteDevise = new ScriptValPostulVenteDeviseTradPlatf() ;
 				$this->InscritScript("valPostulVenteDevise", $this->ScriptValPostulVenteDevise) ;
+				$this->ScriptRefusPostulVenteDevise = new ScriptRefusPostulVenteDeviseTradPlatf() ;
+				$this->InscritScript("refusPostulVenteDevise", $this->ScriptRefusPostulVenteDevise) ;
 				$this->ScriptListePlacements = new ScriptListePlacementsTradPlatf() ;
 				$this->InscritScript("listePlacements", $this->ScriptListePlacements) ;
 				$this->ScriptConsultPlacements = new ScriptConsultPlacementsTradPlatf() ;
@@ -685,6 +719,8 @@
 				$this->InscritScript("postulsEmprunt", $this->ScriptPostulsEmprunt) ;
 				$this->ScriptValPostulEmprunt = new ScriptValPostulEmpruntTradPlatf() ;
 				$this->InscritScript("valPostulEmprunt", $this->ScriptValPostulEmprunt) ;
+				$this->ScriptRefusPostulEmprunt = new ScriptRefusPostulEmpruntTradPlatf() ;
+				$this->InscritScript("refusPostulEmprunt", $this->ScriptRefusPostulEmprunt) ;
 				$this->ScriptSoumissPlacement = new ScriptSoumissPlacementTradPlatf() ;
 				$this->InscritScript("soumissPlacement", $this->ScriptSoumissPlacement) ;
 				$this->ScriptSoumissEmprunt = new ScriptSoumissEmpruntTradPlatf() ;
@@ -872,6 +908,7 @@
 	<tr>
 	<td align="center">' ;
 					$ctn .= '<p><a href="javascript:ouvreFenetreConnexion() ;"><img src="images/btn-acces-platf.png" border="0" width="250" /></a></p>
+					<p><a href="javascript:ouvreFenetreInscription() ;"><img src="images/btn-inscription.png" border="0" width="140" alt="Inscription" /></a></p>
 	</td>
 	</tr>
 	</table>'.PHP_EOL ;
@@ -885,6 +922,7 @@
 		</form>
 	</div>'.PHP_EOL ;
 				}
+				$ctn .= $this->RenduFenetreInscription() ;
 				$ctn .= '<div id="pied">'.$this->ContenuPiedDocument.'</div>'.PHP_EOL ;
 				$ctn .= '</body>' ;
 				return $ctn ;
@@ -907,9 +945,12 @@
 			}
 			public function ArchiveAncTransacts()
 			{
+				if($this->PossedeActionAppelee() || $this->ValeurParamScriptAppele != 'bienvenue')
+					return ;
 				$bd = $this->ApplicationParent->BDPrincipale ;
 				$sql = array() ;
 				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
+				$condArch2 = '('.$bd->SqlDatePart('date_creation').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
 				$sqls[] = 'insert into arch_op_change select op_change.*, '.$bd->SqlNow().' from op_change where '.$condArch ;
 				$sqls[] = 'delete from op_change where '.$condArch ;
 				$sqls[] = 'ALTER TABLE op_change auto_increment = 1' ;
@@ -917,12 +958,45 @@
 				$sqls[] = 'insert into arch_op_inter select op_inter.*, '.$bd->SqlNow().' from op_inter where '.$condArch ;
 				$sqls[] = 'delete from op_inter where '.$condArch ;
 				$sqls[] = 'ALTER TABLE op_inter auto_increment = 1' ;
-				$sqls[] = 'delete from accuse_op_change where '.$condArch ;
+				$sqls[] = 'delete from accuse_op_change where '.$condArch2 ;
 				$sqls[] = 'ALTER TABLE accuse_op_change auto_increment = 1' ;
+				$sqls[] = 'delete from accuse_op_inter where '.$condArch2 ;
+				$sqls[] = 'ALTER TABLE accuse_op_inter auto_increment = 1' ;
 				foreach($sqls as $i => $sql)
 				{
 					$bd->RunSql($sql) ;
 				}
+				$this->VideDossiersChat() ;
+			}
+			protected function VideDossiersChat()
+			{
+				$nomReps = array("op_change", "op_inter", "emiss_bon_tresor", "emiss_obligation", "cotation_depot_terme", "cotation_transf_dev") ;
+				$chemRacine = dirname(__FILE__)."/../donnees/chat" ;
+				foreach($nomReps as $i => $nomRep)
+				{
+					$this->VideDossierChat($chemRacine."/".$nomRep) ;
+				}
+			}
+			protected function VideDossierChat($chemRep)
+			{
+				if(! is_dir($chemRep))
+					return ;
+				$dh = opendir($chemRep) ;
+				$i = 0 ;
+				while(($nomFic = readdir($dh)) !== false)
+				{
+					$chemFic = $chemRep."/".$nomFic ;
+					if($nomFic != '.' && $nomFic != '..')
+					{
+						if(filemtime($chemFic) > date("U", strtotime(date("Y-m-d 00:00:00"))))
+						{
+							continue ;
+						}
+						$i++ ;
+						unlink($chemFic) ;
+					}
+				}
+				closedir($dh) ;
 			}
 			public function ActualiseAccusesOpChange($idEnCours, & $cmd)
 			{
@@ -965,9 +1039,12 @@
 			public $FltFaxEntite ;
 			public $FltRegistrCommEntite ;
 			public $FltTypeEntite ;
+			public $FltMereEntite ;
 			public $FltPaysEntite ;
 			public $FltIdTypeEntiteEnCours ;
 			public $FltLibTypeEntite ;
+			public $FltIdMereEntiteEnCours ;
+			public $FltLibMereEntite ;
 			public $FltIdDeviseEnCours ;
 			public $FltCodeDevise ;
 			public $FltLibDevise ;
@@ -979,6 +1056,27 @@
 			public $CritereTypeDeviseNonVide ;
 			public $CritereDeviseNonVide ;
 			public $CritereDeviseUnique ;
+			protected $DocsEditMarche = array() ;
+			public $IdPaysEmetteurSelect ;
+			protected function ChargeDocsEditMarche()
+			{
+				$this->DocsEditMarche = array() ;
+				$this->DocsEditMarche[1] = new DessinEditMarcheBeninTradPlatf() ;
+				$this->DocsEditMarche[2] = new DessinEditMarcheBeninTradPlatf() ;
+			}
+			protected function DetecteDocEditMarcheActif(& $script)
+			{
+				if($script->PourAjout == 1)
+				{
+					$this->IdPaysEmetteurSelect = _GET_def('idPays', 1) ;
+				}
+			}
+			public function AppliqueScriptBonTresor(& $script)
+			{
+				$this->ChargeDocsEditMarche() ;
+				$ctn = $this->DocsEditMarche[1]->RenduScriptBonTresor($script) ;
+				return $ctn ;
+			}
 			protected function CorrigeIdTypeEntite($idTypeEntite, & $form)
 			{
 				$idTypeEntite = intval($idTypeEntite) ;
@@ -988,6 +1086,18 @@
 				if(count($lig))
 				{
 					$id = $lig['idtype_entite'] ;
+				}
+				return $id ;
+			}
+			protected function CorrigeIdMereEntite($id, & $form)
+			{
+				$id = intval($id) ;
+				$bd = & $form->ApplicationParent->BDPrincipale ;
+				$lig = $bd->FetchSqlRow('select * from mere_entite where id='.$bd->ParamPrefix.'id', array('id' => $id)) ;
+				$id = 1 ;
+				if(count($lig))
+				{
+					$id = $lig['id'] ;
 				}
 				return $id ;
 			}
@@ -1053,6 +1163,19 @@
 				$this->FltLibTypeEntite->Libelle = "Libelle" ;
 				$this->FltLibTypeEntite->Obligatoire = 1 ;
 				$this->CritereTypeDeviseNonVide = $form->CommandeExecuter->InsereNouvCritere(new PvCritereNonVide(), array('lib_type_entite')) ;
+			}
+			public function AppliqueFormMereEntite(& $form)
+			{
+				$form->RemplaceCommandeAnnuler("PvCmdFermeFenetreActiveAdminDirecte") ;
+				$form->FournisseurDonnees = new PvFournisseurDonneesSql() ;
+				$form->FournisseurDonnees->BaseDonnees = $form->ApplicationParent->BDPrincipale ;
+				$form->FournisseurDonnees->RequeteSelection = "mere_entite" ;
+				$form->FournisseurDonnees->TableEdition = "mere_entite" ;
+				$this->FltIdTypeEntiteEnCours = $form->InsereFltLgSelectHttpGet("idEnCours", 'id = <self>') ;
+				$this->FltLibTypeEntite = $form->InsereFltEditHttpPost("libelle", 'libelle') ;
+				$this->FltLibTypeEntite->Libelle = "Libelle" ;
+				$this->FltLibTypeEntite->Obligatoire = 1 ;
+				$this->CritereTypeDeviseNonVide = $form->CommandeExecuter->InsereNouvCritere(new PvCritereNonVide(), array('libelle')) ;
 			}
 			public function AppliqueFormDevise(& $form)
 			{
@@ -1178,6 +1301,7 @@
 				}
 				else
 				{
+					// echo "kkkk" ;
 					$this->FltTypeEntite = $form->ScriptParent->CreeFiltreHttpGet("idTypeEntite", $form->ScriptParent->IdTypeEntiteParDefaut) ;
 					$this->FltTypeEntite->LectureSeule = 1 ;
 					$this->FltTypeEntite->Lie() ;
@@ -1189,6 +1313,32 @@
 				$this->FltTypeEntite->NomParametreDonnees = "idtype_entite" ;
 				$this->FltTypeEntite->NomColonneLiee = "idtype_entite" ;
 				$form->FiltresEdition[] = & $this->FltTypeEntite ;
+				if($form->ScriptParent->InclureChoixTypeEntite || $form->ZoneParent->PossedePrivilege('admin_members'))
+				{
+					$this->FltMereEntite = $form->ScriptParent->CreeFiltreHttpPost("id") ;
+					$this->FltMereEntite->Libelle = "M&egrave;re entit&eacute;" ;
+					$this->FltMereEntite->ValeurParDefaut = $form->ScriptParent->IdMereEntiteParDefaut ;
+					$this->FltMereEntite->DeclareComposant("PvZoneBoiteSelectHtml") ;
+					$comp = & $this->FltMereEntite->Composant ;
+					$comp->FournisseurDonnees = new PvFournisseurDonneesSql() ;
+					$comp->FournisseurDonnees->BaseDonnees = & $form->ApplicationParent->BDPrincipale ;
+					$comp->FournisseurDonnees->RequeteSelection = "mere_entite" ;
+					$comp->NomColonneValeur = "id" ;
+					$comp->NomColonneLibelle = "libelle" ;
+				}
+				else
+				{
+					$this->FltMereEntite = $form->ScriptParent->CreeFiltreHttpGet("idMereEntite", $form->ScriptParent->IdMereEntiteParDefaut) ;
+					$this->FltMereEntite->LectureSeule = 1 ;
+					$this->FltMereEntite->Lie() ;
+					if(! $form->ScriptParent->PourLigneEntite)
+					{
+						$this->FltMereEntite->ValeurParametre = $this->CorrigeIdMereEntite($this->FltMereEntite->ValeurParametre, $form) ;
+					}
+				}
+				$this->FltMereEntite->NomParametreDonnees = "idmere_entite" ;
+				$this->FltMereEntite->NomColonneLiee = "idmere_entite" ;
+				$form->FiltresEdition[] = & $this->FltMereEntite ;
 				$this->FltPaysEntite = $form->ScriptParent->CreeFiltreHttpPost("idpays") ;
 				$this->FltPaysEntite->Libelle = "Pays" ;
 				$this->FltPaysEntite->NomParametreDonnees = "idpays" ;
@@ -1236,13 +1386,15 @@
 				$this->FltNomEntite->NomParametreDonnees = "name" ;
 				$this->FltNomEntite->NomColonneLiee = "name" ;
 				$form->FiltresEdition[] = & $this->FltNomEntite ;
-				$this->FltTypeEntite = $form->ScriptParent->CreeFiltreHttpPost("type_entite") ;
+				$this->FltTypeEntite = $form->ScriptParent->CreeFiltreHttpPost("nom_type_entite") ;
 				$this->FltTypeEntite->Libelle = "Type entit&eacute;" ;
 				$this->FltTypeEntite->NomParametreDonnees = "nom_type_entite" ;
+				$this->FltTypeEntite->NomColonneLiee = "nom_type_entite" ;
 				$form->FiltresEdition[] = & $this->FltTypeEntite ;
-				$this->FltPaysEntite = $form->ScriptParent->CreeFiltreHttpPost("idpays") ;
+				$this->FltPaysEntite = $form->ScriptParent->CreeFiltreHttpPost("nom_pays") ;
 				$this->FltPaysEntite->Libelle = "Pays" ;
 				$this->FltPaysEntite->NomParametreDonnees = "nom_pays" ;
+				$this->FltPaysEntite->NomColonneLiee = "nom_pays" ;
 				$form->FiltresEdition[] = & $this->FltPaysEntite ;
 				$form->InscrireCommandeExecuter = 0 ;
 				$form->InscrireCommandeAnnuler = 0 ;
@@ -1392,6 +1544,7 @@
 			public $CompBondPricing ;
 			public function DetermineEnvironnement()
 			{
+				$this->ZoneParent->ArchiveAncTransacts() ;
 				// $this->TablNotations1Mdgm->IdNotations = array(1390634, 3895009, 1619898, 1171295, 991341, 1292138, 415007, 1361925) ;
 				parent::DetermineEnvironnement() ;
 				$this->TablNotations1Mdgm = new TablNotationsMdgm() ;
@@ -1399,9 +1552,10 @@
 				$this->TablNotations1Mdgm->IdNotations = array(1390634, 1619898, 1171295, 991341, 1292138, 415007, 1361925) ;
 				$this->BlocNotations1Mdgm = new PvBlocAjax() ;
 				$this->BlocNotations1Mdgm->AdopteScript("brr", $this) ;
-				$this->BlocNotations1Mdgm->DelaiRafraich = 10 ;
+				$this->BlocNotations1Mdgm->DelaiRafraich = 300 ;
 				$this->BlocNotations1Mdgm->DelaiExpiration = 120 ;
 				$this->BlocNotations1Mdgm->AutoRafraich = true ;
+				$this->BlocNotations1Mdgm->Visible = 0 ;
 				$this->BlocNotations1Mdgm->Support = & $this->TablNotations1Mdgm ;
 				// 2
 				$this->TablNotations2Mdgm = new TablNotationsMdgm() ;
@@ -1410,9 +1564,10 @@
 				$this->TablNotations2Mdgm->TitreNotation = "TAUX D'INTERET" ;
 				$this->BlocNotations2Mdgm = new PvBlocAjax() ;
 				$this->BlocNotations2Mdgm->AdopteScript("brr2", $this) ;
-				$this->BlocNotations2Mdgm->DelaiRafraich = 10 ;
+				$this->BlocNotations2Mdgm->DelaiRafraich = 300 ;
 				$this->BlocNotations2Mdgm->DelaiExpiration = 120 ;
 				$this->BlocNotations2Mdgm->AutoRafraich = true ;
+				$this->BlocNotations2Mdgm->Visible = 0 ;
 				$this->BlocNotations2Mdgm->Support = & $this->TablNotations2Mdgm ;
 				// 3
 				$this->TablNotations3Mdgm = new TablNotationsMdgm() ;
@@ -1475,6 +1630,31 @@
 				return $ctn ;
 			}
 		}
+		class ScriptInscriptionTradPlatf extends PvScriptInscriptionWeb
+		{
+			public $IdProfilsAcceptes = array(2, 3, 4, 5, 6) ;
+			public $IdProfilParDefaut = 2 ;
+			public $InclureMsgConnexion = 0 ;
+			public function ChargeConfigComposantFormulaireDonnees()
+			{
+				parent::ChargeConfigComposantFormulaireDonnees() ;
+				$this->ComposantFormulaireDonnees->RemplaceCommandeAnnuler("PvCmdAppelFonctJS") ;
+				$this->ComposantFormulaireDonnees->CommandeAnnuler->FenetreCible = "window.top" ;
+				$this->ComposantFormulaireDonnees->CommandeAnnuler->NomFonct = "fermeFenetreInscription" ;
+			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = '' ;
+				$ctn .= '<table width="100%" cellspacing="0" cellpadding="0">
+<tr>
+<td width="50%" align="left"><img src="images/logo.png" width="200" /></td>
+<td width="*" align="right"><img src="images/logo-3.png" /></td>
+</tr>
+</table>'.PHP_EOL ;
+				$ctn .= parent::RenduDispositifBrut() ;
+				return $ctn ;
+			}
+		}
 		
 		class CompBarreInfosMembreTradPlatf extends PvComposantIUBase
 		{
@@ -1485,7 +1665,7 @@
 			public $LibelleLienChMP = "Changer mot de passe" ;
 			public $CheminIconeLienDecnx = "images/miniatures/deconnexion.png" ;
 			public $LibelleLienDecnx = "Deconnexion" ;
-			public $DelaiRafraichAlertes = 30 ;
+			public $DelaiRafraichAlertes = 300 ;
 			public $LienNouvAchatDevise ;
 			public function ChargeConfig()
 			{
@@ -1677,6 +1857,7 @@
 			protected function RenduDispositifBrut()
 			{
 				$ctn = '' ;
+				return ;
 				$this->InitClient() ;
 				if(! $this->Client->Connecte())
 				{

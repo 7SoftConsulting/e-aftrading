@@ -401,7 +401,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->CompDateEcheance = $this->FltDateEcheance->DeclareComposant("PvCalendarDateInput") ;
 				$this->FltCodeISIN = $this->FormPrinc->InsereFltEditHttpPost('code_isin', 'code_isin') ;
 				$this->FltCodeISIN->Libelle = "Code ISIN" ;
-				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) + 1 duree_emission from emission_obligation t1)" ;
+				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) duree_emission from emission_obligation t1)" ;
 				$this->FournDonneesPrinc->TableEdition = "emission_obligation" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
 				if($this->FormPrinc->Editable == 1)

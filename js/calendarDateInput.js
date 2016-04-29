@@ -22,9 +22,9 @@ var DayBGColor = 'lightgrey';
 // Global variables
 var ZCounter = 100;
 var Today = new Date();
-var WeekDays = new Array('S','M','T','W','T','F','S');
+var WeekDays = new Array('D','L','M','M','J','V','S');
 var MonthDays = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
-var MonthNames = new Array('January','February','March','April','May','June','July','August','September','October','November','December');
+var MonthNames = new Array('Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre');
 
 // Write out the stylesheet definition for the calendar
 with (document) {

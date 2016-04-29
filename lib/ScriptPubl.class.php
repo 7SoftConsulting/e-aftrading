@@ -50,7 +50,7 @@
 				$this->MdlTransact = $this->ApplicationParent->ObtientMdlTransact($this->IdMdlTransact) ;
 				$this->BDEntites = $this->ApplicationParent->BDPrincipale ;
 				$this->TablEntites = new TableauDonneesBaseTradPlatf() ;
-				$this->TablEntites->InclureCmdRafraich = ($this->PourLiaison) ? 0 : 1 ;
+				$this->TablEntites->InclureCmdRafraich = 0 ;
 				$this->TablEntites->AdopteScript("tableEntites", $this) ;
 				$this->TablEntites->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$this->TablEntites->FournisseurDonnees->BaseDonnees = $this->BDEntites ;
@@ -598,7 +598,7 @@ left join pays t4 on t4.idpays = t2.idpays where top_active=1)' ;
 		}
 		class CmdChStatutMembre extends PvCommandeExecuterBase
 		{
-			public $MessageSuccesExecution = 'Le statut du membre a été modifié' ;
+			public $MessageSuccesExecution = 'Le statut du membre a ï¿½tï¿½ modifiï¿½' ;
 			protected function ExecuteInstructions()
 			{
 				$idMembre = $this->ScriptParent->FltIdMembre->Lie() ;

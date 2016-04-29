@@ -116,7 +116,7 @@
 					$this->SousMenuConsult->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
 					$this->SousMenuConsult->Titre = "Consultation" ;
 				}
-				if($this->ZoneParent->PossedePrivilege('post_doc_tresorier'))
+				if($this->ZoneParent->PossedePrivileges(array('post_doc_tresorier', 'post_op_change')))
 				{
 					// Publication
 					$this->SousMenuPublier = $this->BarreMenu->MenuRacine->InscritSousMenuScript('publierReventeObligation') ;
@@ -137,7 +137,7 @@
 		class ScriptPublierReventeObligationTradPlatf extends Script1ReventeObligationTradPlatf
 		{
 			public $Titre = "Revente &Eacute;mission d'Obligations" ;
-			public $Privileges = array('post_doc_tresorier') ;
+			public $Privileges = array('post_doc_tresorier', 'post_op_change') ;
 			public $CmdAjout ;
 			public $LienModif ;
 			public $LienSuppr ;
@@ -254,6 +254,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		{
 			public $InclureTitreFormPrinc = 1 ;
 			public $TitreFormPrinc = "Caract&eacute;ristiques Revente Emission d'Obligations Assimilable du Tr&eacute;sor" ;
+			public $Privileges = array('post_doc_tresorier', 'post_op_change') ;
 			public $FltId ;
 			public $FltEmetteur ;
 			public $CompEmetteur ;
@@ -338,7 +339,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->CompDateEcheance = $this->FltDateEcheance->DeclareComposant("PvCalendarDateInput") ;
 				$this->FltCodeISIN = $this->FormPrinc->InsereFltEditHttpPost('code_isin', 'code_isin') ;
 				$this->FltCodeISIN->Libelle = "Code ISIN" ;
-				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) + 1 duree_emission from revente_obligation t1)" ;
+				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) duree_emission from revente_obligation t1)" ;
 				$this->FournDonneesPrinc->TableEdition = "revente_obligation" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
 				if($this->FormPrinc->Editable == 1)
@@ -406,6 +407,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $FormPrincEditable = 0 ;
 			public $InscrireCmdExecFormPrinc = 0 ;
 		}
+		
 		class CritrValidReventeObligationTradPlatf extends PvCritereBase
 		{
 			public function EstRespecte()

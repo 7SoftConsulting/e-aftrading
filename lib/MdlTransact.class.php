@@ -33,10 +33,125 @@ on t5.id_entite_dest=t6.id_entite
 where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_change_dem = 0") ;
 		define("TXT_SQL_SELECT_OP_CHANGE_TRAD_PLATF", "(select t1.*, t2.lib_devise lib_devise1 from op_change t1 left join devise t2 on t1.id_devise1 = t2.id_devise)") ;
 		
+		class FmtMonnaieEtiqTradPlatf extends PvFmtMonnaieEtiquetteFiltre
+		{
+			public $MaxDecimals = 0 ;
+		}
+		
+		class ActDicussChatTransactTradPlatf extends PvActionRenduPageWeb
+		{
+			protected $ModeleTransact = "transact_base" ;
+			protected $UseTable = 0 ;
+			protected $LgnTransact = array() ;
+			public $IdTransact = "0" ;
+			protected $Discuss ;
+			public function __construct()
+			{
+				$this->InstallePreReqs() ;
+			}
+			protected function ObtientChemFicDiscuss()
+			{
+				return dirname(__FILE__)."/../donnees/chat/".$this->ModeleTransact."/".$this->IdTransact.".dat" ;
+			}
+			protected function InstallePreReqs()
+			{
+				$this->IdTransact = (isset($_GET["idEnCours"])) ? $_GET["idEnCours"] : 0 ;
+				$this->Discuss = new DiscussTransactTradPlatf() ;
+			}
+			protected function ChargeDiscuss()
+			{
+				$chemFic = $this->ObtientChemFicDiscuss() ;
+				if(file_exists($chemFic))
+				{
+					$ctnBrut = '' ;
+					$fh = fopen($chemFic, "r") ;
+					while(! feof($fh))
+					{
+						$ctnBrut .= fgets($fh) ;
+					}
+					fclose($fh) ;
+					if($ctnBrut != '')
+					{
+						try { $this->Discuss = unserialize($ctnBrut) ; }
+						catch(Exception $ex) { }
+					}
+				}
+			}
+			protected function SauveDiscuss()
+			{
+				$chemFic = $this->ObtientChemFicDiscuss() ;
+				$fh = fopen($chemFic, "w") ;
+				if($fh !== false)
+				{
+					fputs($fh, serialize($this->Discuss)) ;
+					fclose($fh) ;
+				}
+			}
+			protected function PosteMsgRecu()
+			{
+				if(! isset($_POST["msg"]) || ! isset($_POST["emetteur"]) || ! isset($_POST["dest"]))
+				{
+					return ;
+				}
+				$ctn = $_POST["msg"] ;
+				$emetteur = $_POST["emetteur"] ;
+				$dest = $_POST["dest"] ;
+				$msg = new MsgDiscussTransactTradPlatf() ;
+				$msg->Dest = $dest ;
+				$msg->Emetteur = $emetteur ;
+				$msg->Contenu = $ctn ;
+				$this->Discuss->Messages[] = $msg ;
+				$this->SauveDiscuss() ;
+			}
+			public function Execute()
+			{
+				$this->ChargeDiscuss() ;
+				$this->PosteMsgRecu() ;
+				$this->AfficheEntetes() ;
+				parent::Execute() ;
+			}
+			protected function AfficheEntetes()
+			{
+				Header("Pragma: public") ;
+				Header("Expires: 0") ;
+				Header("Cache-Control: must-revalidate, post-check=0, pre-check=0") ;
+			}
+			protected function RenduCorpsDoc()
+			{
+				echo '<html><head></head>' ;
+				echo '<style type="text/css">body { font-family:arial; font-size:12px }</style>' ;
+				echo '<script language="javascript">function defileEnBas() { window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight); }</script>' ;
+				echo '<body onload="defileEnBas()">' ;
+				if(count($this->Discuss->Messages) > 0)
+				{
+					foreach($this->Discuss->Messages as $i => $msg)
+					{
+						echo '<p><b>'.$msg->Emetteur.'</b> : '.htmlentities($msg->Contenu).'</p>' ;
+					}
+				}
+				else
+				{
+					echo "(Aucun message post&eacute;)" ;
+				}
+				echo '</body></html>' ;
+			}
+		}
+		class DiscussTransactTradPlatf
+		{
+			public $Messages = array() ;
+		}
+		class MsgDiscussTransactTradPlatf
+		{
+			public $Emetteur ;
+			public $Dest ;
+			public $Contenu ;
+			public $TimestampCrea ;
+		}
 		
 		class FormulaireDonneesBaseTradPlatf extends PvFormulaireDonneesHtml
 		{
 			public $LibelleCommandeAnnuler = "Fermer" ;
+			public $LibelleCommandeExecuter = "Valider" ;
 		}
 		class TableauDonneesBaseTradPlatf extends PvTableauDonneesAdminDirecte
 		{
@@ -128,6 +243,16 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 		
 		class ScriptTransactBaseTradPlatf extends PvScriptWebSimple
 		{
+			protected function BDPrinc()
+			{
+				return $this->ApplicationParent->BDPrincipale ;
+			}
+			protected function CreeFournDonneesPrinc()
+			{
+				$fourn = new PvFournisseurDonneesSql() ;
+				$fourn->BaseDonnees = $this->ApplicationParent->BDPrincipale ;
+				return $fourn ;
+			}
 			protected function ArchiveAncTransacts()
 			{
 				// echo $sql1 ;
@@ -144,7 +269,7 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			}
 			public function RenduDispositif()
 			{
-				$this->ArchiveAncTransacts() ;
+				// $this->ArchiveAncTransacts() ;
 				if($this->EstPeriodeTransact())
 				{
 					return parent::RenduDispositif() ;
@@ -179,6 +304,107 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 						'numop' => $this->ZoneParent->IdMembreConnecte()
 					)
 				) ;
+			}
+		}
+		class ScriptChatTransactTradPlatf extends ScriptFormTransactBaseTradPlatf
+		{
+			public $FormPrinc ;
+			protected $ActDicussChat ;
+			protected $DelaiRafraichDiscuss = 10 ;
+			protected $NomColLoginEmetteur = "login_soumis" ;
+			protected $NomParamIdEnCours = "idEnCours" ;
+			protected function DetermineActDicussChat()
+			{
+				$this->ActDicussChat = $this->InsereActionAvantRendu("chat", $this->CreeActDiscussChat()) ;
+				$this->ActDicussChat->ChargeConfig() ;
+			}
+			public function DetermineEnvironnement()
+			{
+				$this->DetermineActDicussChat() ;
+				$this->DetermineFormPrinc() ;
+			}
+			protected function DetermineFormPrinc()
+			{
+				$this->FormPrinc = $this->CreeFormPrinc() ;
+				$this->FormPrinc->AdopteScript("formPrinc", $this) ;
+				$this->FormPrinc->ChargeConfig() ;
+			}
+			protected function CreeFormPrinc()
+			{
+				return new PvFormulaireDonneesHtml() ;
+			}
+			protected function CreeActDiscussChat()
+			{
+				return new ActDicussChatTransactTradPlatf() ;
+			}
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$ctn .= '<table width="100%" cellpadding="2" cellspacing="0">'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td width="50%" valign="top">' ;
+				$ctn .= $this->FormPrinc->RenduDispositif() ;
+				$ctn .= '</td>'.PHP_EOL ;
+				$ctn .= '<td width="*" valign="top">'.PHP_EOL ;
+				$ctn .= $this->RenduChat().PHP_EOL ;
+				$ctn .= '</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '</table>' ;
+				return $ctn ;
+			}
+			protected function RenduChat()
+			{
+				$ctn = '' ;
+				$loginEmetteur = $this->ZoneParent->LoginMembreConnecte() ;
+				$loginDest = $this->FormPrinc->ElementEnCours[$this->NomColLoginEmetteur] ;
+				$urlChat = $this->ActDicussChat->ObtientUrl(array($this->NomParamIdEnCours => _GET_def($this->NomParamIdEnCours))) ;
+				$ctn .= '<table width="100%" cellspacing="0" cellpadding="0">' ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td class="ui-widget ui-widget-content ui-state-default">Chat</td>' ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>' ;
+				$ctn .= '<td>' ;
+				$ctn .= '<form action="'.$urlChat.'" method="post" target="discuss_chat">
+<input type="hidden" name="emetteur" value="'.htmlentities($loginEmetteur).'" />
+<input type="hidden" name="dest" value="'.htmlentities($loginDest).'" />
+<table width=100% cellspacing="0" cellpadding="0">
+<tr>
+<td>
+<textarea name="msg" value="" cols="45" rows="2"></textarea>
+</td>
+<td>
+<input id="btn-soumet-chat" class="ui-widget ui-widget-content ui-state-active" type="button" value="poster" onclick="posteMsgDiscuss(this)" />
+</td>
+</tr>
+</table>
+</form>' ;
+				$ctn .= '</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '<tr>'.PHP_EOL ;
+				$ctn .= '<td class="ui-widget ui-widget-content">' ;
+				// echo $urlChat ;
+				$delaiRafraichDiscuss = $this->DelaiRafraichDiscuss * 1000 ;
+				$ctn .= '<iframe name="discuss_chat" src="'.$urlChat.'" style="width:99%; height:240px" frameborder="0"></iframe>'.PHP_EOL ;
+				$ctn .= '<script type="text/javascript">
+	function rafraichitDiscuss()
+	{
+		var frame = document.getElementsByName("discuss_chat")[0] ;
+		frame.src = "'.$urlChat.'&tid=" + new Date().getTime() + "" ;
+		setTimeout("rafraichitDiscuss()", '.$delaiRafraichDiscuss.') ;
+	}
+	function posteMsgDiscuss(btn)
+	{
+		btn.form.submit() ;
+		document.getElementsByName("msg")[0].value = "" ;
+	}
+	jQuery(function() {
+		rafraichitDiscuss() ;
+	}) ;
+</script>' ;
+				$ctn .= '</td>'.PHP_EOL ;
+				$ctn .= '</tr>'.PHP_EOL ;
+				$ctn .= '</table>'.PHP_EOL ;
+				return $ctn ;
 			}
 		}
 		
@@ -316,6 +542,116 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $NomScriptEdit = "editEmprunts" ;
 			public $NomScriptReserv = "reservEmprunts" ;
 			public $NomScriptSoumiss = "soumissEmprunt" ;
+		}
+		
+		class DessinEditDocMarcheBaseTradPlatf
+		{
+			protected function RenduJsScriptBonTresor(& $script)
+			{
+				$ctn = '' ;
+				$ctn .= '<script type="text/javascript">
+	jQuery(function() {
+		jQuery(".FormulaireFiltres").css("background", "none") ;
+	}) ;
+</script>' ;
+				return $ctn ;
+			}
+			protected function RenduJsScriptObligation(& $script)
+			{
+				$ctn = '' ;
+				$ctn .= '<script type="text/javascript">
+	jQuery(function() {
+		jQuery(".FormulaireFiltres").css("background", "none") ;
+	}) ;
+</script>' ;
+				return $ctn ;
+			}
+			protected function RenduEnteteScriptBonTresor(& $script)
+			{
+				$ctn = '' ;
+				return $ctn ;
+			}
+			protected function RenduPiedScriptBonTresor(& $script)
+			{
+				$ctn = '' ;
+				return $ctn ;
+			}
+			protected function RenduEnteteScriptObligation(& $script)
+			{
+				$ctn = '' ;
+				return $ctn ;
+			}
+			protected function RenduPiedScriptObligation(& $script)
+			{
+				$ctn = '' ;
+				return $ctn ;
+			}
+			public function RenduScriptBonTresor(& $script)
+			{
+				$ctn = '' ;
+				$ctn .= $this->RenduEnteteScriptBonTresor($script) ;
+				$ctn .= $script->RenduSpecifique() ;
+				$ctn .= $this->RenduPiedScriptBonTresor($script) ;
+				$ctn .= $this->RenduJsScriptBonTresor($script) ;
+				return $ctn ;
+			}
+			public function RenduScriptObligation(& $script)
+			{
+				$ctn = '' ;
+				$ctn .= $this->RenduEnteteScriptObligation($script) ;
+				$ctn .= $script->RenduSpecifique() ;
+				$ctn .= $this->RenduPiedScriptObligation($script) ;
+				$ctn .= $this->RenduJsScriptObligation($script) ;
+				return $ctn ;
+			}
+		}
+		class DessinEditMarcheBeninTradPlatf extends DessinEditDocMarcheBaseTradPlatf
+		{
+			protected function RenduEnteteScriptBonTresor(& $script)
+			{
+				$ctn = '<table width="800" class="doc-edit-marche" cellspacing="0" cellpadding="2">
+<tr>
+<td background="">&nbsp;</td>
+</tr>
+<tr>
+<td background="images/marches/benin-entete-bon-tresor.png" height="575" style="background-repeat:no-repeat">&nbsp;</td>
+</tr>
+<tr>
+<td background="images/marches/benin-form-bon-tresor.png" height="217" style="background-repeat:no-repeat">' ;
+				return $ctn ;
+			}
+			protected function RenduPiedScriptBonTresor(& $script)
+			{
+				$ctn = '</td>
+</tr>
+<tr>
+<td background="images/marches/benin-pied-bon-tresor.png" height="377">&nbsp;</td>
+</tr>
+</table>' ;
+				return $ctn ;
+			}
+			protected function RenduEnteteScriptObligation(& $script)
+			{
+				$ctn = '' ;
+				return $ctn ;
+			}
+			protected function RenduPiedScriptObligation(& $script)
+			{
+				$ctn = '' ;
+				return $ctn ;
+			}
+		}
+		
+		class FormEditDocMarcheTradPlatf extends FormulaireDonneesBaseTradPlatf
+		{
+			public function CalculeElementsRendu()
+			{
+				parent::CalculeElementsRendu() ;
+				if($this->InclureElementEnCours && $this->ElementEnCoursTrouve)
+				{
+					$this->ZoneParent->RemplisseurConfig->IdPaysEmetteurSelect = $this->ElementEnCours["id_emetteur"] ;
+				}
+			}
 		}
 	}
 	

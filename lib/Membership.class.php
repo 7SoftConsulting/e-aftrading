@@ -77,7 +77,7 @@
 				$this->FiltreFaxOp->Libelle = "Fax" ;
 				$this->FiltreFaxOp->DefinitColLiee($membership->FaxMemberColumn) ;
 				$form->FiltresEdition[] = & $this->FiltreFaxOp ;
-				if(! $form->ZoneParent->PossedePrivilege('admin_members'))
+				if(! $form->ZoneParent->PossedePrivilege('admin_members') && $form->ZoneParent->ValeurParamScriptAppele != "inscription")
 				{
 					$this->FiltreEntiteOp = $form->ScriptParent->CreeFiltreFixe("entiteOp", $membership->MemberLogged->RawData["ID_ENTITE_MEMBRE"]) ;
 					$fltProfilEdit = $form->ScriptParent->CreeFiltreFixe('idProfilEdit', 1) ;

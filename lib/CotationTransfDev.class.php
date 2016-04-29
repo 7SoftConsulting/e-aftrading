@@ -343,8 +343,10 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltDateOper = $this->FormPrinc->InsereFltEditHttpPost('date_operation', 'date_operation') ;
 				$this->FltDateOper->Libelle = "Date operation" ;
 				$this->FltDateOper->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateOper->FormatteurEtiquette = new PvFmtDateFrEtiquetteFiltre();
 				$this->FltMontant = $this->FormPrinc->InsereFltEditHttpPost('montant', 'montant') ;
 				$this->FltMontant->Libelle = "Montant" ;
+                $this->FltMontant->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->FltDevise = $this->FormPrinc->InsereFltEditHttpPost('id_devise', 'id_devise') ;
 				$this->FltDevise->Libelle = "Devise" ;
 				$this->CompDevise = $this->FltDevise->DeclareComposant("PvZoneBoiteSelectHtml") ;
@@ -355,6 +357,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltDateValeur = $this->FormPrinc->InsereFltEditHttpPost('date_valeur', 'date_valeur') ;
 				$this->FltDateValeur->Libelle = "Date valeur" ;
 				$this->FltDateValeur->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateValeur->FormatteurEtiquette = new PvFmtDateFrEtiquetteFiltre();
 				$this->FournDonneesPrinc->RequeteSelection = "cotation_transf_devise" ;
 				$this->FournDonneesPrinc->TableEdition = "cotation_transf_devise" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
@@ -455,11 +458,12 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			protected function ChargeTablSecond()
 			{
 				$this->FltIdTablSecond = $this->TablSecond->InsereFltSelectHttpGet('id', 'id_cotation = <self>') ;
+				$this->FltIdTablSecond->Obligatoire = 1 ;
 				// $this->FltNumOpTablSecond = $this->TablSecond->InsereFltSelectFixe('numOpDemandeur', $this->ZoneParent->IdMembreConnecte(), 'numop_demandeur = <self>') ;
 				$this->TablSecond->CacherFormulaireFiltres = 1 ;
 				$this->DefColIdTablSecond = $this->TablSecond->InsereDefColCachee('id') ;
-				$this->DefColLoginTablSecond = $this->TablSecond->InsereDefCol('login') ;
-				$this->DefColNomEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite') ;
+				$this->DefColLoginTablSecond = $this->TablSecond->InsereDefCol('login', 'Login') ;
+				$this->DefColNomEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite', 'Banque') ;
 				$this->DefColActsTablSecond = $this->TablSecond->InsereDefColActions('Actions') ;
 				$this->FournDonneesSecond = $this->CreeFournDonneesPrinc() ;
 				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t2.login, t3.name nom_entite from bordereau_decpte_transf t1 left join operateur t2 on t1.numop_demandeur = t2.numop left join entite t3 on t2.id_entite = t3.id_entite)' ;
@@ -623,6 +627,7 @@ on t2.id_entite = t3.id_entite)' ;
 				$this->FormPrinc->InclureElementEnCours = ($this->PourAjout) ? 0 : 1 ;
 				$this->FormPrinc->InclureTotalElements = ($this->PourAjout) ? 0 : 1 ;
 				$this->FormPrinc->Editable = $this->FormPrincEditable ;
+                $this->FormPrinc->InscrireCommandeAnnuler = 0 ;
 			}
 			protected function ChargeFormPrinc()
 			{

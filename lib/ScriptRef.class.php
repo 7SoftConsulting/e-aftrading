@@ -65,16 +65,26 @@ where t2.num_op_change is null and numrep=:numOp and t1.type_change=".$this->Typ
 				$bd = $this->ObtientBD() ;
 				$resultat = new stdClass ;
 				$this->CalculeReqs() ;
+				$sql = '' ;
 				foreach($this->ReqsAlerte as $nomReq => $reqAlerte)
 				{
-					$resultat->$nomReq = $bd->FetchSqlValue($reqAlerte->Contenu, $reqAlerte->Params, "total") ;
+					if($sql != '')
+						$sql .= ' union ' ;
+					$sql .= $reqAlerte->Contenu ;
+				}
+				$lgns = $bd->FetchSqlRows($sql, array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
+				// echo '/* '.$this->ZoneParent->IdMembreConnecte().' */' ;
+				foreach($lgns as $i => $lgn)
+				{
+					$idReq = $lgn["id_req"] ;
+					$resultat->$idReq = $lgn["total"] ;
 				}
 				return $resultat ;
 			}
 			protected function CalculeReqs()
 			{
 				$this->ZoneParent->ArchiveAncTransacts() ;
-				$this->ReqsAlerte["negoc_op_change"] = new ReqAlerteTradPlatf("select t1.total + t2.total total from 
+				$this->ReqsAlerte["negoc_op_change"] = new ReqAlerteTradPlatf("select 'negoc_op_change' id_req, t1.total + t2.total total from 
 (
 	select 1 cle, count(0) total from (
 		select t1.*, t2.numop numop_dem
@@ -99,7 +109,7 @@ inner join
 	where t2.num_op_change is null and t1.numop_dem=:numOp
 ) t2
 on t1.cle = t2.cle", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
-				$this->ReqsAlerte["negoc_op_inter"] = new ReqAlerteTradPlatf("select t1.total + t2.total total from 
+				$this->ReqsAlerte["negoc_op_inter"] = new ReqAlerteTradPlatf("select 'negoc_op_inter' id_req, t1.total + t2.total total from 
 (
 	select 1 cle, count(0) total from (
 		select t1.*, t2.numop numop_dem
@@ -124,19 +134,19 @@ inner join
 	where t2.num_op_inter is null and t1.numop_dem=:numOp
 ) t2
 on t1.cle = t2.cle", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
-				$this->ReqsAlerte["achat_devise"] = new ReqAlerteTradPlatf("select count(0) total from ".VW_OP_CHANGE_ACCESSIBLE." t1
+				$this->ReqsAlerte["achat_devise"] = new ReqAlerteTradPlatf("select 'achat_devise' id_req, count(0) total from ".VW_OP_CHANGE_ACCESSIBLE." t1
 left join accuse_op_change t2
 on t1.num_op_change = t2.num_op_change
 where t2.num_op_change is null and numrep=:numOp and t1.type_change=1", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
-				$this->ReqsAlerte["vente_devise"] = new ReqAlerteTradPlatf("select count(0) total from ".VW_OP_CHANGE_ACCESSIBLE." t1
+				$this->ReqsAlerte["vente_devise"] = new ReqAlerteTradPlatf("select 'vente_devise' id_req, count(0) total from ".VW_OP_CHANGE_ACCESSIBLE." t1
 left join accuse_op_change t2
 on t1.num_op_change = t2.num_op_change
 where t2.num_op_change is null and numrep=:numOp and t1.type_change=2", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
-				$this->ReqsAlerte["placement"] = new ReqAlerteTradPlatf("select count(0) total from ".VW_OP_INTER_ACCESSIBLE." t1
+				$this->ReqsAlerte["placement"] = new ReqAlerteTradPlatf("select 'placement' id_req, count(0) total from ".VW_OP_INTER_ACCESSIBLE." t1
 left join accuse_op_inter t2
 on t1.num_op_inter = t2.num_op_inter
 where t2.num_op_inter is null and numrep=:numOp and t1.type_change=1", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
-				$this->ReqsAlerte["emprunt"] = new ReqAlerteTradPlatf("select count(0) total from ".VW_OP_INTER_ACCESSIBLE." t1
+				$this->ReqsAlerte["emprunt"] = new ReqAlerteTradPlatf("select 'emprunt' id_req, count(0) total from ".VW_OP_INTER_ACCESSIBLE." t1
 left join accuse_op_inter t2
 on t1.num_op_inter = t2.num_op_inter
 where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
@@ -237,6 +247,89 @@ where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("nu
 			{
 				parent::DetermineEnvironnement() ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueFormTypeEntite($this->ComposantFormulaireDonnees) ;
+			}
+		}
+		
+		class ScriptListeMeresEntiteTradPlatf extends PvScriptWebSimple
+		{
+			public $TitreDocument = "Liste des types d'entit&eacute;" ;
+			public $Titre = "Liste des types d'entit&eacute;" ;
+			public $TablTypesEntites ;
+			public $NecessiteMembreConnecte = 1 ;
+			public $Privileges = array('admin_members') ;
+			public function DetermineEnvironnement()
+			{
+				// Création du tableau
+				$this->TablTypesEntites = new TableauDonneesBaseTradPlatf() ;
+				// Initialisation des propriétés
+				$this->TablTypesEntites->AdopteScript("tableTypes", $this) ;
+				$this->TablTypesEntites->Largeur = "600" ;
+				$this->ChargeConfig() ;
+				// Renseigner la source de données
+				$this->TablTypesEntites->FournisseurDonnees = new PvFournisseurDonneesSql() ;
+				$this->TablTypesEntites->FournisseurDonnees->BaseDonnees = $this->ApplicationParent->BDPrincipale ;
+				// Requête de sélection
+				$this->TablTypesEntites->FournisseurDonnees->RequeteSelection = "mere_entite" ;
+				// Définition des colonnes
+				$col = new PvDefinitionColonneDonnees() ;
+				$col->NomDonnees = "id" ;
+				$col->Libelle = "ID" ;
+				$this->TablTypesEntites->DefinitionsColonnes[] = $col ;
+				$col = new PvDefinitionColonneDonnees() ;
+				$col->NomDonnees = "libelle" ;
+				$col->Libelle = "Libelle" ;
+				$this->TablTypesEntites->DefinitionsColonnes[] = $col ;
+				$optsOnglet = array("Hauteur" => "200", 'Modal' => 1, 'BoutonFermer' => 0) ;
+				$colActs = $this->TablTypesEntites->InsereDefColActions("Actions") ;
+				$lienModif = $this->TablTypesEntites->InsereLienOuvreFenetreAction($colActs, '?appelleScript=modifMereEntite&idEnCours=${id}', 'Modifier', 'modif_mere_entite_${id}', 'Modifier m&egrave;re entite', $optsOnglet) ;
+				$lienModif->ClasseCSS = "lien-act-001" ;
+				/*
+				$lienSuppr = $this->TablTypesEntites->InsereLienOuvreFenetreAction($colActs, '?appelleScript=supprMereEntite&idEnCours=${idmere_entite}', 'Supprimer', 'suppr_mere_entite_${idmere_entite}', 'Supprimer type entite', $optsOnglet) ;
+				$lienSuppr->ClasseCSS = "lien-act-002" ;
+				*/
+				$this->TablTypesEntites->InsereCmdOuvreFenetreScript("cmdAjoutMereEntite", "?appelleScript=ajoutMereEntite", "Ajouter", "ajout_mere_entite", "Ajouter m&egrave;re entite", $optsOnglet) ;
+			}
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$ctn .= $this->TablTypesEntites->RenduDispositif() ;
+				return $ctn ;
+			}
+		}
+		class ScriptAjoutMereEntiteTradPlatf extends PvFormulaireAjoutDonneesSimple
+		{
+			public $TitreDocument = "Ajout de m&egrave;re d'entit&eacute;" ;
+			public $Titre = "Ajout de m&egrave;re d'entit&eacute;" ;
+			public $NecessiteMembreConnecte = 1 ;
+			public $Privileges = array('admin_members') ;
+			public function DetermineEnvironnement()
+			{
+				parent::DetermineEnvironnement() ;
+				$this->ZoneParent->RemplisseurConfig->AppliqueFormMereEntite($this->ComposantFormulaireDonnees) ;
+			}
+		}
+		class ScriptModifMereEntiteTradPlatf extends PvFormulaireModifDonneesSimple
+		{
+			public $TitreDocument = "Modif. de m&egrave;re d'entit&eacute;" ;
+			public $Titre = "Modif. de m&egrave;re d'entit&eacute;" ;
+			public $NecessiteMembreConnecte = 1 ;
+			public $Privileges = array('admin_members') ;
+			public function DetermineEnvironnement()
+			{
+				parent::DetermineEnvironnement() ;
+				$this->ZoneParent->RemplisseurConfig->AppliqueFormMereEntite($this->ComposantFormulaireDonnees) ;
+			}
+		}
+		class ScriptSupprMereEntiteTradPlatf extends PvFormulaireSupprDonneesSimple
+		{
+			public $TitreDocument = "Suppr. de m&egrave;re d'entit&eacute;" ;
+			public $Titre = "Suppr. de m&egrave;re d'entit&eacute;" ;
+			public $NecessiteMembreConnecte = 1 ;
+			public $Privileges = array('admin_members') ;
+			public function DetermineEnvironnement()
+			{
+				parent::DetermineEnvironnement() ;
+				$this->ZoneParent->RemplisseurConfig->AppliqueFormMereEntite($this->ComposantFormulaireDonnees) ;
 			}
 		}
 		
@@ -508,7 +601,7 @@ where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("nu
 				$this->CfgsAlerte["placement"] = new CfgAlerteTransactTradPlatf("placement", "Vous avez \${0} placements non lus", "consultPlacements") ;
 				$this->CfgsAlerte["emprunt"] = new CfgAlerteTransactTradPlatf("emprunt", "Vous avez \${0} emprunts non lus", "consultEmprunts") ;
 				$this->CfgsAlerte["negoc_op_change"] = new CfgAlerteTransactTradPlatf("emprunt", "Vous avez \${0} n&eacute;gociations de change non lues", "soumissOpChange") ;
-				$this->CfgsAlerte["negoc_op_change"] = new CfgAlerteTransactTradPlatf("negoc_op_inter", "Vous avez \${0} n&eacute;gociations internationales non lues", "soumissOpInter") ;
+				$this->CfgsAlerte["negoc_op_inter"] = new CfgAlerteTransactTradPlatf("negoc_op_inter", "Vous avez \${0} n&eacute;gociations internationales non lues", "soumissOpInter") ;
 			}
 			public function RenduSpecifique()
 			{

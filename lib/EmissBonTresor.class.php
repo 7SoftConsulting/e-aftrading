@@ -6,18 +6,8 @@
 		
 		class ScriptBaseEmissBonTresorTradPlatf extends ScriptTransactBaseTradPlatf
 		{
-			public $OptsFenetreEdit = array("Largeur" => 525, 'Hauteur' => 450, 'Modal' => 1, "BoutonFermer" => 0) ;
-			public $OptsFenetreDetail = array("Largeur" => 675, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
-			protected function BDPrinc()
-			{
-				return $this->ApplicationParent->BDPrincipale ;
-			}
-			protected function CreeFournDonneesPrinc()
-			{
-				$fourn = new PvFournisseurDonneesSql() ;
-				$fourn->BaseDonnees = $this->ApplicationParent->BDPrincipale ;
-				return $fourn ;
-			}
+			public $OptsFenetreEdit = array("Largeur" => 810, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
+			public $OptsFenetreDetail = array("Largeur" => 810, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
 			public function AdopteZone($nom, & $zone)
 			{
 				parent::AdopteZone($nom, $zone) ;
@@ -60,6 +50,7 @@
 		}
 		class ScriptEditEmissBonTresorTradPlatf extends ScriptBaseEmissBonTresorTradPlatf
 		{
+			public $IdPaysSelect ;
 			public $FormPrinc ;
 			public function DetermineEnvironnement()
 			{
@@ -390,7 +381,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->CompDateEcheance = $this->FltDateEcheance->DeclareComposant("PvCalendarDateInput") ;
 				$this->FltCodeISIN = $this->FormPrinc->InsereFltEditHttpPost('code_isin', 'code_isin') ;
 				$this->FltCodeISIN->Libelle = "Code ISIN" ;
-				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) + 1 duree_emission from emission_bon_tresor t1)" ;
+				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) duree_emission from emission_bon_tresor t1)" ;
 				$this->FournDonneesPrinc->TableEdition = "emission_bon_tresor" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
 				if($this->FormPrinc->Editable == 1)
@@ -628,7 +619,7 @@ group by t2.login, t1.id_emission)' ;
 				$this->TablPrinc->ToujoursAfficher = 1 ;
 				$this->DefColEntite = $this->TablPrinc->InsereDefCol('nom_entite', 'Entit&eacute;') ;
 				$this->DefColLogin = $this->TablPrinc->InsereDefCol('login', 'Login') ;
-				$this->DefColMontant = $this->TablPrinc->InsereDefCol('montant', 'Montant') ;
+				$this->DefColMontant = $this->TablPrinc->InsereDefColMoney('montant', 'Montant') ;
 				$this->DefColTaux = $this->TablPrinc->InsereDefCol('taux', 'Taux') ;
 				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
 from reserv_bon_tresor t1
@@ -671,6 +662,7 @@ on t2.id_entite = t3.id_entite)' ;
 				$this->FltNumOp = $this->FormPrinc->InsereFltEditFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop_demandeur') ;
 				$this->FltMontant = $this->FormPrinc->InsereFltEditHttpPost('montant', 'montant') ;
 				$this->FltMontant->Libelle = "Montant" ;
+				$this->FltMontant->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
 				$this->FltTaux = $this->FormPrinc->InsereFltEditHttpPost('taux', 'taux') ;
 				$this->FltTaux->Libelle = "Taux" ;
 				$this->FournDonneesPrinc->RequeteSelection = "reserv_bon_tresor" ;

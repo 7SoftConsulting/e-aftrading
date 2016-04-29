@@ -15,6 +15,7 @@
 			public $LibLienAjustNegocOpInter = "N&eacute;gocier" ;
 			public $TitrFenAjustNegocOpInter = "N&eacute;gocier Interbancaire" ;
 			public $LibLienConfirmNegoc = "Confirmer" ;
+			public $LibLienRefusNegoc = "Refuser" ;
 			public $TitrFenDemarrNegocAchatDevise = "N&eacute;gocier achat de devises" ;
 			public $TitrFenDemarrNegocVenteDevise = "N&eacute;gocier vente de devises" ;
 			public $MsgInteretAchatDevise = 'Voulez-vous confirmer votre int&eacute;r&ecirc;t pour cet achat de devises ?' ;

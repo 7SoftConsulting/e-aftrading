@@ -63,6 +63,8 @@
 			public $FltEntitesPossibles ;
 			public $CmdActiveRegion ;
 			public $CmdDesactiveRegion ;
+			public $CmdActiveFiliale ;
+			public $CmdDesactiveFiliale ;
 			public function ChargeConfig()
 			{
 				$mdlTransact = & $this->ScriptParent->FormMdlTransacts->MdlTransactSelect ;
@@ -102,7 +104,6 @@
 				$comp->FiltresSelection[] = & $this->FltIdEntiteRef ;
 				$comp->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$comp->FournisseurDonnees->RequeteSelection = '(select * from '.$this->ScriptParent->FormMdlTransacts->MdlTransactSelect->RequeteSelection.' t1 where idtype_entite in ('.$exprTypeEntite.'))' ;
-				// print_r($comp->FournisseurDonnees) ;
 				$comp->FournisseurDonnees->ParamsSelection = $paramsTypeEntite ;
 				$comp->FournisseurDonnees->BaseDonnees = & $this->ApplicationParent->BDPrincipale ;
 				$this->FiltresEdition[] = & $this->FltEntitesPossibles ;
@@ -124,7 +125,19 @@
 				$this->CmdDesactiveRegion->ChargeConfig() ;
 				$this->CmdDesactiveRegion->Libelle = "Detacher la zone" ;
 				$this->CmdDesactiveRegion->MessageSuccesExecution = "Les banques de la zone ont &eacute;t&eacute; d&eacute;sactiv&eacute;es" ;
-				$this->CmdDesactiveRegion->InscritNouvActCmd(new ActCmdSupprEntitesRegion()) ; ;
+				$this->CmdDesactiveRegion->InscritNouvActCmd(new ActCmdSupprEntitesRegion()) ;
+				$this->CmdActiveFiliale = new PvCommandeExecuterBase() ;
+				$this->InscritCommande("active_filiale", $this->CmdActiveFiliale) ;
+				$this->CmdActiveFiliale->ChargeConfig() ;
+				$this->CmdActiveFiliale->Libelle = "Lier les filiales" ;
+				$this->CmdActiveFiliale->MessageSuccesExecution = "Les entit&eacute;s de la filiales ont &eacute;t&eacute; activ&eacute;es" ;
+				$this->CmdActiveFiliale->InscritNouvActCmd(new ActCmdAjoutEntitesFiliale()) ; ;
+				$this->CmdDesactiveFiliale = new PvCommandeExecuterBase() ;
+				$this->InscritCommande("desactive_filiale", $this->CmdDesactiveFiliale) ;
+				$this->CmdDesactiveFiliale->ChargeConfig() ;
+				$this->CmdDesactiveFiliale->Libelle = "Detacher les filiales" ;
+				$this->CmdDesactiveFiliale->MessageSuccesExecution = "Les entit&eacute;s de la zone ont &eacute;t&eacute; d&eacute;sactiv&eacute;es" ;
+				$this->CmdDesactiveFiliale->InscritNouvActCmd(new ActCmdSupprEntitesFiliale()) ;
 			}
 			public function RenduDispositif()
 			{
@@ -133,7 +146,7 @@
 					return '<p>'.htmlentities('-- Veuillez selectionner un modèle de transaction --').'</p>' ;
 				}
 				$ctn = parent::RenduDispositif() ;
-				// print_r($this->ApplicationParent->BDPrincipale) ;
+				// print_r($this->FournisseurDonnees) ;
 				return $ctn ;
 			}
 		}
@@ -222,6 +235,7 @@
 				$this->CommandeParent->MessageExecution = $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees->LastSqlText.'<br />Erreur SQL : '.$this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees->ConnectionException ;
 			}
 		}
+
 		class ActCmdAjoutEntitesRegion extends PvActCmdBase
 		{
 			public $ActiveLiaison = 1 ;
@@ -288,6 +302,71 @@
 			}
 		}
 		class ActCmdSupprEntitesRegion extends ActCmdAjoutEntitesRegion
+		{
+			public $ActiveLiaison = 0 ;
+		}
+
+		class ActCmdAjoutEntitesFiliale extends ActCmdAjoutEntitesRegion
+		{
+			public $ActiveLiaison = 1 ;
+			protected function RecupIdMereEntite($idEntite)
+			{
+				$bd = & $this->ApplicationParent->BDPrincipale ;
+				$idFiliale = $bd->FetchSqlValue('select * from entite t1 left join mere_entite t2 on t1.idmere_entite = t2.id where id_entite = '.$bd->ParamPrefix.'idEntite', array('idEntite' => $idEntite), 'idmere_entite') ;
+				// print_r($bd) ;
+				return $idFiliale ;
+			}
+			public function Execute()
+			{
+				$bd = $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
+				$this->FormulaireDonneesParent->AnnulerLiaisonParametre = 1 ;
+				$idEntiteEnCours = $this->FormulaireDonneesParent->FltIdEntiteRef->Lie() ;
+				$idMereEntite = $this->RecupIdMereEntite($idEntiteEnCours) ;
+				if($idMereEntite == 1)
+				{
+					return 1 ;
+				}
+				$listeEntites = array() ;
+				$chaineEntites = '' ;
+				$lignes = $bd->FetchSqlRows('select t1.* from entite t1 left join mere_entite t2 on t1.idmere_entite = t2.id where idmere_entite='.$bd->ParamPrefix.'idMereEntite', array('idMereEntite' => $idMereEntite)) ;
+				// print_r($bd) ;
+				foreach($lignes as $i => $ligne)
+				{
+					if($i > 0)
+					{
+						$chaineEntites .= ', ' ;
+					}
+					$cle = "idEntiteDest".format_number_size($i, strlen(strval(count($lignes)))) ;
+					$listeEntites[$cle] = $ligne["id_entite"] ;
+					$chaineEntites .= $bd->ParamPrefix.$cle ;
+				}
+				if(count($listeEntites) == 0)
+				{
+					return 1 ;
+				}
+				$ligEntite = array_merge(array('idEntiteSrc' => $idEntiteEnCours), $listeEntites) ;
+				$sql = $this->SqlSupprEntitesLiees($chaineEntites) ;
+				$ok = $bd->RunSql($sql, $ligEntite) ;
+				if(! $ok)
+				{
+					$this->RenseignErrBD() ;
+					return 0 ;
+				}
+				$sql = $this->SqlInsereEntitesLiees($chaineEntites) ;
+				$ok = $bd->RunSql($sql, $ligEntite) ;
+				if(! $ok)
+				{
+					$this->RenseignErrBD() ;
+					return 0 ;
+				}
+				return 1 ;
+			}
+			protected function RenseignErrBD()
+			{
+				$this->CommandeParent->MessageExecution = $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees->LastSqlText.'<br />Erreur SQL : '.$this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees->ConnectionException ;
+			}
+		}
+		class ActCmdSupprEntitesFiliale extends ActCmdAjoutEntitesFiliale
 		{
 			public $ActiveLiaison = 0 ;
 		}
