@@ -605,19 +605,22 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				return $ctn ;
 			}
 		}
-		class DessinEditMarcheBeninTradPlatf extends DessinEditDocMarcheBaseTradPlatf
+		class DessinEditUEMOABaseTradPlatf extends DessinEditDocMarcheBaseTradPlatf
 		{
+			public $CheminImgEnteteBonTresor = "" ;
+			public $CheminImgCorpsBonTresor = "" ;
+			public $CheminImgPiedBonTresor = "" ;
+			public $CheminImgEnteteObligation = "" ;
+			public $CheminImgCorpsObligation = "" ;
+			public $CheminImgPiedObligation = "" ;
 			protected function RenduEnteteScriptBonTresor(& $script)
 			{
 				$ctn = '<table width="800" class="doc-edit-marche" cellspacing="0" cellpadding="2">
 <tr>
-<td background="">&nbsp;</td>
+<td background="'.$this->CheminImgEnteteBonTresor.'" height="575" style="background-repeat:no-repeat">&nbsp;</td>
 </tr>
 <tr>
-<td background="images/marches/benin-entete-bon-tresor.png" height="575" style="background-repeat:no-repeat">&nbsp;</td>
-</tr>
-<tr>
-<td background="images/marches/benin-form-bon-tresor.png" height="217" style="background-repeat:no-repeat">' ;
+<td background="'.$this->CheminImgCorpsBonTresor.'" height="217" style="background-repeat:no-repeat">' ;
 				return $ctn ;
 			}
 			protected function RenduPiedScriptBonTresor(& $script)
@@ -625,33 +628,117 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				$ctn = '</td>
 </tr>
 <tr>
-<td background="images/marches/benin-pied-bon-tresor.png" height="377">&nbsp;</td>
+<td background="'.$this->CheminImgPiedBonTresor.'" height="340" style="background-repeat:no-repeat">&nbsp;</td>
 </tr>
 </table>' ;
 				return $ctn ;
 			}
 			protected function RenduEnteteScriptObligation(& $script)
 			{
-				$ctn = '' ;
+				$ctn = '<table width="800" class="doc-edit-marche" cellspacing="0" cellpadding="2">
+<tr>
+<td background="'.$this->CheminImgEnteteObligation.'" height="575" style="background-repeat:no-repeat">&nbsp;</td>
+</tr>
+<tr>
+<td background="'.$this->CheminImgCorpsObligation.'" height="217" style="background-repeat:no-repeat">' ;
 				return $ctn ;
 			}
 			protected function RenduPiedScriptObligation(& $script)
 			{
-				$ctn = '' ;
+				$ctn = '</td>
+</tr>
+<tr>
+<td background="'.$this->CheminImgPiedObligation.'" height="340" style="background-repeat:no-repeat">&nbsp;</td>
+</tr>
+</table>' ;
 				return $ctn ;
 			}
+		}
+		class DessinEditMarcheBeninTradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/benin-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/benin-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/benin-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/benin-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/benin-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/benin-pied-obligation.png" ;
+		}
+		class DessinEditMarcheBFTradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/bf-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/bf-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/bf-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/benin-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/benin-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/benin-pied-obligation.png" ;
+		}
+		class DessinEditMarcheCIVTradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/ci-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/ci-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/ci-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/ci-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/ci-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/ci-pied-obligation.png" ;
+		}
+		class DessinEditMarcheGBTradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/gb-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/gb-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/gb-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/gb-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/gb-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/gb-pied-obligation.png" ;
+		}
+		class DessinEditMarcheMaliTradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/mali-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/mali-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/mali-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/mali-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/mali-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/mali-pied-obligation.png" ;
+		}
+		class DessinEditMarcheNigerTradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/niger-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/niger-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/niger-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/niger-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/niger-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/niger-pied-obligation.png" ;
+		}
+		class DessinEditMarcheSenegalTradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/senegal-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/senegal-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/senegal-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/senegal-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/senegal-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/senegal-pied-obligation.png" ;
+		}
+		class DessinEditMarcheTogoTradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/togo-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/togo-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/togo-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/togo-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/togo-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/togo-pied-obligation.png" ;
+		}
+		
+		class DessinEditMarchSecTradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/marchesec-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/marchesec-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/marchesec-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/marchesec-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/marchesec-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/marchesec-pied-obligation.png" ;
 		}
 		
 		class FormEditDocMarcheTradPlatf extends FormulaireDonneesBaseTradPlatf
 		{
-			public function CalculeElementsRendu()
-			{
-				parent::CalculeElementsRendu() ;
-				if($this->InclureElementEnCours && $this->ElementEnCoursTrouve)
-				{
-					$this->ZoneParent->RemplisseurConfig->IdPaysEmetteurSelect = $this->ElementEnCours["id_emetteur"] ;
-				}
-			}
 		}
 	}
 	

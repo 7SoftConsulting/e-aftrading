@@ -6,7 +6,7 @@
 		
 		class ScriptBaseReventeObligationTradPlatf extends ScriptTransactBaseTradPlatf
 		{
-			public $OptsFenetreEdit = array("Largeur" => 525, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
+			public $OptsFenetreEdit = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
 			protected function BDPrinc()
 			{
 				return $this->ApplicationParent->BDPrincipale ;
@@ -357,6 +357,10 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$bd = $this->BDPrinc() ;
 				return 1 ;
 			}
+			public function RenduSpecifique()
+			{
+				return $this->FormPrinc->RenduDispositif() ;
+			}
 			protected function RenduDispositifBrut()
 			{
 				$ctn = '' ;
@@ -367,11 +371,11 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 						$ctn .= '<div align="center" class="ui-widget ui-widget-content ui-state-active ui-corner-all">'.$this->TitreFormPrinc.'</div>'.PHP_EOL ;
 						$ctn .= '<br />' ;
 					}
-					$ctn .= parent::RenduDispositifBrut() ;
+					$ctn .= $this->ZoneParent->RemplisseurConfig->AppliqueScriptObligationMarchSec($this) ;
 				}
 				else
 				{
-					$ctn .= '<div class="ui-widget ui-state-error">Cette &eacute;mission a &eacute;t&eacute; r&eacute;serv&eacute;e au moins une fois</div>' ;
+					$ctn .= '<div class="ui-widget ui-state-error">Cette &Eacute;mission a &eacute;t&eacute; r&eacute;serv&eacute;e au moins une fois</div>' ;
 				}
 				return $ctn ;
 			}

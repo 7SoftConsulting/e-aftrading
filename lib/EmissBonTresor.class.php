@@ -6,8 +6,8 @@
 		
 		class ScriptBaseEmissBonTresorTradPlatf extends ScriptTransactBaseTradPlatf
 		{
-			public $OptsFenetreEdit = array("Largeur" => 810, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
-			public $OptsFenetreDetail = array("Largeur" => 810, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
+			public $OptsFenetreEdit = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
+			public $OptsFenetreDetail = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
 			public function AdopteZone($nom, & $zone)
 			{
 				parent::AdopteZone($nom, $zone) ;
@@ -183,7 +183,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprEmissBonTresor&id=${id}', 'Supprimer', 'suppr_emiss_bon_tresor_${id}', 'Supprimer &Eacute;mission Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->LienSuppr->DefinitScriptOnglActifSurFerm($this) ;
-				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutEmissBonTresor", '?appelleScript=ajoutEmissBonTresor', 'Ajouter', 'ajoutEmissBonTresor', "Poster une &Eacute;mission Bon du Tr&eacute;sor", $this->OptsFenetreEdit) ;
+				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutEmissBonTresor", '?appelleScript=selectPaysBonTresor', 'Ajouter', 'ajoutEmissBonTresor', "Poster une &Eacute;mission Bon du Tr&eacute;sor", $this->OptsFenetreEdit) ;
 				$this->CmdAjout->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
@@ -326,6 +326,19 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $InscrireCmdExecFormPrinc = 1 ;
 			public $CritrNonVidePrinc ;
 			public $CritrValidPrinc ;
+			public function DetermineFormPrinc()
+			{
+				parent::DetermineFormPrinc() ;
+				$this->ZoneParent->RemplisseurConfig->DeterminePaysEmetteurTransact($this) ;
+			}
+			protected function CreeFormPrinc()
+			{
+				return new FormEditDocMarcheTradPlatf() ;
+			}
+			public function RenduSpecifique()
+			{
+				return $this->FormPrinc->RenduDispositif() ;
+			}
 			protected function DefinitExprs()
 			{
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenAjoutEmissBonTresor ;
@@ -346,6 +359,11 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltNumOp = $this->FormPrinc->InsereFltEditFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop_publieur') ;
 				$this->FltEmetteur = $this->FormPrinc->InsereFltEditHttpPost('emetteur', 'emetteur') ;
 				$this->FltEmetteur->Libelle = "Emetteur" ;
+				if($this->FormPrinc->InclureElementEnCours == 0)
+				{
+					$this->FltEmetteur->ValeurParDefaut = _GET_def("idPays") ;
+				}
+				$this->FltEmetteur->EstEtiquette = 1 ;
 				$this->CompEmetteur = $this->FltEmetteur->DeclareComposant("PvZoneBoiteSelectHtml") ;
 				$this->CompEmetteur->FournisseurDonnees = $this->CreeFournDonneesPrinc() ;
 				$this->CompEmetteur->FournisseurDonnees->RequeteSelection = "(select * from pays where id_region=1)" ;
@@ -355,10 +373,10 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltRefTransact->Libelle = "No Reference" ;
 				$this->FltMontant = $this->FormPrinc->InsereFltEditHttpPost('montant', 'montant') ;
 				$this->FltMontant->Libelle = "Montant" ;
-				$this->FltMontant->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
+				$this->FltMontant->DefinitFmtLbl(new PvFmtMonnaie()) ;
 				$this->FltValNominaleUnit = $this->FormPrinc->InsereFltEditHttpPost('val_nominale_unit', 'val_nominale_unit') ;
 				$this->FltValNominaleUnit->Libelle = "Valeur nominale unitaire" ;
-				$this->FltValNominaleUnit->FormatteurEtiquette = new PvFmtMonnaieEtiquetteFiltre() ;
+				$this->FltValNominaleUnit->DefinitFmtLbl(new PvFmtMonnaie()) ;
 				if($this->FormPrinc->InclureElementEnCours)
 				{
 					$this->FltDuree = $this->FormPrinc->InsereFltEditHttpPost('duree_emission', 'duree_emission') ;
@@ -376,9 +394,11 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltDateEmission = $this->FormPrinc->InsereFltEditHttpPost('date_emission', 'date_emission') ;
 				$this->FltDateEmission->Libelle = "Date valeur" ;
 				$this->CompDateEmission = $this->FltDateEmission->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateEmission->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltDateEcheance = $this->FormPrinc->InsereFltEditHttpPost('date_echeance', 'date_echeance') ;
 				$this->FltDateEcheance->Libelle = "Date &eacute;cheance" ;
 				$this->CompDateEcheance = $this->FltDateEcheance->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateEcheance->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltCodeISIN = $this->FormPrinc->InsereFltEditHttpPost('code_isin', 'code_isin') ;
 				$this->FltCodeISIN->Libelle = "Code ISIN" ;
 				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) duree_emission from emission_bon_tresor t1)" ;
@@ -417,7 +437,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 						$ctn .= '<div align="center" class="ui-widget ui-widget-content ui-state-active ui-corner-all">'.$this->TitreFormPrinc.'</div>'.PHP_EOL ;
 						$ctn .= '<br />' ;
 					}
-					$ctn .= parent::RenduDispositifBrut() ;
+					$ctn .= $this->ZoneParent->RemplisseurConfig->AppliqueScriptBonTresor($this) ;
 				}
 				else
 				{

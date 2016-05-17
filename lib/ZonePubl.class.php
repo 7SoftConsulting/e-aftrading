@@ -402,9 +402,9 @@
 				$this->MenuListeTransacts->Privileges[] = "post_doc_tresorier" ;
 				$this->MenuOpChangeDevise = $this->MenuListeTransacts->InscritSousMenuFige("transactsOpChangeDevise") ;
 				$this->MenuOpChangeDevise->Titre = "Op&eacute;ration change devise" ;
-				$this->MenuListeAchatsDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("listeAchatsDevise") ;
+				$this->MenuListeAchatsDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("editAchatsDevise") ;
 				$this->MenuListeAchatsDevise->Titre = "Achat de devises" ;
-				$this->MenuListeVentesDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("listeVentesDevise") ;
+				$this->MenuListeVentesDevise = $this->MenuOpChangeDevise->InscritSousMenuScript("editVentesDevise") ;
 				$this->MenuListeVentesDevise->Titre = "Vente de devises" ;
 				$this->MenuArchOpChange = $this->MenuOpChangeDevise->InscritSousMenuScript("consultArchOpChange") ;
 				$this->MenuArchOpChange->Titre = "Archives" ;
@@ -826,6 +826,10 @@
 				$this->ScriptModifReventeObligation = $this->InsereScript('modifReventeObligation', new ScriptModifReventeObligationTradPlatf()) ;
 				$this->ScriptDetailReventeObligation = $this->InsereScript('detailReventeObligation', new ScriptDetailReventeObligationTradPlatf()) ;
 				$this->ScriptSupprReventeObligation = $this->InsereScript('supprReventeObligation', new ScriptSupprReventeObligationTradPlatf()) ;
+				$this->ScriptSelectPaysBonTresor = $this->InsereScript('selectPaysBonTresor', new ScriptSelectPaysTradPlatf()) ;
+				$this->ScriptSelectPaysBonTresor->NomScriptRedirect = "ajoutEmissBonTresor" ;
+				$this->ScriptSelectPaysOblig = $this->InsereScript('selectPaysOblig', new ScriptSelectPaysTradPlatf()) ;
+				$this->ScriptSelectPaysOblig->NomScriptRedirect = "ajoutEmissObligation" ;
 				// $this->ScriptBienvenue->Titre = "Trading Platform" ;
 				$this->ScriptAccueil->TitreDocument = "Trading Platform" ;
 				// $this->ChargeScriptsMembershipSuppl() ;
@@ -1061,8 +1065,14 @@
 			protected function ChargeDocsEditMarche()
 			{
 				$this->DocsEditMarche = array() ;
-				$this->DocsEditMarche[1] = new DessinEditMarcheBeninTradPlatf() ;
+				$this->DocsEditMarche[1] = new DessinEditMarcheBFTradPlatf() ;
 				$this->DocsEditMarche[2] = new DessinEditMarcheBeninTradPlatf() ;
+				$this->DocsEditMarche[3] = new DessinEditMarcheCIVTradPlatf() ;
+				$this->DocsEditMarche[5] = new DessinEditMarcheGBTradPlatf() ;
+				$this->DocsEditMarche[6] = new DessinEditMarcheMaliTradPlatf() ;
+				$this->DocsEditMarche[7] = new DessinEditMarcheNigerTradPlatf() ;
+				$this->DocsEditMarche[8] = new DessinEditMarcheSenegalTradPlatf() ;
+				$this->DocsEditMarche[9] = new DessinEditMarcheTogoTradPlatf() ;
 			}
 			protected function DetecteDocEditMarcheActif(& $script)
 			{
@@ -1071,10 +1081,60 @@
 					$this->IdPaysEmetteurSelect = _GET_def('idPays', 1) ;
 				}
 			}
+			public function DeterminePaysEmetteurTransact(& $script)
+			{
+				if(! $script->FormPrinc->InclureElementEnCours)
+				{
+					return ;
+				}
+				$bd = $script->ApplicationParent->BDPrincipale ;
+				$lgn = $bd->FetchSqlRow(
+					"select * from ".$script->FormPrinc->FournisseurDonnees->RequeteSelection." t1 where id=:id",
+					array("id" => $script->FltId->Lie())
+				) ;
+				if(is_array($lgn) && count($lgn["emetteur"]) > 0)
+				{
+					$this->IdPaysEmetteurSelect = $lgn["emetteur"] ;
+				}
+			}
 			public function AppliqueScriptBonTresor(& $script)
 			{
 				$this->ChargeDocsEditMarche() ;
-				$ctn = $this->DocsEditMarche[1]->RenduScriptBonTresor($script) ;
+				$this->DetecteDocEditMarcheActif($script) ;
+				if(isset($this->DocsEditMarche[$this->IdPaysEmetteurSelect]))
+				{
+					$ctn = $this->DocsEditMarche[$this->IdPaysEmetteurSelect]->RenduScriptBonTresor($script) ;
+				}
+				else
+				{
+					$ctn = $this->DocsEditMarche[1]->RenduScriptBonTresor($script) ;
+				}
+				return $ctn ;
+			}
+			public function AppliqueScriptObligation(& $script)
+			{
+				$this->ChargeDocsEditMarche() ;
+				$this->DetecteDocEditMarcheActif($script) ;
+				if(isset($this->DocsEditMarche[$this->IdPaysEmetteurSelect]))
+				{
+					$ctn = $this->DocsEditMarche[$this->IdPaysEmetteurSelect]->RenduScriptObligation($script) ;
+				}
+				else
+				{
+					$ctn = $this->DocsEditMarche[1]->RenduScriptObligation($script) ;
+				}
+				return $ctn ;
+			}
+			public function AppliqueScriptBonTresorMarchSec(& $script)
+			{
+				$dessin = new DessinEditMarchSecTradPlatf() ;
+				$ctn = $dessin->RenduScriptBonTresor($script) ;
+				return $ctn ;
+			}
+			public function AppliqueScriptObligationMarchSec(& $script)
+			{
+				$dessin = new DessinEditMarchSecTradPlatf() ;
+				$ctn = $dessin->RenduScriptObligation($script) ;
 				return $ctn ;
 			}
 			protected function CorrigeIdTypeEntite($idTypeEntite, & $form)
@@ -1652,6 +1712,36 @@
 </tr>
 </table>'.PHP_EOL ;
 				$ctn .= parent::RenduDispositifBrut() ;
+				return $ctn ;
+			}
+		}
+		
+		class ScriptSelectPaysTradPlatf extends PvScriptWebSimple
+		{
+			public $NecessiteMembreConnecte = 1 ;
+			public $NomScriptRedirect ;
+			public $MsgEntete = "Veuillez selectionner le pays d'origine de la transaction" ;
+			public $Titre = "Selectionner le pays" ;
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$bd = $this->ApplicationParent->BDPrincipale ;
+				$ctn .= '<div class="ui-widget ui-state-default">'.$this->MsgEntete.'</div>'.PHP_EOL ;
+				$ctn .= '<div class="ui-widget ui-widget-content" style="padding:4px">'.PHP_EOL ;
+				$ctn .= '<form action="'.$this->UrlRedirect.'" method="get">'.PHP_EOL ;
+				$ctn .= '<input type="hidden" name="appelleScript" value="'.$this->NomScriptRedirect.'" />'.PHP_EOL ;
+				$ctn .= '<div><b>Pays</b> : ' ;
+				$ctn .= '<select name="idPays">' ;
+				$lgns = $bd->FetchSqlRows("select * from pays where id_region=1") ;
+				foreach($lgns as $i => $lgn)
+				{
+					$ctn .= '<option value="'.$lgn["idpays"].'">'.htmlentities($lgn["libpays"]).'</option>' ;
+				}
+				$ctn .= '</select>' ;
+				$ctn .= '<input type="submit" value="Selectionner" />'.PHP_EOL ;
+				$ctn .= '</div>'.PHP_EOL ;
+				$ctn .= '</form>' ;
+				$ctn .= '</div>' ;
 				return $ctn ;
 			}
 		}

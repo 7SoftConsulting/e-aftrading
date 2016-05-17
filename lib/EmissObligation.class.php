@@ -6,8 +6,8 @@
 		
 		class ScriptBaseEmissObligationTradPlatf extends ScriptTransactBaseTradPlatf
 		{
-			public $OptsFenetreEdit = array("Largeur" => 525, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
-			public $OptsFenetreDetail = array("Largeur" => 675, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
+			public $OptsFenetreEdit = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
+			public $OptsFenetreDetail = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
 			protected function BDPrinc()
 			{
 				return $this->ApplicationParent->BDPrincipale ;
@@ -193,7 +193,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprEmissObligation&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer &eacute;mission obligation #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->LienSuppr->DefinitScriptOnglActifSurFerm($this) ;
-				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutEmissObligation", '?appelleScript=ajoutEmissObligation', 'Ajouter', 'ajoutEmissObligation', "Poster une &eacute;mission obligation", $this->OptsFenetreEdit) ;
+				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutEmissObligation", '?appelleScript=selectPaysOblig', 'Ajouter', 'ajoutEmissObligation', "Poster une &eacute;mission obligation", $this->OptsFenetreEdit) ;
 				$this->CmdAjout->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
@@ -342,6 +342,15 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $InscrireCmdExecFormPrinc = 1 ;
 			public $CritrNonVidePrinc ;
 			public $CritrValidPrinc ;
+			protected function CreeFormPrinc()
+			{
+				return new FormEditDocMarcheTradPlatf() ;
+			}
+			public function DetermineFormPrinc()
+			{
+				parent::DetermineFormPrinc() ;
+				$this->ZoneParent->RemplisseurConfig->DeterminePaysEmetteurTransact($this) ;
+			}
 			protected function DefinitExprs()
 			{
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenAjoutEmissObligation ;
@@ -362,6 +371,11 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltNumOp = $this->FormPrinc->InsereFltEditFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop_publieur') ;
 				$this->FltEmetteur = $this->FormPrinc->InsereFltEditHttpPost('emetteur', 'emetteur') ;
 				$this->FltEmetteur->Libelle = "Emetteur" ;
+				if($this->FormPrinc->InclureElementEnCours == 0)
+				{
+					$this->FltEmetteur->ValeurParDefaut = _GET_def("idPays") ;
+				}
+				$this->FltEmetteur->EstEtiquette = 1 ;
 				$this->CompEmetteur = $this->FltEmetteur->DeclareComposant("PvZoneBoiteSelectHtml") ;
 				$this->CompEmetteur->FournisseurDonnees = $this->CreeFournDonneesPrinc() ;
 				$this->CompEmetteur->FournisseurDonnees->RequeteSelection = "(select * from pays where id_region=1)" ;
@@ -427,6 +441,10 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				}
 				return $ok ;
 			}
+			public function RenduSpecifique()
+			{
+				return $this->FormPrinc->RenduDispositif() ;
+			}
 			protected function RenduDispositifBrut()
 			{
 				$ctn = '' ;
@@ -437,7 +455,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 						$ctn .= '<div align="center" class="ui-widget ui-widget-content ui-state-active ui-corner-all">'.$this->TitreFormPrinc.'</div>'.PHP_EOL ;
 						$ctn .= '<br />' ;
 					}
-					$ctn .= parent::RenduDispositifBrut() ;
+					$ctn .= $this->ZoneParent->RemplisseurConfig->AppliqueScriptObligation($this) ;
 				}
 				else
 				{
