@@ -118,7 +118,7 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			}
 			protected function RenduCorpsDoc()
 			{
-				echo '<html><head></head>' ;
+				echo '<!doctype html><html><head><meta charset="utf-8"></head>' ;
 				echo '<style type="text/css">body { font-family:arial; font-size:12px }</style>' ;
 				echo '<script language="javascript">function defileEnBas() { window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight); }</script>' ;
 				echo '<body onload="defileEnBas()">' ;
@@ -146,6 +146,91 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $Dest ;
 			public $Contenu ;
 			public $TimestampCrea ;
+		}
+		
+		class ScriptBaseTradPlatf extends PvScriptWebSimple
+		{
+			protected function BDPrinc()
+			{
+				return $this->ApplicationParent->BDPrincipale ;
+			}
+			protected function & CreeFournDonneesPrinc()
+			{
+				$fourn = new PvFournisseurDonneesSql() ;
+				$fourn->BaseDonnees = $this->ApplicationParent->BDPrincipale ;
+				return $fourn ;
+			}
+			protected function & CreeFournBDPrinc()
+			{
+				$fourn = $this->CreeFournDonneesPrinc() ;
+				return $fourn ;
+			}
+		}
+		class ScriptLstBaseTradPlatf extends ScriptBaseTradPlatf
+		{
+			protected $TablPrinc ;
+			protected function CreeTablPrinc()
+			{
+				return new TableauDonneesBaseTradPlatf() ;
+			}
+			protected function InitTablPrinc()
+			{
+			}
+			protected function ChargeTablPrinc()
+			{
+			}
+			public function DetermineEnvironnement()
+			{
+				parent::DetermineEnvironnement() ;
+				$this->DetermineTablPrinc() ;
+			}
+			protected function DetermineTablPrinc()
+			{
+				$this->TablPrinc = $this->CreeTablPrinc() ;
+				$this->InitTablPrinc() ;
+				$this->TablPrinc->AdopteScript("tablPrinc", $this) ;
+				$this->TablPrinc->ChargeConfig() ;
+				$this->ChargeTablPrinc() ;
+			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = '' ;
+				$ctn .= $this->TablPrinc->RenduDispositif() ;
+				return $ctn ;
+			}
+		}
+		class ScriptEditBaseTradPlatf extends ScriptBaseTradPlatf
+		{
+			protected $FormPrinc ;
+			protected function CreeFormPrinc()
+			{
+				return new FormulaireDonneesBaseTradPlatf() ;
+			}
+			protected function InitFormPrinc()
+			{
+			}
+			protected function ChargeFormPrinc()
+			{
+			}
+			public function DetermineEnvironnement()
+			{
+				parent::DetermineEnvironnement() ;
+				$this->DetermineFormPrinc() ;
+			}
+			protected function DetermineFormPrinc()
+			{
+				$this->FormPrinc = $this->CreeFormPrinc() ;
+				$this->InitFormPrinc() ;
+				$this->FormPrinc->AdopteScript("formPrinc", $this) ;
+				$this->FormPrinc->ChargeConfig() ;
+				$this->ChargeFormPrinc() ;
+			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = '' ;
+				$ctn .= $this->FormPrinc->RenduDispositif() ;
+				return $ctn ;
+			}
 		}
 		
 		class FormulaireDonneesBaseTradPlatf extends PvFormulaireDonneesHtml
@@ -286,24 +371,25 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 		}
 		class ScriptFormTransactBaseTradPlatf extends ScriptTransactBaseTradPlatf
 		{
-			protected function NotifieAccuseLecture($nomTable)
+			protected function NotifieAccuseLecture($nomTable, $nomColId="num_op_change")
 			{
 				$bd = $this->ApplicationParent->BDPrincipale ;
 				$bd->DeleteRow(
 					$nomTable,
-					'num_op_change=:num_op_change and numop=:numop',
+					$nomColId.'=:'.$nomColId.' and numop=:numop',
 					array(
-						'num_op_change' => intval(_GET_def('idEnCours')),
+						$nomColId => intval(_GET_def('idEnCours')),
 						'numop' => $this->ZoneParent->IdMembreConnecte()
 					)
 				) ;
 				$bd->InsertRow(
 					$nomTable,
 					array(
-						'num_op_change' => intval(_GET_def('idEnCours')),
+						$nomColId => intval(_GET_def('idEnCours')),
 						'numop' => $this->ZoneParent->IdMembreConnecte()
 					)
 				) ;
+				// print_r($bd) ;
 			}
 		}
 		class ScriptChatTransactTradPlatf extends ScriptFormTransactBaseTradPlatf
@@ -668,9 +754,9 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteBonTresor = "images/marches/bf-entete-bon-tresor.png" ;
 			public $CheminImgCorpsBonTresor = "images/marches/bf-form-bon-tresor.png" ;
 			public $CheminImgPiedBonTresor = "images/marches/bf-pied-bon-tresor.png" ;
-			public $CheminImgEnteteObligation = "images/marches/benin-entete-obligation.png" ;
-			public $CheminImgCorpsObligation = "images/marches/benin-form-obligation.png" ;
-			public $CheminImgPiedObligation = "images/marches/benin-pied-obligation.png" ;
+			public $CheminImgEnteteObligation = "images/marches/bf-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/bf-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/bf-pied-obligation.png" ;
 		}
 		class DessinEditMarcheCIVTradPlatf extends DessinEditUEMOABaseTradPlatf
 		{

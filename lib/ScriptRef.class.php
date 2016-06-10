@@ -11,6 +11,10 @@
 		define('VW_OP_CHANGE_ACCESSIBLE', '(select `t1`.`num_op_change` AS `num_op_change`,`t1`.`type_change` AS `type_change`,`t1`.`id_ctrl` AS `id_ctrl`,`t1`.`ref_change` AS `ref_change`,`t1`.`montant_change` AS `montant_change`,`t1`.`date_change` AS `date_change`,`t1`.`taux_change` AS `taux_change`,`t1`.`id_devise1` AS `id_devise1`,`t1`.`id_devise2` AS `id_devise2`,`t1`.`numop` AS `numop`,`t1`.`date_valeur` AS `date_valeur`,`t1`.`date_operation` AS `date_operation`,`t1`.`bool_valide` AS `bool_valide`,`t1`.`bool_confirme` AS `bool_confirme`,`t1`.`bool_expire` AS `bool_expire`,`t1`.`num_op_change_dem` AS `num_op_change_dem`,`t1`.`commiss_ou_taux` AS `commiss_ou_taux`,`t1`.`mtt_commiss` AS `mtt_commiss`,`t1`.`date_commiss` AS `date_commiss`,`t1`.`type_taux` AS `type_taux`,`t1`.`ecran_taux` AS `ecran_taux`,`t1`.`commentaire` AS `commentaire`,`t1`.`montant_soumis` AS `montant_soumis`,`t1`.`taux_soumis` AS `taux_soumis`,(case when (`t1`.`commiss_ou_taux` = 0) then `t1`.`mtt_commiss` when (`t1`.`type_taux` = 0) then `t1`.`taux_change` else `t1`.`ecran_taux` end) AS `taux_transact`,`t7`.`shortname` AS `nom_court_entite`,`t7`.`name` AS `nom_entite`,`t2`.`code_devise` AS `lib_devise1`,`t3`.`code_devise` AS `lib_devise2`,`t4`.`login` AS `loginop`,`t4`.`nomop` AS `nomop`,`t4`.`prenomop` AS `prenomop`,`t5`.`id_entite_source` AS `id_entite_source`,`t5`.`id_entite_dest` AS `id_entite_dest`,`t5`.`top_active` AS `top_active`,`t6`.`numop` AS `numrep`,`t6`.`login` AS `loginrep` from ((((((`op_change` `t1` left join `devise` `t2` on((`t1`.`id_devise1` = `t2`.`id_devise`))) left join `devise` `t3` on((`t1`.`id_devise2` = `t3`.`id_devise`))) left join `operateur` `t4` on((`t1`.`numop` = `t4`.`numop`))) left join `oper_b_change` `t5` on((`t5`.`id_entite_source` = `t4`.`id_entite`))) left join `entite` `t7` on((`t5`.`id_entite_source` = `t7`.`id_entite`))) left join `operateur` `t6` on((`t5`.`id_entite_dest` = `t6`.`id_entite`))) where ((`t5`.`id_entite_dest` is not null) and (`t7`.`id_entite` is not null) and (`t6`.`login` is not null) and (`t5`.`top_active` = 1) and (`t4`.`active_op` = 1) and (`t1`.`num_op_change_dem` = 0) and (`t1`.`numop` <> `t6`.`numop`)))') ;
 		
 		define('VW_OP_INTER_ACCESSIBLE', '(select `t1`.`num_op_inter` AS `num_op_inter`,`t1`.`type_change` AS `type_change`,`t1`.`id_ctrl` AS `id_ctrl`,`t1`.`ref_change` AS `ref_change`,`t1`.`montant_change` AS `montant_change`,`t1`.`date_change` AS `date_change`,`t1`.`taux_change` AS `taux_change`,`t1`.`id_devise1` AS `id_devise1`,`t1`.`id_devise2` AS `id_devise2`,`t1`.`numop` AS `numop`,`t1`.`date_valeur` AS `date_valeur`,`t1`.`date_operation` AS `date_operation`,`t1`.`bool_valide` AS `bool_valide`,`t1`.`bool_confirme` AS `bool_confirme`,`t1`.`bool_expire` AS `bool_expire`,`t1`.`num_op_inter_dem` AS `num_op_inter_dem`,`t1`.`commiss_ou_taux` AS `commiss_ou_taux`,`t1`.`mtt_commiss` AS `mtt_commiss`,`t1`.`date_commiss` AS `date_commiss`,`t1`.`type_taux` AS `type_taux`,`t1`.`ecran_taux` AS `ecran_taux`,`t1`.`commentaire` AS `commentaire`,`t1`.`montant_soumis` AS `montant_soumis`,`t1`.`taux_soumis` AS `taux_soumis`,(case when (`t1`.`commiss_ou_taux` = 0) then `t1`.`mtt_commiss` when (`t1`.`type_taux` = 0) then `t1`.`taux_change` else `t1`.`ecran_taux` end) AS `taux_transact`,`t7`.`shortname` AS `nom_court_entite`,`t7`.`name` AS `nom_entite`,`t2`.`code_devise` AS `lib_devise1`,`t3`.`code_devise` AS `lib_devise2`,`t4`.`login` AS `loginop`,`t4`.`nomop` AS `nomop`,`t4`.`prenomop` AS `prenomop`,`t5`.`id_entite_source` AS `id_entite_source`,`t5`.`id_entite_dest` AS `id_entite_dest`,`t5`.`top_active` AS `top_active`,`t6`.`numop` AS `numrep`,`t6`.`login` AS `loginrep` from ((((((`op_inter` `t1` left join `devise` `t2` on((`t1`.`id_devise1` = `t2`.`id_devise`))) left join `devise` `t3` on((`t1`.`id_devise2` = `t3`.`id_devise`))) left join `operateur` `t4` on((`t1`.`numop` = `t4`.`numop`))) left join `oper_b_change` `t5` on((`t5`.`id_entite_source` = `t4`.`id_entite`))) left join `entite` `t7` on((`t5`.`id_entite_source` = `t7`.`id_entite`))) left join `operateur` `t6` on((`t5`.`id_entite_dest` = `t6`.`id_entite`))) where ((`t5`.`id_entite_dest` is not null) and (`t7`.`id_entite` is not null) and (`t6`.`login` is not null) and (`t5`.`top_active` = 1) and (`t4`.`active_op` = 1) and (`t1`.`num_op_inter_dem` = 0) and (`t1`.`numop` <> `t6`.`numop`)))') ;
+
+		/*
+		define('VW_OP_INTER_ACCESSIBLE', '(select `t1`.`num_op_inter` AS `num_op_inter`,`t1`.`type_change` AS `type_change`,`t1`.`id_ctrl` AS `id_ctrl`,`t1`.`ref_change` AS `ref_change`,`t1`.`montant_change` AS `montant_change`,`t1`.`date_change` AS `date_change`,`t1`.`taux_change` AS `taux_change`,`t1`.`id_devise1` AS `id_devise1`,`t1`.`id_devise2` AS `id_devise2`,`t1`.`numop` AS `numop`,`t1`.`date_valeur` AS `date_valeur`,`t1`.`date_operation` AS `date_operation`,`t1`.`bool_valide` AS `bool_valide`,`t1`.`bool_confirme` AS `bool_confirme`,`t1`.`bool_expire` AS `bool_expire`,`t1`.`num_op_inter_dem` AS `num_op_inter_dem`,`t1`.`commiss_ou_taux` AS `commiss_ou_taux`,`t1`.`mtt_commiss` AS `mtt_commiss`,`t1`.`date_commiss` AS `date_commiss`,`t1`.`type_taux` AS `type_taux`,`t1`.`ecran_taux` AS `ecran_taux`,`t1`.`commentaire` AS `commentaire`,`t1`.`montant_soumis` AS `montant_soumis`,`t1`.`taux_soumis` AS `taux_soumis`,(case when (`t1`.`commiss_ou_taux` = 0) then `t1`.`mtt_commiss` when (`t1`.`type_taux` = 0) then `t1`.`taux_change` else `t1`.`ecran_taux` end) AS `taux_transact`,`t7`.`shortname` AS `nom_court_entite`,`t7`.`name` AS `nom_entite`,`t2`.`code_devise` AS `lib_devise1`,`t3`.`code_devise` AS `lib_devise2`,`t4`.`login` AS `loginop`,`t4`.`nomop` AS `nomop`,`t4`.`prenomop` AS `prenomop`,`t5`.`id_entite_source` AS `id_entite_source`,`t5`.`id_entite_dest` AS `id_entite_dest`,`t5`.`top_active` AS `top_active`,`t6`.`numop` AS `numrep`,`t6`.`login` AS `loginrep` from ((((((`op_inter` `t1` left join `devise` `t2` on((`t1`.`id_devise1` = `t2`.`id_devise`))) left join `devise` `t3` on((`t1`.`id_devise2` = `t3`.`id_devise`))) left join `operateur` `t4` on((`t1`.`numop` = `t4`.`numop`))) left join `oper_b_change` `t5` on((`t5`.`id_entite_source` = `t4`.`id_entite`))) left join `entite` `t7` on((`t5`.`id_entite_source` = `t7`.`id_entite`))) left join `operateur` `t6` on((`t5`.`id_entite_dest` = `t6`.`id_entite`))) where ((`t5`.`id_entite_dest` is not null) and (`t7`.`id_entite` is not null) and (`t6`.`login` is not null) and (`t5`.`top_active` = 1) and (`t4`.`active_op` = 1) and (`t1`.`num_op_inter_dem` = 0) and (`t1`.`numop` <> `t6`.`numop`)))') ;
+		*/
 		
 		class ActAlerteNouvPublBaseTradPlatf extends PvActionBaseZoneWebSimple
 		{
@@ -72,6 +76,7 @@ where t2.num_op_change is null and numrep=:numOp and t1.type_change=".$this->Typ
 						$sql .= ' union ' ;
 					$sql .= $reqAlerte->Contenu ;
 				}
+				// print $sql ;
 				$lgns = $bd->FetchSqlRows($sql, array("numOp" => $this->ZoneParent->IdMembreConnecte())) ;
 				// echo '/* '.$this->ZoneParent->IdMembreConnecte().' */' ;
 				foreach($lgns as $i => $lgn)
@@ -569,6 +574,211 @@ where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("nu
 			}
 		}
 		
+		class ScriptListeCfgBonTresorTradPlatf extends ScriptLstBaseTradPlatf
+		{
+			public $TitreDocument = "Configurations bon de tresor" ;
+			public $Titre = "Configurations bon de tresor" ;
+			public $TablPrinc ;
+			public $NecessiteMembreConnecte = 1 ;
+			public $Privileges = array('admin_members') ;
+			protected $LargeurFenModif = 450 ;
+			protected $HauteurFenModif = 350 ;
+			protected $LargeurTablPrinc = 900 ;
+			public function DetermineEnvironnement()
+			{
+				// Création du tableau
+				$this->TablPrinc = new TableauDonneesBaseTradPlatf() ;
+				// Initialisation des propriétés
+				$this->TablPrinc->AdopteScript("tablePrinc", $this) ;
+				$this->TablPrinc->Largeur = $this->LargeurTablPrinc ;
+				$this->ChargeConfig() ;
+				// Renseigner la source de données
+				$this->TablPrinc->FournisseurDonnees = new PvFournisseurDonneesSql() ;
+				$this->TablPrinc->FournisseurDonnees->BaseDonnees = $this->ApplicationParent->BDPrincipale ;
+				// Requête de sélection
+				$this->TablPrinc->FournisseurDonnees->RequeteSelection = "(select t1.*, t2.codepays, t2.libpays from config_bon_tresor t1 inner join pays t2 on t1.idpays = t2.idpays)" ;
+				$optsOnglet = array("Largeur" => $this->LargeurFenModif, "Hauteur" => $this->HauteurFenModif, 'Modal' => 1, 'BoutonFermer' => 0, "Redimensionnable" => false) ;
+				$this->TablPrinc->InsereDefColCachee("id") ;
+				$defCol1 = $this->TablPrinc->InsereDefCol("codepays", "Code") ;
+				$defCol1->Largeur = "10%" ;
+				$defCol2 = $this->TablPrinc->InsereDefCol("libpays", "Libelle") ;
+				$defCol2->Largeur = "20%" ;
+				$defCol3 = $this->TablPrinc->InsereDefCol("telephone", "Zone") ;
+				$defCol3->Largeur = "15%" ;
+				$defCol3 = $this->TablPrinc->InsereDefCol("directeur_agence_uemoa", "Directeur") ;
+				$defCol3->Largeur = "25%" ;
+				$defCol4 = $this->TablPrinc->InsereDefCol("email", "Email") ;
+				$defCol4->Largeur = "20%" ;
+				$colActs = $this->TablPrinc->InsereDefColActions("Actions") ;
+				$colActs->Largeur = "*" ;
+				$lienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=modifCfgBonTresor&idEnCours=${id}', 'Modifier', 'modif_cfg_bon_tresor_${id}', 'Modifier config bon tresor', $optsOnglet) ;
+				$lienModif->ClasseCSS = "lien-act-001" ;
+			}
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$ctn .= $this->TablPrinc->RenduDispositif() ;
+				return $ctn ;
+			}
+		}
+		class ScriptModifCfgBonTresorTradPlatf extends ScriptEditBaseTradPlatf
+		{
+			public $TitreDocument = "Modif. config bon de tr&eacute;sor" ;
+			public $Titre = "Modif. config bon de tr&eacute;sor" ;
+			public $NecessiteMembreConnecte = 1 ;
+			public $Privileges = array('admin_members') ;
+			protected $FltId ;
+			protected $FltTelephone ;
+			protected $FltFax ;
+			protected $FltEmail ;
+			protected $FltDirUemoa ;
+			protected $FltRemarque ;
+			protected $FltPays ;
+			protected function InitFormPrinc()
+			{
+				parent::InitFormPrinc() ;
+				$this->FormPrinc->NomClasseCommandeExecuter = "PvCommandeModifElement" ;
+				$this->FormPrinc->NomClasseCommandeAnnuler = "PvCmdFermeFenetreActiveAdminDirecte" ;
+			}
+			protected function ChargeFormPrinc()
+			{
+				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
+				$this->FormPrinc->CommandeAnnuler->RafraichOnglActif = 1 ;
+				parent::ChargeFormPrinc() ;
+				$this->FltId = $this->FormPrinc->InsereFltLgSelectHttpGet("idEnCours", "id = <self>") ;
+				$this->FltId->Obligatoire = 1 ;
+				$this->FltPays = $this->FormPrinc->InsereFltEditHttpPost("idpays", "idpays") ;
+				$this->FltPays->Libelle = "Pays" ;
+				$compPays = $this->FltPays->DeclareComposant("PvZoneCorrespHtml") ;
+				$compPays->FournisseurDonnees = $this->CreeFournDonneesPrinc() ;
+				$compPays->FournisseurDonnees->RequeteSelection = "pays" ;
+				$compPays->NomColonneValeur = "idpays" ;
+				$compPays->NomColonneLibelle = "libpays" ;
+				$this->FltTelephone = $this->FormPrinc->InsereFltEditHttpPost("telephone", "telephone") ;
+				$this->FltTelephone->Libelle = "Telephone" ;
+				$this->FltTelephone->ObtientComposant()->Largeur = "180px" ;
+				$this->FltFax = $this->FormPrinc->InsereFltEditHttpPost("fax", "fax") ;
+				$this->FltFax->Libelle = "Fax" ;
+				$this->FltFax->ObtientComposant()->Largeur = "180px" ;
+				$this->FltEmail = $this->FormPrinc->InsereFltEditHttpPost("email", "email") ;
+				$this->FltEmail->Libelle = "Email" ;
+				$this->FltEmail->ObtientComposant()->Largeur = "240px" ;
+				$this->FltDirUemoa = $this->FormPrinc->InsereFltEditHttpPost("directeur_agence_uemoa", "directeur_agence_uemoa") ;
+				$this->FltDirUemoa->ObtientComposant()->Largeur = "180px" ;
+				$this->FltDirUemoa->Libelle = "Directeur agence UEMOA titre" ;
+				$this->FltRemarque = $this->FormPrinc->InsereFltEditHttpPost("remarque", "remarque") ;
+				$this->FltRemarque->Libelle = "Remarque" ;
+				$compRemarque = $this->FltRemarque->DeclareComposant("PvZoneMultiligneHtml") ;
+				$compRemarque->TotalLignes = "5" ;
+				$compRemarque->TotalColonnes = "40" ;
+				$this->FormPrinc->FournisseurDonnees = $this->CreeFournDonneesPrinc() ;
+				$this->FormPrinc->FournisseurDonnees->RequeteSelection = "config_bon_tresor" ;
+				$this->FormPrinc->FournisseurDonnees->TableEdition = "config_bon_tresor" ;
+			}
+		}
+
+		class ScriptListeCfgObligationTradPlatf extends ScriptLstBaseTradPlatf
+		{
+			public $TitreDocument = "Configurations obligation" ;
+			public $Titre = "Configurations obligation" ;
+			public $TablPrinc ;
+			public $NecessiteMembreConnecte = 1 ;
+			public $Privileges = array('admin_members') ;
+			protected $LargeurFenModif = 450 ;
+			protected $HauteurFenModif = 350 ;
+			protected $LargeurTablPrinc = 900 ;
+			public function DetermineEnvironnement()
+			{
+				// Création du tableau
+				$this->TablPrinc = new TableauDonneesBaseTradPlatf() ;
+				// Initialisation des propriétés
+				$this->TablPrinc->AdopteScript("tablePrinc", $this) ;
+				$this->TablPrinc->Largeur = $this->LargeurTablPrinc ;
+				$this->ChargeConfig() ;
+				// Renseigner la source de données
+				$this->TablPrinc->FournisseurDonnees = new PvFournisseurDonneesSql() ;
+				$this->TablPrinc->FournisseurDonnees->BaseDonnees = $this->ApplicationParent->BDPrincipale ;
+				// Requête de sélection
+				$this->TablPrinc->FournisseurDonnees->RequeteSelection = "(select t1.*, t2.codepays, t2.libpays from config_obligation t1 inner join pays t2 on t1.idpays = t2.idpays)" ;
+				$optsOnglet = array("Largeur" => $this->LargeurFenModif, "Hauteur" => $this->HauteurFenModif, 'Modal' => 1, 'BoutonFermer' => 0, "Redimensionnable" => false) ;
+				$this->TablPrinc->InsereDefColCachee("id") ;
+				$defCol1 = $this->TablPrinc->InsereDefCol("codepays", "Code") ;
+				$defCol1->Largeur = "10%" ;
+				$defCol2 = $this->TablPrinc->InsereDefCol("libpays", "Libelle") ;
+				$defCol2->Largeur = "20%" ;
+				$defCol3 = $this->TablPrinc->InsereDefCol("telephone", "Zone") ;
+				$defCol3->Largeur = "15%" ;
+				$defCol3 = $this->TablPrinc->InsereDefCol("directeur_agence_uemoa", "Directeur") ;
+				$defCol3->Largeur = "25%" ;
+				$defCol4 = $this->TablPrinc->InsereDefCol("email", "Email") ;
+				$defCol4->Largeur = "20%" ;
+				$colActs = $this->TablPrinc->InsereDefColActions("Actions") ;
+				$colActs->Largeur = "*" ;
+				$lienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($colActs, '?appelleScript=modifCfgObligation&idEnCours=${id}', 'Modifier', 'modif_cfg_obligation_${id}', 'Modifier config bon tresor', $optsOnglet) ;
+				$lienModif->ClasseCSS = "lien-act-001" ;
+			}
+			public function RenduSpecifique()
+			{
+				$ctn = '' ;
+				$ctn .= $this->TablPrinc->RenduDispositif() ;
+				return $ctn ;
+			}
+		}
+		class ScriptModifCfgObligationTradPlatf extends ScriptEditBaseTradPlatf
+		{
+			public $TitreDocument = "Modif. config obligation" ;
+			public $Titre = "Modif. config bon de obligation" ;
+			public $NecessiteMembreConnecte = 1 ;
+			public $Privileges = array('admin_members') ;
+			protected $FltId ;
+			protected $FltTelephone ;
+			protected $FltFax ;
+			protected $FltEmail ;
+			protected $FltDirUemoa ;
+			protected $FltRemarque ;
+			protected $FltPays ;
+			protected function InitFormPrinc()
+			{
+				parent::InitFormPrinc() ;
+				$this->FormPrinc->NomClasseCommandeExecuter = "PvCommandeModifElement" ;
+				$this->FormPrinc->NomClasseCommandeAnnuler = "PvCmdFermeFenetreActiveAdminDirecte" ;
+			}
+			protected function ChargeFormPrinc()
+			{
+				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
+				$this->FormPrinc->CommandeAnnuler->RafraichOnglActif = 1 ;
+				parent::ChargeFormPrinc() ;
+				$this->FltId = $this->FormPrinc->InsereFltLgSelectHttpGet("idEnCours", "id = <self>") ;
+				$this->FltId->Obligatoire = 1 ;
+				$this->FltPays = $this->FormPrinc->InsereFltEditHttpPost("idpays", "idpays") ;
+				$this->FltPays->Libelle = "Pays" ;
+				$compPays = $this->FltPays->DeclareComposant("PvZoneCorrespHtml") ;
+				$compPays->FournisseurDonnees = $this->CreeFournDonneesPrinc() ;
+				$compPays->FournisseurDonnees->RequeteSelection = "pays" ;
+				$compPays->NomColonneValeur = "idpays" ;
+				$compPays->NomColonneLibelle = "libpays" ;
+				$this->FltTelephone = $this->FormPrinc->InsereFltEditHttpPost("telephone", "telephone") ;
+				$this->FltTelephone->Libelle = "Telephone" ;
+				$this->FltTelephone->ObtientComposant()->Largeur = "180px" ;
+				$this->FltFax = $this->FormPrinc->InsereFltEditHttpPost("fax", "fax") ;
+				$this->FltFax->Libelle = "Fax" ;
+				$this->FltFax->ObtientComposant()->Largeur = "180px" ;
+				$this->FltEmail = $this->FormPrinc->InsereFltEditHttpPost("email", "email") ;
+				$this->FltEmail->Libelle = "Email" ;
+				$this->FltEmail->ObtientComposant()->Largeur = "240px" ;
+				$this->FltDirUemoa = $this->FormPrinc->InsereFltEditHttpPost("directeur_agence_uemoa", "directeur_agence_uemoa") ;
+				$this->FltDirUemoa->ObtientComposant()->Largeur = "180px" ;
+				$this->FltDirUemoa->Libelle = "Directeur agence UEMOA titre" ;
+				$this->FltRemarque = $this->FormPrinc->InsereFltEditHttpPost("remarque", "remarque") ;
+				$this->FltRemarque->Libelle = "Remarque" ;
+				$compRemarque = $this->FltRemarque->DeclareComposant("PvZoneMultiligneHtml") ;
+				$compRemarque->TotalLignes = "5" ;
+				$compRemarque->TotalColonnes = "40" ;
+				$this->FormPrinc->FournisseurDonnees = $this->CreeFournDonneesPrinc() ;
+				$this->FormPrinc->FournisseurDonnees->RequeteSelection = "config_obligation" ;
+				$this->FormPrinc->FournisseurDonnees->TableEdition = "config_obligation" ;
+			}
+		}
 		class ScriptAccueilStatsTradPlatf extends PvScriptWebSimple
 		{
 			public $NecessiteMembreConnecte = 1 ;
@@ -600,7 +810,7 @@ where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("nu
 				$this->CfgsAlerte["vente_devise"] = new CfgAlerteTransactTradPlatf("vente_devise", "Vous avez \${0} vente de devises non lues", "consultVentesDevise") ;
 				$this->CfgsAlerte["placement"] = new CfgAlerteTransactTradPlatf("placement", "Vous avez \${0} placements non lus", "consultPlacements") ;
 				$this->CfgsAlerte["emprunt"] = new CfgAlerteTransactTradPlatf("emprunt", "Vous avez \${0} emprunts non lus", "consultEmprunts") ;
-				$this->CfgsAlerte["negoc_op_change"] = new CfgAlerteTransactTradPlatf("emprunt", "Vous avez \${0} n&eacute;gociations de change non lues", "soumissOpChange") ;
+				$this->CfgsAlerte["negoc_op_change"] = new CfgAlerteTransactTradPlatf("negoc_op_change", "Vous avez \${0} n&eacute;gociations de change non lues", "soumissOpChange") ;
 				$this->CfgsAlerte["negoc_op_inter"] = new CfgAlerteTransactTradPlatf("negoc_op_inter", "Vous avez \${0} n&eacute;gociations internationales non lues", "soumissOpInter") ;
 			}
 			public function RenduSpecifique()

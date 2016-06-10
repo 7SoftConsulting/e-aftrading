@@ -150,7 +150,8 @@
 				$this->FmtModif->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtModif->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtModif->OptionsOnglet["Largeur"] = 600 ;
-				$this->FmtModif->OptionsOnglet["Hauteur"] = 535 ;
+				$this->FmtModif->OptionsOnglet["Hauteur"] = 275 ;
+				$this->FmtModif->OptionsOnglet["Redimensionnable"] = false ;
 				$this->FmtModif->FormatIdOnglet = 'modif_op_inter_${num_op_inter}' ;
 				$this->FmtModif->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Modifier placement' : 'Modifier emprunt' ;
 				$this->FmtModif->FormatCheminIcone = 'images/icones/modif.png' ;
@@ -164,7 +165,8 @@
 				$this->FmtSuppr->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtSuppr->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtSuppr->OptionsOnglet["Largeur"] = 600 ;
-				$this->FmtSuppr->OptionsOnglet["Hauteur"] = 535 ;
+				$this->FmtSuppr->OptionsOnglet["Hauteur"] = 275 ;
+				$this->FmtSuppr->OptionsOnglet["Redimensionnable"] = false ;
 				$this->FmtSuppr->FormatIdOnglet = 'suppr_op_inter_${num_op_inter}' ;
 				$this->FmtSuppr->FormatTitreOnglet = ($this->ScriptParent->TypeOpInter == 1) ? 'Supprimer placement' : 'Supprimer emprunt' ;
 				$this->FmtSuppr->FormatCheminIcone = 'images/icones/suppr.png' ;
@@ -275,7 +277,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 					$this->CmdAjout = new PvCommandeOuvreFenetreAdminDirecte() ;
 					$this->CmdAjout->Libelle = "Ajouter" ;
 					$this->CmdAjout->NomScript = ($this->ScriptParent->TypeOpInter == 1) ? "ajoutPlacement" : "ajoutEmprunt" ;
-					$this->CmdAjout->OptionsOnglet = array("Largeur" => "670", "Hauteur" => "545", "Modal" => 1, "BoutonFermer" => 0, "LibelleFermer" => "Fermer") ;
+					$this->CmdAjout->OptionsOnglet = array("Largeur" => "670", "Hauteur" => "275", "Modal" => 1, "BoutonFermer" => 0, "LibelleFermer" => "Fermer", "Redimensionnable" => false) ;
 					$this->CmdAjout->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 					$this->InscritCommande("cmdAjout", $this->CmdAjout) ;
 				}
@@ -584,7 +586,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltMontant = $this->ScriptParent->CreeFiltreHttpPost("montant") ;
 				$this->FltMontant->DefinitColLiee("montant_change") ;
 				$this->FltMontant->Libelle = "Montant" ;
-				$this->FltMontant->FormatteurEtiquette = new FmtMonnaieEtiqTradPlatf() ;
+				$this->FltMontant->DeclareComposant("PvPriceFormatJQuery") ;
 				$this->FiltresEdition[] = & $this->FltMontant ;
 				// Taux / Commission
 				$this->FltMttTaux = $this->ScriptParent->CreeFiltreHttpPost("taux_change") ;
@@ -787,6 +789,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				{
 					$this->StatutExecution = 1 ;
 					$this->MessageExecution = $this->MessageSuccesExecution ;
+					$idEnCours = $bd->FetchSqlValue('select num_op_inter from op_inter where numop=:numOperateur and num_op_inter_dem=:numOpInter', array('numOperateur' => $this->ZoneParent->Membership->MemberLogged->Id, 'numOpInter' => $numOpInter), 'num_op_inter') ;
+					$this->ZoneParent->ActualiseAccusesOpInter($idEnCours, $this) ;
 				}
 				else
 				{
@@ -945,7 +949,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn .= '<table width="100%" cellspacing=0 cellpadding="2">'.PHP_EOL ;
 				$ctn .= '<tr><th colspan="2" align="left">Transaction</th></tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td width="25%">Devise :</td><td width="*"><table cellspacing="0" cellpadding="0"><tr><td>'.$this->RenduFiltre($composant->FltDevise1, $composant).'</td></tr></table></td>'.PHP_EOL ;
+				$ctn .= '<td width="25%">Devise</td><td width="*"><table cellspacing="0" cellpadding="0"><tr><td>'.$this->RenduFiltre($composant->FltDevise1, $composant).'</td></tr></table></td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Montant</td>'.PHP_EOL ;
@@ -1106,7 +1110,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$ctn = '' ;
 				$ctn .= '<tr>' ;
 				$ctn .= '<td><label for="'.$composant->FltMontantSoumis->ObtientIDElementHtmlComposant().'">'.$composant->FltMontantSoumis->ObtientLibelle().'</label></td>' ;
-				$ctn .= '<td>'.$this->RenduFiltreMonnaie($composant->FltMontantSoumis).'</td>' ;
+				$ctn .= '<td>'.$composant->FltMontantSoumis->Rendu().'</td>' ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>' ;
 				$ctn .= '<td><label for="'.$composant->FltTauxSoumis->ObtientIDElementHtmlComposant().'">'.$composant->FltTauxSoumis->ObtientLibelle().'</label></td>' ;
@@ -1427,7 +1431,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$this->FltTauxDem->Libelle = "Taux (%)" ;
 				$this->FltMontantSoumis = $this->InsereFltEditHttpPost("montant_soumis", "montant_soumis") ;
 				$this->FltMontantSoumis->Libelle = "Montant" ;
-				$this->FltMontantSoumis->ObtientComposant()->ClassesCSS[] = "nombre" ;
+				$this->FltMontantSoumis->DeclareComposant("PvPriceFormatJQuery") ;
 				$this->FltTauxSoumis = $this->InsereFltEditHttpPost("taux_soumis", "taux_soumis") ;
 				$this->FltTauxSoumis->Libelle = "Taux (%)" ;
 				$this->FltTauxSoumis->ObtientComposant()->ClassesCSS[] = "nombre" ;
@@ -1774,6 +1778,15 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				return new FormInteretPlacementTradPlatf() ;
 				// return new FormAjustPlacementTradPlatf() ;
 			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = parent::RenduDispositifBrut() ;
+				if($this->FormOpInter->ElementEnCoursTrouve)
+				{
+					$this->NotifieAccuseLecture("accuse_op_inter", "num_op_inter") ;
+				}
+				return $ctn ;
+			}
 		}
 		class ScriptNegocPlacementTradPlatf extends ScriptAjoutPlacementTradPlatf
 		{
@@ -1901,6 +1914,15 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			protected function CreeFormOpInter()
 			{
 				return new FormInteretEmpruntTradPlatf() ;
+			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = parent::RenduDispositifBrut() ;
+				if($this->FormOpInter->ElementEnCoursTrouve)
+				{
+					$this->NotifieAccuseLecture("accuse_op_inter", "num_op_inter") ;
+				}
+				return $ctn ;
 			}
 		}
 		class ScriptNegocEmpruntTradPlatf extends ScriptAjoutEmpruntTradPlatf
@@ -2294,6 +2316,10 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 
 		class ScriptSoumissOpInterTradPlatf extends ScriptListBaseOpInter
 		{
+			public $Titre = "Op&eacute;rations interbancaires" ;
+			public $TitreDocument = "Op&eacute;rations interbancaires" ;
+			public $ActiverAutoRafraich = 1 ;
+			public $DelaiAutoRafraich = 60 ;
 			protected function DetermineTablPrinc()
 			{
 				$this->TablPrinc = new TablNegocOpInterTradPlatf() ;

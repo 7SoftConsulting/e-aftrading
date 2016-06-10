@@ -140,7 +140,8 @@
 				$this->FmtModif->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtModif->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtModif->OptionsOnglet["Largeur"] = 600 ;
-				$this->FmtModif->OptionsOnglet["Hauteur"] = 535 ;
+				$this->FmtModif->OptionsOnglet["Hauteur"] = 275 ;
+				$this->FmtModif->OptionsOnglet["Redimensionnable"] = false ;
 				$this->FmtModif->FormatIdOnglet = 'modif_op_change_${num_op_change}' ;
 				$this->FmtModif->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Modifier achat de devises' : 'Modifier vente de devises' ;
 				$this->FmtModif->FormatCheminIcone = 'images/icones/modif.png' ;
@@ -154,7 +155,8 @@
 				$this->FmtSuppr->OptionsOnglet["Modal"] = 1 ;
 				$this->FmtSuppr->OptionsOnglet["BoutonFermer"] = 0 ;
 				$this->FmtSuppr->OptionsOnglet["Largeur"] = 600 ;
-				$this->FmtSuppr->OptionsOnglet["Hauteur"] = 535 ;
+				$this->FmtSuppr->OptionsOnglet["Hauteur"] = 275 ;
+				$this->FmtSuppr->OptionsOnglet["Redimensionnable"] = false ;
 				$this->FmtSuppr->FormatIdOnglet = 'suppr_op_change_${num_op_change}' ;
 				$this->FmtSuppr->FormatTitreOnglet = ($this->ScriptParent->TypeOpChange == 1) ? 'Supprimer achat de devises' : 'Supprimer vente de devises' ;
 				$this->FmtSuppr->FormatCheminIcone = 'images/icones/suppr.png' ;
@@ -263,7 +265,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 					$this->CmdAjout->Libelle = "Ajouter" ;
 					$this->CmdAjout->NomScript = ($this->ScriptParent->TypeOpChange == 1) ? "ajoutAchatDevise" : "ajoutVenteDevise" ;
 					$this->CmdAjout->NomScript = ($this->ScriptParent->TypeOpChange == 1) ? "ajoutAchatDevise" : "ajoutVenteDevise" ;
-					$this->CmdAjout->OptionsOnglet = array("Largeur" => "670", "Hauteur" => "545", "Modal" => 1, "BoutonFermer" => 0, "LibelleFermer" => "Fermer") ;
+					$this->CmdAjout->OptionsOnglet = array("Largeur" => "670", "Hauteur" => "275", "Modal" => 1, "BoutonFermer" => 0, "LibelleFermer" => "Fermer", "Redimensionnable" => false) ;
 					$this->CmdAjout->UrlOnglActifSurFerm = "?appelleScript=".(($this->ScriptParent->TypeOpChange == 1) ? "editAchatsDevise" : "editVentesDevise") ;
 					$this->InscritCommande("cmdAjoutDevise", $this->CmdAjout) ;
 				}
@@ -705,6 +707,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltMontant = $this->ScriptParent->CreeFiltreHttpPost("montant") ;
 				$this->FltMontant->DefinitColLiee("montant_change") ;
 				$this->FltMontant->Libelle = "Montant" ;
+				$this->FltMontant->DeclareComposant("PvPriceFormatJQuery") ;
 				$this->FltMontant->ObtientComposant()->ClassesCSS[] = "nombre" ;
 				$this->FltMontant->FormatteurEtiquette = new FmtMonnaieEtiqTradPlatf() ;
 				$this->FiltresEdition[] = & $this->FltMontant ;
@@ -751,7 +754,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				// Montant soumis
 				$this->FltMttSoumis = $this->InsereFltEditHttpPost('montant_soumis', 'montant_soumis') ;
 				$this->FltMttSoumis->NePasIntegrerParametre = 1 ;
-				$this->FltMttSoumis->FormatteurEtiquette = new FmtMonnaieEtiqTradPlatf() ;
+				$this->FltMttSoumis->DeclareComposant("PvPriceFormatJQuery") ;
 				// Taux soumis
 				$this->FltTauxSoumis = $this->InsereFltEditHttpPost('taux_soumis', 'taux_soumis') ;
 				$this->FltTauxSoumis->NePasIntegrerParametre = 1 ;
@@ -1064,7 +1067,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn .= '<table width="100%" cellspacing=0 cellpadding="2">'.PHP_EOL ;
 				$ctn .= '<tr><th colspan="2" align="left">Transaction</th></tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
-				$ctn .= '<td width="25%">Devise :</td><td width="*"><table cellspacing="0" cellpadding="0"><tr><td>'.$this->RenduFiltre($composant->FltDevise1, $composant).'</td><td>&nbsp;&nbsp;Contre&nbsp;&nbsp;</td><td>'.$this->RenduFiltre($composant->FltDevise2, $composant).'</td></tr></table></td>'.PHP_EOL ;
+				$ctn .= '<td width="25%">Devise</td><td width="*"><table cellspacing="0" cellpadding="0"><tr><td>'.$this->RenduFiltre($composant->FltDevise1, $composant).'</td><td>&nbsp;&nbsp;Contre&nbsp;&nbsp;</td><td>'.$this->RenduFiltre($composant->FltDevise2, $composant).'</td></tr></table></td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td>Montant</td>'.PHP_EOL ;
@@ -1225,7 +1228,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ctn = '' ;
 				$ctn .= '<tr>' ;
 				$ctn .= '<td><label for="'.$composant->FltMontantSoumis->ObtientIDElementHtmlComposant().'">'.$composant->FltMontantSoumis->ObtientLibelle().'</label></td>' ;
-				$ctn .= '<td>'.$this->RenduFiltreMonnaie($composant->FltMontantSoumis).'</td>' ;
+				$ctn .= '<td>'.$composant->FltMontantSoumis->Rendu().'</td>' ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>' ;
 				$ctn .= '<td><label for="'.$composant->FltTauxSoumis->ObtientIDElementHtmlComposant().'">'.$composant->FltTauxSoumis->ObtientLibelle().'</label></td>' ;
@@ -1364,6 +1367,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			public $MaxFiltresEditionParLigne = 1 ;
 			public $LigneOpChangeDem = array() ;
 			public $MsgReponseInterdit = '<div class="ui-state-error">Vous avez d&eacute;j&agrave; r&eacute;pondu &agrave; cette offre.</div>' ;
+			public $MsgNegocAttente = '<div class="ui-state-error">Vous &ecirc;tes d&eacute;j&agrave; en n&eacute;gociation avec ce membre.</div>' ;
 			protected function CreeDessinFltsEdit()
 			{
 				return new DessinFiltresAjustOpChange() ;
@@ -1386,15 +1390,16 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$ok = parent::EstAccessible() ;
 				if(! $ok)
 					return $ok ;
-				$idMembre = $this->ZoneParent->IdMembreConnecte() ;
 				$bd = & $this->ApplicationParent->BDPrincipale ;
 				$ligne = array() ;
 				if($this->InclureElementEnCours)
 				{
 					$idEnCours = $this->FltIdEnCours->Lie() ;
+					$idMembre = $this->ZoneParent->IdMembreConnecte() ;
 					$ligne = $bd->FetchSqlRow('select t1.* from op_change t1
 	inner join op_change t2 on t1.num_op_change_dem = t2.num_op_change
 	where t1.num_op_change='.$bd->ParamPrefix.'idEnCours and (t1.numop = '.$bd->ParamPrefix.'idMembre or t2.numop = '.$bd->ParamPrefix.'idMembre)', array('idEnCours' => $idEnCours, 'idMembre' => $idMembre)) ;
+					// print_r($bd) ;
 				}
 				else
 				{
@@ -1443,6 +1448,27 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 					}
 				}
 				return $ok ;
+			}
+			protected function NegociationEnAttente()
+			{
+				if($this->InclureElementEnCours)
+				{
+					return 0 ;
+				}
+				$idMembre = $this->ZoneParent->IdMembreConnecte() ;
+				$idEnCours = $this->FltIdEnCours->Lie() ;
+				$bd = & $this->ApplicationParent->BDPrincipale ;
+				$ligne = $bd->FetchSqlRow(
+					'select t1.* from op_change t1
+	inner join op_change t2 on t1.num_op_change_dem = t2.num_op_change
+	where t1.num_op_change <> '.$bd->ParamPrefix.'idEnCours and ((t1.numop = '.$bd->ParamPrefix.'idMembre and t2.numop = '.$bd->ParamPrefix.'idPartie) or (t1.numop = '.$bd->ParamPrefix.'idPartie and t2.numop = '.$bd->ParamPrefix.'idMembre)) and t1.bool_confirme=0',
+					array('idEnCours' => $idEnCours, 'idMembre' => $idMembre, 'idPartie' => ($this->LigneOpChangeDem["numop"]))
+				) ;
+				if(! is_array($ligne) || count($ligne) > 0)
+				{
+					return 1 ;
+				}
+				return 0 ;
 			}
 			public function ChargeConfig()
 			{
@@ -1562,8 +1588,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$this->FltTauxDem->Libelle = "Taux de change" ;
 				$this->FltTauxDem->ClassesCSS[] = "nombre" ;
 				$this->FltMontantSoumis = $this->InsereFltEditHttpPost("montant_soumis", "montant_soumis") ;
-				$this->FltMontantSoumis->ClassesCSS[] = "nombre" ;
 				$this->FltMontantSoumis->Libelle = "Montant" ;
+				$this->FltMontantSoumis->DeclareComposant("PvPriceFormatJQuery") ;
 				$this->FltTauxSoumis = $this->InsereFltEditHttpPost("taux_soumis", "taux_soumis") ;
 				$this->FltTauxSoumis->Libelle = "Taux de change" ;
 				$this->FltTauxSoumis->ClassesCSS[] = "nombre" ;
@@ -1608,6 +1634,10 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				if(! $ok)
 				{
 					$ctn .= $this->MsgReponseInterdit ;
+				}
+				elseif($this->InclureElementEnCours == 0 && $this->NegociationEnAttente())
+				{
+					$ctn .= $this->MsgNegocAttente ;
 				}
 				else
 				{
@@ -1721,6 +1751,8 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 		{
 			public $Titre = "Negociations op&eacute;rations de change" ;
 			public $TitreDocument = "Negociations op&eacute;rations de change" ;
+			public $ActiverAutoRafraich = 1 ;
+			public $DelaiAutoRafraich = 60 ;
 			protected function DetermineTablPrinc()
 			{
 				$this->TablPrinc = new TablNegocOpChangeTradPlatf() ;

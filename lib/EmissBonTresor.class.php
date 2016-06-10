@@ -4,6 +4,16 @@
 	{
 		define('EMISS_BON_TRESOR_TRAD_PLATF', 1) ;
 		
+		class DessinFltsBonTresorTradPlatf extends PvDessinateurRenduHtmlFiltresDonnees
+		{
+			public $IdPays = 1 ;
+			public function Execute(& $script, & $composant, $parametres)
+			{
+				$composant->LieTousLesFiltres() ;
+				return ":P" ;
+			}
+		}
+		
 		class ScriptBaseEmissBonTresorTradPlatf extends ScriptTransactBaseTradPlatf
 		{
 			public $OptsFenetreEdit = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
@@ -118,7 +128,7 @@
 					// Propositions
 					$this->SousMenuPropos = $this->BarreMenu->MenuRacine->InscritSousMenuScript('proposEmissBonTresor') ;
 					$this->SousMenuPropos->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
-					$this->SousMenuPropos->Titre = "R&eacute;servations" ;
+					$this->SousMenuPropos->Titre = "Visuel des souscriptions" ;
 				}
 			}
 			protected function RenduDispositifBrut()
@@ -289,7 +299,7 @@ inner join (select id_emission, count(0) total from reserv_bon_tresor group by i
 on t1.id = t2.id_emission
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservEmissBonTresor&id=${id}', 'R&eacute;servations', 'list_reserv_emiss_bon_tresor_${id}', 'Liste r&eacute;servations &Eacute;mission Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservEmissBonTresor&id=${id}', 'Souscriptions', 'list_reserv_emiss_bon_tresor_${id}', 'Liste souscriptions &Eacute;mission Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
@@ -315,6 +325,13 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $FltDevise ;
 			public $FltDateEmission ;
 			public $FltDateEcheance ;
+			public $FltPourcentMttAdjuc ;
+			public $FltDateDepotSoumiss ;
+			public $FltHeureDepotSoumiss ;
+			public $FltIdAppDepotSoumiss ;
+			public $FltLieuEtabl ;
+			public $FltDateEtabl ;
+			public $FltDirecteurTresor ;
 			public $CompDevise ;
 			public $FltNumOp ;
 			public $CompDateEmission ;
@@ -351,6 +368,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FormPrinc->InclureTotalElements = ($this->PourAjout) ? 0 : 1 ;
 				$this->FormPrinc->Editable = $this->FormPrincEditable ;
 				$this->FormPrinc->InscrireCommandeExecuter = $this->InscrireCmdExecFormPrinc ;
+				// $this->FormPrinc->DessinateurFiltresEdition = new DessinFltsBonTresorTradPlatf() ;
 			}
 			protected function ChargeFormPrinc()
 			{
@@ -401,6 +419,20 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltDateEcheance->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltCodeISIN = $this->FormPrinc->InsereFltEditHttpPost('code_isin', 'code_isin') ;
 				$this->FltCodeISIN->Libelle = "Code ISIN" ;
+				$this->FltPourcentMttAdjuc = $this->FormPrinc->InsereFltEditHttpPost('pourcent_mtt_adjuc', 'pourcent_mtt_adjuc') ;
+				$this->FltPourcentMttAdjuc->Libelle = "Pourcentage montant adjucation" ;
+				$this->FltDateDepotSoumiss = $this->FormPrinc->InsereFltEditHttpPost('date_depot_soumiss', 'date_depot_soumiss') ;
+				$this->FltDateDepotSoumiss->Libelle = "Date depot soumission" ;
+				$this->FltHeureDepotSoumiss = $this->FormPrinc->InsereFltEditHttpPost('heure_depot_soumiss', 'heure_depot_soumiss') ;
+				$this->FltHeureDepotSoumiss->Libelle = "Heure depot soumission" ;
+				$this->FltIdAppSoumiss = $this->FormPrinc->InsereFltEditHttpPost('id_app_soumiss', 'id_app_soumiss') ;
+				$this->FltIdAppSoumiss->Libelle = "Application soumission" ;
+				$this->FltLieuEtabl = $this->FormPrinc->InsereFltEditHttpPost('lieu_etabl', 'lieu_etabl') ;
+				$this->FltLieuEtabl->Libelle = "Lieu etablissement" ;
+				$this->FltDateEtabl = $this->FormPrinc->InsereFltEditHttpPost('date_etabl', 'date_etabl') ;
+				$this->FltDateEtabl->Libelle = "Date etablissement" ;
+				$this->FltDirecteurTresor = $this->FormPrinc->InsereFltEditHttpPost('directeur_tresor', 'directeur_tresor') ;
+				$this->FltDirecteurTresor->Libelle = "Directeur tresor" ;
 				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) duree_emission from emission_bon_tresor t1)" ;
 				$this->FournDonneesPrinc->TableEdition = "emission_bon_tresor" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
@@ -438,6 +470,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 						$ctn .= '<br />' ;
 					}
 					$ctn .= $this->ZoneParent->RemplisseurConfig->AppliqueScriptBonTresor($this) ;
+					// $ctn .= $this->FormPrinc->RenduDispositif() ;
 				}
 				else
 				{

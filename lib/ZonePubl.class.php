@@ -70,6 +70,7 @@
 		
 		class ZonePublTradPlatf extends PvZoneWebAdminDirecte
 		{
+			public $EncodageDocument = "utf-8" ;
 			public $MessageIntroduction = "Bienvenue sur Trading Platform, la plateforme d'echange de tresorerie. Pour acc&eacute;der à votre espace, veuillez vous connecter" ;
 			public $ContenuPiedDocument = "Trading Platform 2014 &copy; tous droits r&eacute;serv&eacute;s." ;
 			public $NomClasseMembership = "MembershipTradPlatf" ;
@@ -296,6 +297,10 @@
 			public $ScriptDetailReventeBonTresor ;
 			public $ScriptModifReventeBonTresor ;
 			public $ScriptSupprReventeBonTresor ;
+			public $ScriptListeCfgBonTresor ;
+			public $ScriptModifCfgBonTresor ;
+			public $ScriptListeCfgObligation ;
+			public $ScriptModifCfgObligation ;
 			public $RemplisseurConfig ;
 			protected $LargeurFenInscription = 750 ;
 			protected $HauteurFenInscription = 525 ;
@@ -304,6 +309,7 @@
 			public $PrivilegesMenuMembership = array("admin_operator", "admin_members") ;
 			public $PrivilegesPassePartout = array("admin_members") ;
 			public $ActAlerteTransacts ;
+			public $CacherIconeOnglet = 1 ;
 			protected function InitConfig()
 			{
 				parent::InitConfig() ;
@@ -411,9 +417,9 @@
 				$this->MenuOpInterbancaire = $this->MenuListeTransacts->InscritSousMenuFige("transactsOpInterbancaires") ;
 				$this->MenuOpInterbancaire->Titre = "Op&eacute;ration interbancaire" ;
 				$this->MenuOpInterbancaire->Privileges[] = "post_op_change" ;
-				$this->MenuListePlacements = $this->MenuOpInterbancaire->InscritSousMenuScript("listePlacements") ;
+				$this->MenuListePlacements = $this->MenuOpInterbancaire->InscritSousMenuScript("editPlacements") ;
 				$this->MenuListePlacements->Titre = "Placements" ;
-				$this->MenuListeEmprunts = $this->MenuOpInterbancaire->InscritSousMenuScript("listeEmprunts") ;
+				$this->MenuListeEmprunts = $this->MenuOpInterbancaire->InscritSousMenuScript("editEmprunts") ;
 				$this->MenuListeEmprunts->Titre = "Emprunts" ;
 				$this->MenuArchOpInter = $this->MenuOpInterbancaire->InscritSousMenuScript("consultArchOpInter") ;
 				$this->MenuArchOpInter->Titre = "Archives" ;
@@ -461,6 +467,15 @@
 				$this->MenuEmissBonTresor->Titre = "Bons du Tr&eacute;sor" ;
 				$this->MenuEmissObligation = $this->MenuAvisAppelOffres->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissObligation' : 'publierEmissObligation') ;
 				$this->MenuEmissObligation->Titre = "Obligations" ;
+				if($this->PossedePrivilege('post_doc_tresorier'))
+				{
+					$this->MenuCfgUEMOATitre = $this->MenuUMOATitres->InscritSousMenuFige('CfgUEMOATitre') ;
+					$this->MenuCfgUEMOATitre->Titre = "Informations " ;
+					$this->MenuCfgBonTresor = $this->MenuCfgUEMOATitre->InscritSousMenuScript('listeCfgBonTresor') ;
+					$this->MenuCfgBonTresor->Titre = "Bons du Tr&eacute;sor" ;
+					$this->MenuCfgObligation = $this->MenuCfgUEMOATitre->InscritSousMenuScript('listeCfgObligation') ;
+					$this->MenuCfgObligation->Titre = "Obligations" ;
+				}
 				if($this->PossedePrivilege('post_doc_entreprise'))
 				{
 					$this->MenuEmissObligation->Titre = "Obligations" ;
@@ -473,6 +488,8 @@
 				}
 				$this->MenuStats = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('stats') ;
 				$this->MenuStats->Titre = "Statistiques" ;
+				$this->MenuRappAnnuels = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('rapports_annuels') ;
+				$this->MenuRappAnnuels->Titre = "Rapports annuels" ;
 			}
 			protected function ChargeAvantMenusMembership()
 			{
@@ -830,6 +847,10 @@
 				$this->ScriptSelectPaysBonTresor->NomScriptRedirect = "ajoutEmissBonTresor" ;
 				$this->ScriptSelectPaysOblig = $this->InsereScript('selectPaysOblig', new ScriptSelectPaysTradPlatf()) ;
 				$this->ScriptSelectPaysOblig->NomScriptRedirect = "ajoutEmissObligation" ;
+				$this->ScriptListeCfgBonTresor = $this->InsereScript('listeCfgBonTresor', new ScriptListeCfgBonTresorTradPlatf()) ;
+				$this->ScriptModifCfgBonTresor = $this->InsereScript('modifCfgBonTresor', new ScriptModifCfgBonTresorTradPlatf()) ;
+				$this->ScriptListeCfgObligation = $this->InsereScript('listeCfgObligation', new ScriptListeCfgObligationTradPlatf()) ;
+				$this->ScriptModifCfgObligation = $this->InsereScript('modifCfgObligation', new ScriptModifCfgObligationTradPlatf()) ;
 				// $this->ScriptBienvenue->Titre = "Trading Platform" ;
 				$this->ScriptAccueil->TitreDocument = "Trading Platform" ;
 				// $this->ChargeScriptsMembershipSuppl() ;
@@ -880,7 +901,72 @@
 	.lien-act-005 { background-image:url(images/bg-lien-05.png) ; }
 	.lien-act-001, .lien-act-002, .lien-act-003, .lien-act-004, .lien-act-005 { background-position: top center ; background-repeat:no-repeat; padding : 6px; padding-left:20px; padding-right:20px; text-decoration:none ; }
 	.lien-act-001:link, .lien-act-002:link, .lien-act-003:link, .lien-act-004:link, .lien-act-005:link, .lien-act-001:visited, .lien-act-002:visited, .lien-act-003:visited, .lien-act-004:visited, .lien-act-005:visited { color:white ; }
-	.lien-act-001:hover, .lien-act-002:hover, .lien-act-003:hover, .lien-act-004:hover { color:#ededed ; }' ;
+	.lien-act-001:hover, .lien-act-002:hover, .lien-act-003:hover, .lien-act-004:hover { color:#ededed ; }
+	#fenetreConnexion { margin-left:200px ; }' ;
+				return $ctn ;
+			}
+			protected function ObtientContenuJsNonConnecte1()
+			{
+				$ctn = '' ;
+				$ctn .= 'jQuery(function()
+{
+	ouvreFenetreConnexion() ;
+}) ;
+function ouvreFenetreConnexion()
+{
+	jQuery(\'#fenetreConnexion\').dialog({
+		modal : true,
+		width : 300,
+		height : 177,
+		resizable : false,
+		draggable : false,
+		position:{
+			of : jQuery("#logo-accueil"),
+			at : "left+8% center",
+			my : "left+8% center"
+		},
+		buttons : [{
+			text : "Annuler",
+			click : function() { jQuery(this).dialog("close") ; }
+		},
+		{
+			text : "Se Connecter",
+			click : function() {
+				jQuery(this).find("form").submit() ;
+				jQuery(this).dialog("close") ;
+			}
+		}]
+	});
+	jQuery(\'#fenetreConnexion\').find(":input").keypress(function(evt) {
+		if(evt.which == 13)
+		{
+			jQuery(this).closest("form").submit() ;
+			jQuery(\'#fenetreConnexion\').dialog("close") ;
+		}
+	}) ;
+}' ;
+				if($this->AutoriserInscription == 1)
+				{
+					$ctn .= '
+function ouvreFenetreInscription()
+{
+	jQuery(\'#fenetreInscription\').dialog("open");
+}
+function fermeFenetreInscription()
+{
+	jQuery(\'#fenetreInscription\').dialog("close");
+}
+jQuery(function() {
+	jQuery(\'#fenetreInscription\').dialog({
+		modal : true,
+		width : '.$this->LargeurFenInscription.',
+		height : "'.$this->HauteurFenInscription.'",
+		resizable : false,
+		draggable : false,
+		autoOpen : false
+	}) ;
+}) ;' ;
+				}
 				return $ctn ;
 			}
 			protected function RenduCorpsDocumentNonConnecte()
@@ -931,6 +1017,57 @@
 				$ctn .= '</body>' ;
 				return $ctn ;
 			}
+			protected function RenduCorpsDocumentNonConnecte1()
+			{
+				$ctn = '' ;
+				$ctn .= '<script type="text/javascript">
+	jQuery(function() {
+		if(window.top != window)
+		{
+			window.top.location.href = window.location ;
+		}
+	}) ;
+</script>' ;
+				$ctn .= '<body id="corps_document" align="center">' ;
+				$ctn .= '<div align="center" id="logo-accueil"><img src="images/logo-accueil.png" width="375" /></div>'.PHP_EOL ;
+				if($this->ScriptPourRendu->NomElementZone == $this->NomScriptDeconnexion)
+				{
+					$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
+	<tr>
+	<td align="center">' ;
+					$ctn .= $this->RenduContenuCorpsDocument() ;
+					$ctn .= '</td>
+	</tr>
+</table>' ;
+				}
+				else
+				{
+					$ctn .= '<div><a href="javascript:ouvreFenetreConnexion() ;"><img src="images/btn-acces-platf.png" border="0" width="215" height="46" /></a>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<a href="javascript:ouvreFenetreInscription() ;"><img src="images/btn-inscription.png" border="0" width="130" alt="Inscription" /></a></div>'.PHP_EOL ;
+					$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
+	<tr>
+	<td align="center">' ;
+					$ctn .= '<p>&nbsp;</p>
+					<p>&nbsp;</p>
+					</td>
+	</tr>
+	</table>'.PHP_EOL ;
+					$ctn .= '<div id="fenetreConnexion" title="Authentification">
+		<form id="formulaireConnexion" action="'.$this->ScriptConnexion->ObtientUrl().'" method="post">' ;
+					if($this->ScriptConnexion->TentativeConnexionEnCours && $this->ScriptConnexion->TentativeConnexionValidee == 0)
+					{
+						$ctn .= '<div class="erreur ui-state-error">'.$this->ScriptConnexion->MessageConnexionEchouee.'</div>'.PHP_EOL ;
+					}
+					$ctn .= $this->ScriptConnexion->RenduTableauParametres().'
+		</form>
+	</div>'.PHP_EOL ;
+				}
+				$ctn .= $this->RenduFenetreInscription() ;
+				$ctn .= '<div id="pied">'.$this->ContenuPiedDocument.'</div>'.PHP_EOL ;
+				$ctn .= '</body>' ;
+				return $ctn ;
+			}
 			protected function RenduCorpsDocumentParDefaut()
 			{
 				$ctn = parent::RenduCorpsDocumentParDefaut() ;
@@ -955,11 +1092,11 @@
 				$sql = array() ;
 				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
 				$condArch2 = '('.$bd->SqlDatePart('date_creation').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
-				$sqls[] = 'insert into arch_op_change select op_change.*, '.$bd->SqlNow().' from op_change where '.$condArch ;
+				$sqls[] = 'insert into arch_op_change select null, op_change.*, '.$bd->SqlNow().' from op_change where '.$condArch ;
 				$sqls[] = 'delete from op_change where '.$condArch ;
 				$sqls[] = 'ALTER TABLE op_change auto_increment = 1' ;
 				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
-				$sqls[] = 'insert into arch_op_inter select op_inter.*, '.$bd->SqlNow().' from op_inter where '.$condArch ;
+				$sqls[] = 'insert into arch_op_inter select null, op_inter.*, '.$bd->SqlNow().' from op_inter where '.$condArch ;
 				$sqls[] = 'delete from op_inter where '.$condArch ;
 				$sqls[] = 'ALTER TABLE op_inter auto_increment = 1' ;
 				$sqls[] = 'delete from accuse_op_change where '.$condArch2 ;
@@ -1020,7 +1157,7 @@
 				$bd = $cmd->ApplicationParent->BDPrincipale ;
 				$form = & $cmd->FormulaireDonneesParent ;
 				$idMembre = $cmd->ZoneParent->IdMembreConnecte() ;
-				$lgn = $bd->FetchSqlRow('select t1.*, t2.numop numop_dem from op_inter t1 inner join op_inter t2 on t1.num_oop_inter_dem=t2.num_op_inter where t1.num_op_inter=:numOpInter', array('numOpInter' => $idEnCours)) ;
+				$lgn = $bd->FetchSqlRow('select t1.*, t2.numop numop_dem from op_inter t1 inner join op_inter t2 on t1.num_op_inter_dem=t2.num_op_inter where t1.num_op_inter=:numOpInter', array('numOpInter' => $idEnCours)) ;
 				if(count($lgn) > 0)
 				{
 					$bd->RunSql('delete from accuse_op_inter where num_op_inter=:numOpInter and numop=:numOp', array('numOpInter' => $lgn["num_op_inter"], "numOp" => ($lgn["numop"] != $idMembre) ? $lgn["numop"] : $lgn["numop_dem"])) ;
@@ -1738,7 +1875,7 @@
 					$ctn .= '<option value="'.$lgn["idpays"].'">'.htmlentities($lgn["libpays"]).'</option>' ;
 				}
 				$ctn .= '</select>' ;
-				$ctn .= '<input type="submit" value="Selectionner" />'.PHP_EOL ;
+				$ctn .= '<input type="submit" value="Valider" />'.PHP_EOL ;
 				$ctn .= '</div>'.PHP_EOL ;
 				$ctn .= '</form>' ;
 				$ctn .= '</div>' ;
@@ -1755,7 +1892,7 @@
 			public $LibelleLienChMP = "Changer mot de passe" ;
 			public $CheminIconeLienDecnx = "images/miniatures/deconnexion.png" ;
 			public $LibelleLienDecnx = "Deconnexion" ;
-			public $DelaiRafraichAlertes = 300 ;
+			public $DelaiRafraichAlertes = 60 ;
 			public $LienNouvAchatDevise ;
 			public function ChargeConfig()
 			{
@@ -1820,11 +1957,15 @@
 				$ctn .= '</table>'.PHP_EOL ;
 				$ctn .= '</div>'.PHP_EOL ;
 				$ctn .= '<script type="text/javascript">
-	'.$this->IDInstanceCalc.' = {
+	var '.$this->IDInstanceCalc.' = {
 		actualiseAlertes : function() {
 			jQuery.ajax('.svc_json_encode($urlAction).', { success : function(data, textStatus, jqXHR) {
 					var infosAlerte = new Object() ;
-					try { eval("infosAlerte = " + data + " ;") } catch(ex) { alert(ex) ; } ;
+					try { eval("infosAlerte = " + data + " ;") }
+					catch(ex) {
+						// alert(ex + "\n\n" + data) ;
+						infosAlerte = {} ;
+					} ;
 					// alert(data) ;
 					'.$this->IDInstanceCalc.'.definitAlertes(infosAlerte) ;
 					setTimeout("'.$this->IDInstanceCalc.'.actualiseAlertes()", '.($this->DelaiRafraichAlertes * 1000).') ;
@@ -1990,7 +2131,7 @@
 		
 		class LienAlerteNouvPublTradPlatf extends PvComposantIUBase
 		{
-			public $DelaiRafraich = 2 ;
+			public $DelaiRafraich = 0.5 ;
 			public $NomAction ;
 			public $Titre ;
 			protected function RenduDispositifBrut()

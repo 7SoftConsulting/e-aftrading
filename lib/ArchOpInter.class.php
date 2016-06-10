@@ -6,7 +6,7 @@
 		
 		class ScriptConsultArchOpInterTradPlatf extends PvScriptWebSimple
 		{
-			public $HauteurCadre = 450 ;
+			public $HauteurCadre = 350 ;
 			public function RenduDispositifBrut()
 			{
 				$ctn = '' ;
@@ -65,16 +65,19 @@
 				$this->TablPrinc->AdopteScript('tablPrinc', $this) ;
 				$this->TablPrinc->ChargeConfig() ;
 				// $this->DefColTri = $this->TablPrinc->InsereDefColCachee('date_change') ;
-				$this->TablPrinc->InsereDefsColCachee("date_change", "num_op_inter", "id_emetteur", "id_devise1", "id_devise2", "lib_devise1", "lib_devise2", "bool_confirme", "bool_valide") ;
+				$this->TablPrinc->InsereDefsColCachee("id_arch", "date_change", "num_op_inter", "id_emetteur", "id_devise1", "id_devise2", "lib_devise1", "lib_devise2", "bool_confirme", "bool_valide") ;
 				$this->DefColRefChange = $this->TablPrinc->InsereDefCol('ref_change', 'Ref change') ;
-				$this->DefColDevise = $this->TablPrinc->InsereDefColHtml('${lib_devise2} / ${lib_devise1}', 'Devise') ;
+				$this->DefColDevise = $this->TablPrinc->InsereDefColHtml('${lib_devise2}', 'Devise') ;
 				$this->DefColLoginOp = $this->TablPrinc->InsereDefCol('login_operateur', 'Auteur') ;
 				$this->DefColNomEntiteOp = $this->TablPrinc->InsereDefCol('nom_entite_operateur', 'Banque') ;
 				$this->DefColDateOp = $this->TablPrinc->InsereDefCol('date_operation', 'Date Op.', $bd->SqlDateToStrFr('date_operation')) ;
 				$this->DefColDateValeur = $this->TablPrinc->InsereDefCol('date_valeur', 'Date Valeur', $bd->SqlDateToStrFr('date_valeur')) ;
 				$this->DefColMontant = $this->TablPrinc->InsereDefColMoney('montant_operateur', 'Montant') ;
 				$this->DefColTaux = $this->TablPrinc->InsereDefCol('taux_transact', 'Taux') ;
-				$this->FltNumOp = $this->TablPrinc->InsereFltSelectFixe('num_operateur', $this->ZoneParent->IdMembreConnecte(), '(id_emetteur=<self> or (id_repondeur=<self> and bool_valide=1))') ;
+				if(! $this->ZoneParent->MembreSuperAdminConnecte() && ! $this->ZoneParent->PossedeTousPrivileges())
+				{
+					$this->FltNumOp = $this->TablPrinc->InsereFltSelectFixe('num_operateur', $this->ZoneParent->IdMembreConnecte(), '(id_emetteur=<self> or (id_repondeur=<self> and bool_valide=1))') ;
+				}
 				$this->FltConfirme = $this->TablPrinc->InsereFltSelectFixe('est_confirme', 1, 'bool_confirme=<self>') ;
 				$this->FltTypeChange = $this->TablPrinc->InsereFltSelectFixe('type_change_accepte', $this->IdTypeChange, 'type_change=<self>') ;
 				$this->FltDateDebut = $this->TablPrinc->InsereFltSelectHttpGet('date_debut', 'date_change >= <self>') ;
@@ -86,16 +89,17 @@
 				$this->FltDateFin->DeclareComposant("PvCalendarDateInput") ;
 				$this->DefColActions = $this->TablPrinc->InsereDefColActions('Actions') ;
 				$this->LienDetails = $this->TablPrinc->InsereLienOuvreFenetreAction(
-					$this->DefColActions,'?appelleScript=detailArchOpInter&idEnCours=${num_op_inter}&dateChange=${date_change}',
-					"Details", 'detail_arch_op_inter_${num_op_inter}',
+					$this->DefColActions,'?appelleScript=detailArchOpInter&idEnCours=${id_arch}',
+					"Details", 'detail_arch_op_inter_${id_arch}',
 					"Details archive operation de change", 
-					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 525)
+					array('Modal' => 1, 'BoutonFermer' => 0, 'Largeur' => 450, 'Hauteur' => 400)
 				) ;
 				$this->LienDetails->NomCadreConteneur = "top" ;
 				$this->TablPrinc->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$this->TablPrinc->FournisseurDonnees->BaseDonnees = $bd ;
 				$this->TablPrinc->FournisseurDonnees->RequeteSelection = "(
-	select d1.code_devise lib_devise1,
+	select t1.id_arch,
+		d1.code_devise lib_devise1,
 		d2.code_devise lib_devise2,
 		t1.id_devise1,
 		t1.id_devise2,
@@ -123,6 +127,8 @@
 		t1.bool_valide,
 		t1.bool_confirme,
         t1.type_change,
+        t1.mtt_commiss_soumis,
+        t1.date_valeur_soumis,
 		case when t1.numop = t2.numop then t1.montant_change else t1.montant_soumis end montant_operateur,
 		case when t1.numop = t2.numop then t2.numop else e1.numop end id_operateur,
 		case when t1.numop = t2.numop then t3.login else e1.login end login_operateur,
@@ -186,11 +192,12 @@
 				$this->FormPrinc->ChargeConfig() ;
 				$this->FormPrinc->CommandeAnnuler->NomCadreConteneur = "top" ;
 				
-				$this->FltIdEnCours = $this->FormPrinc->InsereFltSelectHttpGet("idEnCours", "num_op_inter=<self>") ;
+				$this->FltIdEnCours = $this->FormPrinc->InsereFltSelectHttpGet("idEnCours", "id_arch=<self>") ;
 				$this->FltIdEnCours->Obligatoire = 1 ;
-				$this->FltDateEnCours = $this->FormPrinc->InsereFltSelectHttpGet("dateChange", "date(date_change)=date(<self>)") ;
-				$this->FltAuteur = $this->FormPrinc->InsereFltSelectFixe("membre", $this->ZoneParent->IdMembreConnecte(), "id_emetteur=<self> or id_soumis = <self>") ;
-				$this->FltDateEnCours->Obligatoire = 1 ;
+				if(! $this->ZoneParent->MembreSuperAdminConnecte() && ! $this->ZoneParent->PossedeTousPrivileges())
+				{
+					$this->FltAuteur = $this->FormPrinc->InsereFltSelectFixe("membre", $this->ZoneParent->IdMembreConnecte(), "id_emetteur=<self> or id_soumis = <self>") ;
+				}
 				
 				$this->FltDevise = $this->FormPrinc->InsereFltEditHttpPost("lib_devise", "lib_devise") ;
 				$this->FltDevise->Libelle = "Devise" ;
@@ -232,9 +239,10 @@
 				
 				$this->FormPrinc->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$this->FormPrinc->FournisseurDonnees->BaseDonnees = $bd ;
-				$this->FormPrinc->FournisseurDonnees->RequeteSelection = "(select d1.code_devise lib_devise1,
+				$this->FormPrinc->FournisseurDonnees->RequeteSelection = "(select t1.id_arch,
+	d1.code_devise lib_devise1,
 	d2.code_devise lib_devise2,
-	concat(d1.code_devise, ' / ', d2.code_devise) lib_devise,
+	d2.code_devise lib_devise,
 	t1.id_devise1,
 	t1.id_devise2,
 	case when t1.commiss_ou_taux = 0 then t1.taux_soumis when t1.type_taux = 0 then t1.taux_change else t1.ecran_taux end taux_transact,
@@ -262,6 +270,8 @@
 	t1.ecran_taux,
 	t1.bool_valide,
 	t1.bool_confirme,
+	t1.mtt_commiss_soumis,
+	t1.date_valeur_soumis,
 	t2.type_change
 from arch_op_inter t1
 inner join arch_op_inter t2 ON t2.num_op_inter = t1.num_op_inter_dem

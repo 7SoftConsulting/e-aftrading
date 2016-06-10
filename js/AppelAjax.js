@@ -294,8 +294,11 @@ function ReponseAjax() {
 	this.DateEntete = "" ;
 	this.AnalyseXmlHttp = function (xmlHttp) {
 		this.EtatChangement = xmlHttp.readyState ;
-		this.CodeStatutHttp = xmlHttp.status ;
+		/*
+		if(xmlHttp.status != undefined)
+			this.CodeStatutHttp = xmlHttp.status ;
 		this.ContenuCorps = xmlHttp.responseText ;
+		*/
 		// alert(xmlHttp.responseText) ;
 	}
 	this.ChargeEntetes = function (xmlHttp) {
