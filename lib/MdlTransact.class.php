@@ -672,6 +672,42 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				$ctn = '' ;
 				return $ctn ;
 			}
+			protected function RenduFormBonTresorSpec(& $script, & $composant)
+			{
+				return '' ;
+			}
+			public function RenduFormBonTresor(& $script, & $composant)
+			{
+				$ctn = '' ;
+				$ctn .= $this->RenduFormBonTresorSpec($script, $composant) ;
+				$ctn .= $this->RenduJsScriptBonTresor($script) ;
+				return $ctn ;
+			}
+			protected function RenduFormObligationSpec(& $script, & $composant)
+			{
+				return '' ;
+			}
+			public function RenduFormObligation(& $script, & $composant)
+			{
+				$ctn = '' ;
+				$ctn .= $this->RenduFormObligationSpec($script, $composant) ;
+				$ctn .= $this->RenduJsScriptObligation($script) ;
+				return $ctn ;
+			}
+			protected function RenduFiltre(& $composant, & $filtre)
+			{
+				$ctn = '' ;
+				if($composant->Editable)
+				{
+					// $ctn .= $filtre->Lie() ;
+					$ctn .= $filtre->Rendu() ;
+				}
+				else
+				{
+					$ctn .= $filtre->Etiquette() ;
+				}
+				return $ctn ;
+			}
 			public function RenduScriptBonTresor(& $script)
 			{
 				$ctn = '' ;
@@ -699,6 +735,260 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "" ;
 			public $CheminImgCorpsObligation = "" ;
 			public $CheminImgPiedObligation = "" ;
+			protected $LargeurDoc = "800" ;
+			protected $Texte1 = "" ;
+			protected $Texte1Pluriel = 1 ;
+			protected $LargeurForm = "" ;
+			protected $LargeurEnteteDoc = "464" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/bf-entete1-bon-tresor.png" ;
+			protected $CouleurBg1 = "#ff0000" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#ff0000" ;
+			protected $CouleurBg4 = "#ff0000" ;
+			protected $CouleurBg5 = "#ffda00" ;
+			protected $VilleSignature = "Dakar" ;
+			protected function RenduFormBonTresorSpec(& $script, & $composant)
+			{
+				$remplCfg = & $script->ZoneParent->RemplisseurConfig ;
+				$ctn = '' ;
+				$ctn .= '<div align="center"><table width="'.$this->LargeurDoc.'" cellspacing="0" cellpadding="2" align="center">'.PHP_EOL ;
+				$ctn .= '<tr>
+<td background="'.$this->CheminImgEnteteFormBonTresor.'" style="background-repeat:no-repeat; height:'.$this->LargeurEnteteDoc.'px">&nbsp;</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td>
+<p><b style="font-size:14px">'.$this->Texte1.'</b><br />
+'.(($this->Texte1Pluriel) ? 'PORTENT' : 'PORTE').' A LA CONNAISSANCE DU PUBLIC QU\'ILS ORGANISENT UN APPEL D\'OFFRES POUR LA SESSION DE BONS DE TR&Eacute;SOR<br />DONT LES TERMES SONT LES SUIVANTS</p>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center">
+	<span style="background:'.$this->CouleurBg1.'; padding:4px; font-size:20px; color:white; font-weight:bold;">CARACTERISTIQUES DE L\'OFFRE</span>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center">
+<br />
+<table width="'.$this->LargeurForm.'" cellspacing="0" cellpadding="4">
+<tr>
+<td>'.$script->FltEmetteur->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltEmetteur).'</td>
+</tr>
+<tr>
+<td>'.$script->FltValNominaleUnit->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltValNominaleUnit).'</td>
+</tr>
+<tr>
+<td>'.$script->FltCodeISIN->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltCodeISIN).'</td>
+</tr>
+<tr>
+<td>'.$script->FltTauxInteret->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltTauxInteret).'</td>
+</tr>
+<tr>
+<td>'.$script->FltRefTransact->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltRefTransact).'</td>
+</tr>
+<tr>
+<td>'.$script->FltMontant->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltMontant).'</td>
+</tr>
+<tr>
+<td>'.$script->FltDevise->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltDevise).'</td>
+</tr>
+<tr>
+<td>'.$script->FltDateEmission->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltDateEmission).'</td>
+</tr>
+<tr>
+<td>'.$script->FltDateEcheance->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltDateEcheance).'</td>
+</tr>
+</table>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center" style="background:'.$this->CouleurBg2.'; padding:4px; font-size:14px; font-weight:bold;">'.$this->RenduFiltre($composant, $script->FltPourcentMttAdjuc).'</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr><td>&nbsp;</td></tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center">
+	<span style="background:'.$this->CouleurBg3.'; padding:4px; font-size:20px; color:white; font-weight:bold;">DEPOT DES SOUMISSIONS</span>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr><td>&nbsp;</td></tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center" style="background:'.$this->CouleurBg4.'; padding:4px; font-size:16px; color:white; font-weight:bold;">
+<table align="center" cellspacing="0" cellpadding="2">
+<tr>
+<td>Date</td>
+<td>'.$this->RenduFiltre($composant, $script->FltDateDepotSoumiss).'</td>
+</tr>
+<tr>
+<td>Heure limite</td>
+<td>'.$this->RenduFiltre($composant, $script->FltHeureDepotSoumiss).'</td>
+</tr>
+<tr>
+<td colspan="2">Les offres sont re&ccedil;ues &agrave; travers l\'application e-AFTrading</td>
+</tr>
+</table>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr><td>&nbsp;</td></tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center">
+<p align="left">'.nl2br(htmlentities($remplCfg->LgnEmetteurSelect["remarque"])).'</p>
+<table width="100%" cellspacing="0" cellpadding="2">
+<tr>
+<td>
+<p>'.$this->RenduFiltre($composant, $script->FltLieuSignature).', le '.$this->RenduFiltre($composant, $script->FltDateSignature).'</p>
+<p>Le Directeur de l\'agence UEMOA-Titres<br />
+<b>'.htmlentities($remplCfg->LgnEmetteurSelect["directeur_agence_uemoa"]).'</b>
+</p>
+</td>
+<td align="right">
+<p>Le Directeur G&eacute;n&eacute;ral du Tr&eacute;sor et de la Comptabilit&eacute; Publique<br />
+'.$this->RenduFiltre($composant, $script->FltDirecteurTresor).'
+</p>
+</td>
+</tr>
+</table>
+<div style="font-size:10px; font-style:italic; font-weight:bold;">Cette &eacute;mission est organis&eacute;e avec le concours de la Banque Centrale des Etats de l\'Afrique de l\'Ouest (BCEAO)</div>
+</td>
+</tr>
+<tr>
+<td align="center">
+<p style="background:'.$this->CouleurBg5.'; color:white; font-size:14px"><b>Pour plus d\'informations, merci de contacter l\'agence UEMOA-Titre :</b><br />
+Email : '.htmlentities($remplCfg->LgnEmetteurSelect["email"]).' / Tel : '.htmlentities($remplCfg->LgnEmetteurSelect["telephone"]).' / Fax : '.htmlentities($remplCfg->LgnEmetteurSelect["fax"]).'
+</p>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '</table></div>'.PHP_EOL ;
+				return $ctn ;
+			}
+			protected function RenduFormObligationSpec(& $script, & $composant)
+			{
+				$remplCfg = & $script->ZoneParent->RemplisseurConfig ;
+				$ctn = '' ;
+				$ctn .= '<div align="center"><table width="'.$this->LargeurDoc.'" cellspacing="0" cellpadding="2" align="center">'.PHP_EOL ;
+				$ctn .= '<tr>
+<td background="'.$this->CheminImgEnteteFormObligation.'" style="background-repeat:no-repeat; height:'.$this->LargeurEnteteDoc.'px">&nbsp;</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td>
+<p><b style="font-size:14px">'.$this->Texte1.'</b><br />
+'.(($this->Texte1Pluriel) ? 'PORTENT' : 'PORTE').' A LA CONNAISSANCE DU PUBLIC QU\'ILS ORGANISENT UN APPEL D\'OFFRES POUR LA CESSION D\'OBLIGATIONS DU TRESOR<br /> DONT LES TERMES SONT LES SUIVANTS</p>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center">
+	<span style="background:'.$this->CouleurBg1.'; padding:4px; font-size:20px; color:white; font-weight:bold;">CARACTERISTIQUES DE L\'OFFRE</span>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center">
+<br />
+<table width="'.$this->LargeurForm.'" cellspacing="0" cellpadding="4">
+<tr>
+<td>'.$script->FltEmetteur->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltEmetteur).'</td>
+</tr>
+<tr>
+<td>'.$script->FltValNominaleUnit->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltValNominaleUnit).'</td>
+</tr>
+<tr>
+<td>'.$script->FltCodeISIN->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltCodeISIN).'</td>
+</tr>
+<tr>
+<td>'.$script->FltTaux->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltTaux).'</td>
+</tr>
+<tr>
+<td>'.$script->FltRefTransact->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltRefTransact).'</td>
+</tr>
+<tr>
+<td>'.$script->FltMontant->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltMontant).'</td>
+</tr>
+<tr>
+<td>'.$script->FltDevise->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltDevise).'</td>
+</tr>
+<tr>
+<td>'.$script->FltDateEmission->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltDateEmission).'</td>
+</tr>
+<tr>
+<td>'.$script->FltDateEcheance->ObtientLibelle().'</td>
+<td>'.$this->RenduFiltre($composant, $script->FltDateEcheance).'</td>
+</tr>
+</table>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center" style="background:'.$this->CouleurBg2.'; padding:4px; font-size:14px; font-weight:bold;">'.$this->RenduFiltre($composant, $script->FltPourcentMttAdjuc).'</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr><td>&nbsp;</td></tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center">
+	<span style="background:'.$this->CouleurBg3.'; padding:4px; font-size:20px; color:white; font-weight:bold;">DEPOT DES SOUMISSIONS</span>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr><td>&nbsp;</td></tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center" style="background:'.$this->CouleurBg4.'; padding:4px; font-size:16px; color:white; font-weight:bold;">
+<table align="center" cellspacing="0" cellpadding="2">
+<tr>
+<td>Date</td>
+<td>'.$this->RenduFiltre($composant, $script->FltDateDepotSoumiss).'</td>
+</tr>
+<tr>
+<td>Heure limite</td>
+<td>'.$this->RenduFiltre($composant, $script->FltHeureDepotSoumiss).'</td>
+</tr>
+<tr>
+<td colspan="2">Les offres sont re&ccedil;ues &agrave; travers l\'application e-AFTrading</td>
+</tr>
+</table>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '<tr><td>&nbsp;</td></tr>'.PHP_EOL ;
+				$ctn .= '<tr>
+<td align="center">
+<p align="left">'.nl2br(htmlentities($remplCfg->LgnEmetteurSelect["remarque"])).'</p>
+<table width="100%" cellspacing="0" cellpadding="2">
+<tr>
+<td>
+<p>'.$this->RenduFiltre($composant, $script->FltLieuSignature).', le '.$this->RenduFiltre($composant, $script->FltDateSignature).'</p>
+<p>Le Directeur de l\'agence UEMOA-Titres<br />
+<b>'.htmlentities($remplCfg->LgnEmetteurSelect["directeur_agence_uemoa"]).'</b>
+</p>
+</td>
+<td align="right">
+<p>Le Directeur G&eacute;n&eacute;ral du Tr&eacute;sor et de la Comptabilit&eacute; Publique<br />
+'.$this->RenduFiltre($composant, $script->FltDirecteurTresor).'
+</p>
+</td>
+</tr>
+</table>
+<div style="font-size:10px; font-style:italic; font-weight:bold;">Cette &eacute;mission est organis&eacute;e avec le concours de la Banque Centrale des Etats de l\'Afrique de l\'Ouest (BCEAO)</div>
+</td>
+</tr>
+<tr>
+<td align="center">
+<p style="background:'.$this->CouleurBg5.'; color:white; font-size:14px"><b>Pour plus d\'informations, merci de contacter l\'agence UEMOA-Titre :</b><br />
+Email : '.htmlentities($remplCfg->LgnEmetteurSelect["email"]).' / Tel : '.htmlentities($remplCfg->LgnEmetteurSelect["telephone"]).' / Fax : '.htmlentities($remplCfg->LgnEmetteurSelect["fax"]).'
+</p>
+</td>
+</tr>'.PHP_EOL ;
+				$ctn .= '</table></div>'.PHP_EOL ;
+				return $ctn ;
+			}
 			protected function RenduEnteteScriptBonTresor(& $script)
 			{
 				$ctn = '<table width="800" class="doc-edit-marche" cellspacing="0" cellpadding="2">
@@ -748,6 +1038,14 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "images/marches/benin-entete-obligation.png" ;
 			public $CheminImgCorpsObligation = "images/marches/benin-form-obligation.png" ;
 			public $CheminImgPiedObligation = "images/marches/benin-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/benin-entete1-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/benin-entete1-obligation.png" ;
+			protected $Texte1 = "L'agence UEMOA-Titre et le Tr&eacute;sor B&eacute;ninois" ;
+			protected $CouleurBg1 = "#ff0000" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#ff0000" ;
+			protected $CouleurBg4 = "#ff0000" ;
+			protected $CouleurBg5 = "#009900" ;
 		}
 		class DessinEditMarcheBFTradPlatf extends DessinEditUEMOABaseTradPlatf
 		{
@@ -757,6 +1055,14 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "images/marches/bf-entete-obligation.png" ;
 			public $CheminImgCorpsObligation = "images/marches/bf-form-obligation.png" ;
 			public $CheminImgPiedObligation = "images/marches/bf-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/bf-entete1-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/bf-entete1-obligation.png" ;
+			protected $Texte1 = "L'agence UEMOA-Titre et le Tr&eacute;sor Burkinab&eacute;" ;
+			protected $CouleurBg1 = "#ff0000" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#ff0000" ;
+			protected $CouleurBg4 = "#ff0000" ;
+			protected $CouleurBg5 = "#008001" ;
 		}
 		class DessinEditMarcheCIVTradPlatf extends DessinEditUEMOABaseTradPlatf
 		{
@@ -766,6 +1072,14 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "images/marches/ci-entete-obligation.png" ;
 			public $CheminImgCorpsObligation = "images/marches/ci-form-obligation.png" ;
 			public $CheminImgPiedObligation = "images/marches/ci-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/ci-entete1-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/ci-entete1-obligation.png" ;
+			protected $Texte1 = "L'agence UEMOA-Titre et le Tr&eacute;sor Ivoirien" ;
+			protected $CouleurBg1 = "#017f01" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#017f01" ;
+			protected $CouleurBg4 = "#017f01" ;
+			protected $CouleurBg5 = "#ffa808" ;
 		}
 		class DessinEditMarcheGBTradPlatf extends DessinEditUEMOABaseTradPlatf
 		{
@@ -775,6 +1089,14 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "images/marches/gb-entete-obligation.png" ;
 			public $CheminImgCorpsObligation = "images/marches/gb-form-obligation.png" ;
 			public $CheminImgPiedObligation = "images/marches/gb-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/gb-entete1-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/gb-entete1-obligation.png" ;
+			protected $Texte1 = "L'agence UEMOA-Titre et le Tr&eacute;sor Bissau Guin&eacute;en" ;
+			protected $CouleurBg1 = "#008001" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#008001" ;
+			protected $CouleurBg4 = "#008001" ;
+			protected $CouleurBg5 = "#fe0000" ;
 		}
 		class DessinEditMarcheMaliTradPlatf extends DessinEditUEMOABaseTradPlatf
 		{
@@ -784,6 +1106,14 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "images/marches/mali-entete-obligation.png" ;
 			public $CheminImgCorpsObligation = "images/marches/mali-form-obligation.png" ;
 			public $CheminImgPiedObligation = "images/marches/mali-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/mali-entete1-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/mali-entete1-obligation.png" ;
+			protected $Texte1 = "L'agence UEMOA-Titre et le Tr&eacute;sor Malien" ;
+			protected $CouleurBg1 = "#008001" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#008001" ;
+			protected $CouleurBg4 = "#008001" ;
+			protected $CouleurBg5 = "#fe0000" ;
 		}
 		class DessinEditMarcheNigerTradPlatf extends DessinEditUEMOABaseTradPlatf
 		{
@@ -793,6 +1123,14 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "images/marches/niger-entete-obligation.png" ;
 			public $CheminImgCorpsObligation = "images/marches/niger-form-obligation.png" ;
 			public $CheminImgPiedObligation = "images/marches/niger-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/niger-entete1-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/niger-entete1-obligation.png" ;
+			protected $Texte1 = "L'agence UEMOA-Titre et le Tr&eacute;sor Nigerien" ;
+			protected $CouleurBg1 = "#ffa808" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#ffa808" ;
+			protected $CouleurBg4 = "#ffa808" ;
+			protected $CouleurBg5 = "#008001" ;
 		}
 		class DessinEditMarcheSenegalTradPlatf extends DessinEditUEMOABaseTradPlatf
 		{
@@ -802,6 +1140,14 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "images/marches/senegal-entete-obligation.png" ;
 			public $CheminImgCorpsObligation = "images/marches/senegal-form-obligation.png" ;
 			public $CheminImgPiedObligation = "images/marches/senegal-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/senegal-entete1-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/senegal-entete1-obligation.png" ;
+			protected $Texte1 = "L'agence UEMOA-Titre et le Tr&eacute;sor S&eacute;n&eacute;galais" ;
+			protected $CouleurBg1 = "#009900" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#009900" ;
+			protected $CouleurBg4 = "#009900" ;
+			protected $CouleurBg5 = "#feda00" ;
 		}
 		class DessinEditMarcheTogoTradPlatf extends DessinEditUEMOABaseTradPlatf
 		{
@@ -811,6 +1157,14 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "images/marches/togo-entete-obligation.png" ;
 			public $CheminImgCorpsObligation = "images/marches/togo-form-obligation.png" ;
 			public $CheminImgPiedObligation = "images/marches/togo-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/togo-entete1-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/togo-entete1-obligation.png" ;
+			protected $Texte1 = "L'agence UEMOA-Titre et le Tr&eacute;sor Togolais" ;
+			protected $CouleurBg1 = "#fe0000" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#fe0000" ;
+			protected $CouleurBg4 = "#fe0000" ;
+			protected $CouleurBg5 = "#feda00" ;
 		}
 		
 		class DessinEditMarchSecTradPlatf extends DessinEditUEMOABaseTradPlatf
@@ -821,6 +1175,15 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			public $CheminImgEnteteObligation = "images/marches/marchesec-entete-obligation.png" ;
 			public $CheminImgCorpsObligation = "images/marches/marchesec-form-obligation.png" ;
 			public $CheminImgPiedObligation = "images/marches/marchesec-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/marchesec-entete1-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/marchesec-entete1-obligation.png" ;
+			protected $Texte1 = "L'AGENCE UEMOA" ;
+			protected $Texte1Pluriel = 0 ;
+			protected $CouleurBg1 = "#1c88ae" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#1c88ae" ;
+			protected $CouleurBg4 = "#1c88ae" ;
+			protected $CouleurBg5 = "#1c88ae" ;
 		}
 		
 		class FormEditDocMarcheTradPlatf extends FormulaireDonneesBaseTradPlatf

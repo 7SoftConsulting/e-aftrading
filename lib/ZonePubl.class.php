@@ -467,14 +467,18 @@
 				$this->MenuEmissBonTresor->Titre = "Bons du Tr&eacute;sor" ;
 				$this->MenuEmissObligation = $this->MenuAvisAppelOffres->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissObligation' : 'publierEmissObligation') ;
 				$this->MenuEmissObligation->Titre = "Obligations" ;
-				if($this->PossedePrivilege('post_doc_tresorier'))
+				if($this->PossedePrivilege('admin_operator'))
 				{
-					$this->MenuCfgUEMOATitre = $this->MenuUMOATitres->InscritSousMenuFige('CfgUEMOATitre') ;
-					$this->MenuCfgUEMOATitre->Titre = "Informations " ;
-					$this->MenuCfgBonTresor = $this->MenuCfgUEMOATitre->InscritSousMenuScript('listeCfgBonTresor') ;
-					$this->MenuCfgBonTresor->Titre = "Bons du Tr&eacute;sor" ;
-					$this->MenuCfgObligation = $this->MenuCfgUEMOATitre->InscritSousMenuScript('listeCfgObligation') ;
-					$this->MenuCfgObligation->Titre = "Obligations" ;
+					$idTypeEntite = $this->Membership->MemberLogged->RawData["ID_TYPE_ENTITE_MEMBRE"] ;
+					if($idTypeEntite == 4 || $this->PossedeTousPrivileges())
+					{
+						$this->MenuCfgUEMOATitre = $this->MenuUMOATitres->InscritSousMenuFige('CfgUEMOATitre') ;
+						$this->MenuCfgUEMOATitre->Titre = "Informations" ;
+						$this->MenuCfgBonTresor = $this->MenuCfgUEMOATitre->InscritSousMenuScript('listeCfgBonTresor') ;
+						$this->MenuCfgBonTresor->Titre = "Bons du Tr&eacute;sor" ;
+						$this->MenuCfgObligation = $this->MenuCfgUEMOATitre->InscritSousMenuScript('listeCfgObligation') ;
+						$this->MenuCfgObligation->Titre = "Obligations" ;
+					}
 				}
 				if($this->PossedePrivilege('post_doc_entreprise'))
 				{
@@ -1199,6 +1203,7 @@ jQuery(function() {
 			public $CritereDeviseUnique ;
 			protected $DocsEditMarche = array() ;
 			public $IdPaysEmetteurSelect ;
+			public $LgnEmetteurSelect ;
 			protected function ChargeDocsEditMarche()
 			{
 				$this->DocsEditMarche = array() ;
@@ -1211,12 +1216,18 @@ jQuery(function() {
 				$this->DocsEditMarche[8] = new DessinEditMarcheSenegalTradPlatf() ;
 				$this->DocsEditMarche[9] = new DessinEditMarcheTogoTradPlatf() ;
 			}
-			protected function DetecteDocEditMarcheActif(& $script)
+			protected function DetecteDocEditMarcheActif(& $script, $nomTable="config_bon_tresor")
 			{
 				if($script->PourAjout == 1)
 				{
 					$this->IdPaysEmetteurSelect = _GET_def('idPays', 1) ;
 				}
+				if(! isset($this->DocsEditMarche[$this->IdPaysEmetteurSelect]))
+				{
+					$this->IdPaysEmetteurSelect = 1 ;
+				}
+				$bd = $script->ApplicationParent->BDPrincipale ;
+				$this->LgnEmetteurSelect = $bd->FetchSqlRow("select * from ".$nomTable." t1 where idpays=:id", array("id" => $this->IdPaysEmetteurSelect)) ;
 			}
 			public function DeterminePaysEmetteurTransact(& $script)
 			{
@@ -1233,6 +1244,20 @@ jQuery(function() {
 				{
 					$this->IdPaysEmetteurSelect = $lgn["emetteur"] ;
 				}
+			}
+			public function AppliqueFormBonTresor(& $script, & $composant)
+			{
+				$this->ChargeDocsEditMarche() ;
+				$this->DetecteDocEditMarcheActif($script, "config_bon_tresor") ;
+				$ctn = $this->DocsEditMarche[$this->IdPaysEmetteurSelect]->RenduFormBonTresor($script, $composant) ;
+				return $ctn ;
+			}
+			public function AppliqueFormObligation(& $script, & $composant)
+			{
+				$this->ChargeDocsEditMarche() ;
+				$this->DetecteDocEditMarcheActif($script, "config_obligation") ;
+				$ctn = $this->DocsEditMarche[$this->IdPaysEmetteurSelect]->RenduFormObligation($script, $composant) ;
+				return $ctn ;
 			}
 			public function AppliqueScriptBonTresor(& $script)
 			{
@@ -1268,10 +1293,26 @@ jQuery(function() {
 				$ctn = $dessin->RenduScriptBonTresor($script) ;
 				return $ctn ;
 			}
-			public function AppliqueScriptObligationMarchSec(& $script)
+			public function AppliqueScriptObligationMarchSec(& $script, & $composant)
 			{
 				$dessin = new DessinEditMarchSecTradPlatf() ;
-				$ctn = $dessin->RenduScriptObligation($script) ;
+				$ctn = $dessin->RenduScriptObligation($script, $composant) ;
+				return $ctn ;
+			}
+			public function AppliqueFormBonTresorMarchSec(& $script, & $composant)
+			{
+				$dessin = new DessinEditMarchSecTradPlatf() ;
+				$bd = $script->ApplicationParent->BDPrincipale ;
+				$this->LgnEmetteurSelect = $bd->FetchSqlRow("select * from config_obligation t1 where idpays=8") ;
+				$ctn = $dessin->RenduFormBonTresor($script, $composant) ;
+				return $ctn ;
+			}
+			public function AppliqueFormObligationMarchSec(& $script, & $composant)
+			{
+				$dessin = new DessinEditMarchSecTradPlatf() ;
+				$bd = $script->ApplicationParent->BDPrincipale ;
+				$this->LgnEmetteurSelect = $bd->FetchSqlRow("select * from config_obligation t1 where idpays=8") ;
+				$ctn = $dessin->RenduFormObligation($script, $composant) ;
 				return $ctn ;
 			}
 			protected function CorrigeIdTypeEntite($idTypeEntite, & $form)

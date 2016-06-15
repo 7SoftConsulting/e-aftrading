@@ -273,6 +273,13 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $FltNumOp ;
 			public $CompDateEmission ;
 			public $CompDateEcheance ;
+			public $FltPourcentMttAdjuc ;
+			public $FltDateDepotSoumiss ;
+			public $FltHeureDepotSoumiss ;
+			public $FltIdAppDepotSoumiss ;
+			public $FltLieuEtabl ;
+			public $FltDateEtabl ;
+			public $FltDirecteurTresor ;
 			public $NomClasseCmdExecFormPrinc = "PvCommandeAjoutElement" ;
 			public $PourAjout = 1 ;
 			public $PourDetail = 0 ;
@@ -292,6 +299,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FormPrinc->InclureTotalElements = ($this->PourAjout) ? 0 : 1 ;
 				$this->FormPrinc->Editable = $this->FormPrincEditable ;
 				$this->FormPrinc->InscrireCommandeExecuter = $this->InscrireCmdExecFormPrinc ;
+				$this->FormPrinc->DessinateurFiltresEdition = new DessinFltsObligationMarchSecTradPlatf() ;
 			}
 			protected function ChargeFormPrinc()
 			{
@@ -334,11 +342,42 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltDateEmission = $this->FormPrinc->InsereFltEditHttpPost('date_emission', 'date_emission') ;
 				$this->FltDateEmission->Libelle = "Date valeur" ;
 				$this->CompDateEmission = $this->FltDateEmission->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateEmission->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltDateEcheance = $this->FormPrinc->InsereFltEditHttpPost('date_echeance', 'date_echeance') ;
 				$this->FltDateEcheance->Libelle = "Date &eacute;cheance" ;
 				$this->CompDateEcheance = $this->FltDateEcheance->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateEcheance->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltCodeISIN = $this->FormPrinc->InsereFltEditHttpPost('code_isin', 'code_isin') ;
 				$this->FltCodeISIN->Libelle = "Code ISIN" ;
+				$this->FltPourcentMttAdjuc = $this->FormPrinc->InsereFltEditHttpPost('pourcent_mtt_adjuc', 'pourcent_mtt_adjuc') ;
+				$this->CompPourcentMttAdjuc = $this->FltPourcentMttAdjuc->DeclareComposant("PvZoneMultiligneHtml") ;
+				$this->CompPourcentMttAdjuc->TotalLignes = 4 ;
+				$this->CompPourcentMttAdjuc->TotalColonnes = 90 ;
+				$this->CompPourcentMttAdjuc->StyleCSS = "background:none; border:1px solid white; padding:4px; text-align:center; font-size:12px; font-weight:bold;" ;
+				$this->FltPourcentMttAdjuc->Libelle = "Pourcentage montant adjucation" ;
+				$this->FltDateDepotSoumiss = $this->FormPrinc->InsereFltEditHttpPost('date_depot_soumiss', 'date_depot_soumiss') ;
+				$this->FltDateDepotSoumiss->Libelle = "Date depot soumission" ;
+				$this->CompDateDepotSoumiss = $this->FltDateDepotSoumiss->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateDepotSoumiss->DefinitFmtLbl(new PvFmtLblDateFr()) ;
+				$this->FltHeureDepotSoumiss = $this->FormPrinc->InsereFltEditHttpPost('heure_depot_soumiss', 'heure_depot_soumiss') ;
+				$this->FltHeureDepotSoumiss->Libelle = "Heure depot soumission" ;
+				$this->CompHeureDepotSoumiss = $this->FltHeureDepotSoumiss->DeclareComposant("PvTimeInput") ;
+				$this->FltIdAppSoumiss = $this->FormPrinc->InsereFltEditHttpPost('id_app_depot_soumiss', 'id_app_depot_soumiss') ;
+				$this->FltIdAppSoumiss->Libelle = "Application soumission" ;
+				$this->FltLieuEtabl = $this->FormPrinc->InsereFltEditHttpPost('lieu_etabl', 'lieu_etabl') ;
+				$this->FltLieuEtabl->Libelle = "Lieu etablissement" ;
+				$this->FltDateEtabl = $this->FormPrinc->InsereFltEditHttpPost('date_etabl', 'date_etabl') ;
+				$this->FltDateEtabl->Libelle = "Date etablissement" ;
+				$this->CompDateEtabl = $this->FltDateEtabl->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateEtabl->DefinitFmtLbl(new PvFmtLblDateFr()) ;
+				$this->FltDirecteurTresor = $this->FormPrinc->InsereFltEditHttpPost('directeur_tresor', 'directeur_tresor') ;
+				$this->FltDirecteurTresor->Libelle = "Directeur tresor" ;
+				$this->FltLieuSignature = $this->FormPrinc->InsereFltEditHttpPost('lieu_signature', 'lieu_signature') ;
+				$this->FltLieuSignature->Libelle = "Lieu signature" ;
+				$this->FltDateSignature = $this->FormPrinc->InsereFltEditHttpPost('date_signature', 'date_signature') ;
+				$this->FltDateSignature->Libelle = "Date signature" ;
+				$this->CompDateSignature = $this->FltDateSignature->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateSignature->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FournDonneesPrinc->RequeteSelection = "(select t1.*, DATEDIFF(date_echeance, date_emission) duree_emission from rachat_obligation t1)" ;
 				$this->FournDonneesPrinc->TableEdition = "rachat_obligation" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
@@ -371,7 +410,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 						$ctn .= '<div align="center" class="ui-widget ui-widget-content ui-state-active ui-corner-all">'.$this->TitreFormPrinc.'</div>'.PHP_EOL ;
 						$ctn .= '<br />' ;
 					}
-					$ctn .= $this->ZoneParent->RemplisseurConfig->AppliqueScriptObligationMarchSec($this) ;
+					// $ctn .= $this->ZoneParent->RemplisseurConfig->AppliqueScriptObligationMarchSec($this) ;
+					$ctn .= $this->FormPrinc->RenduDispositif() ;
 				}
 				else
 				{

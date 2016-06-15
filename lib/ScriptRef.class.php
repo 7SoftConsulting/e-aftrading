@@ -580,7 +580,7 @@ where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("nu
 			public $Titre = "Configurations bon de tresor" ;
 			public $TablPrinc ;
 			public $NecessiteMembreConnecte = 1 ;
-			public $Privileges = array('admin_members') ;
+			public $Privileges = array('admin_operator') ;
 			protected $LargeurFenModif = 450 ;
 			protected $HauteurFenModif = 350 ;
 			protected $LargeurTablPrinc = 900 ;
@@ -626,7 +626,7 @@ where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("nu
 			public $TitreDocument = "Modif. config bon de tr&eacute;sor" ;
 			public $Titre = "Modif. config bon de tr&eacute;sor" ;
 			public $NecessiteMembreConnecte = 1 ;
-			public $Privileges = array('admin_members') ;
+			public $Privileges = array('admin_operator') ;
 			protected $FltId ;
 			protected $FltTelephone ;
 			protected $FltFax ;
@@ -683,7 +683,7 @@ where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("nu
 			public $Titre = "Configurations obligation" ;
 			public $TablPrinc ;
 			public $NecessiteMembreConnecte = 1 ;
-			public $Privileges = array('admin_members') ;
+			public $Privileges = array('admin_operator') ;
 			protected $LargeurFenModif = 450 ;
 			protected $HauteurFenModif = 350 ;
 			protected $LargeurTablPrinc = 900 ;
@@ -729,7 +729,7 @@ where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("nu
 			public $TitreDocument = "Modif. config obligation" ;
 			public $Titre = "Modif. config bon de obligation" ;
 			public $NecessiteMembreConnecte = 1 ;
-			public $Privileges = array('admin_members') ;
+			public $Privileges = array('admin_operator') ;
 			protected $FltId ;
 			protected $FltTelephone ;
 			protected $FltFax ;
@@ -779,6 +779,7 @@ where t2.num_op_inter is null and numrep=:numOp and t1.type_change=2", array("nu
 				$this->FormPrinc->FournisseurDonnees->TableEdition = "config_obligation" ;
 			}
 		}
+		
 		class ScriptAccueilStatsTradPlatf extends PvScriptWebSimple
 		{
 			public $NecessiteMembreConnecte = 1 ;
