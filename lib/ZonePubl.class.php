@@ -72,7 +72,7 @@
 		{
 			public $EncodageDocument = "utf-8" ;
 			public $MessageIntroduction = "Bienvenue sur Trading Platform, la plateforme d'echange de tresorerie. Pour acc&eacute;der à votre espace, veuillez vous connecter" ;
-			public $ContenuPiedDocument = "Trading Platform 2014 &copy; tous droits r&eacute;serv&eacute;s." ;
+			public $ContenuPiedDocument = "Juin 2016 * e-AFTrading * Copyright" ;
 			public $NomClasseMembership = "MembershipTradPlatf" ;
 			public $AutoriserInscription = 1 ;
 			public $NomClasseRemplisseurConfigMembership = "RemplisseurConfigMembershipTradPlatf" ;
@@ -885,12 +885,91 @@
 			}
 			protected function ObtientContenuCSSNonConnecte()
 			{
-				$ctn = parent::ObtientContenuCSSNonConnecte().PHP_EOL ;
-				$ctn .= '#espaceTravail {
-	background-image:url(images/pied-accueil.png) ;
-	background-repeat:no-repeat;
-	padding-top:72px ;
-	background-position: center top ;
+				$ctn .= 'body, p, div, form, table, tr, td, th {
+	font-size:14px;
+	font-family:arial ;
+}
+#corps_document {
+	background:#000000 ;
+}
+#espaceTravail {
+	background-image:url(images/new-home-bg2.png) ;
+	background-position : center middle ;
+	background-repeat : center no-repeat ;
+	height:672px ;
+	width:100%;
+	border-top:12px solid white ;
+	border-bottom:12px solid white ;
+}
+#fenetreConnexion {
+	width:638px ;
+	height:379px ;
+	background:url(images/new-home-bg3.png) ;
+	color:#F0F0F0 ;
+}
+#fenetreConnexion .bouton2 {
+	background:black ;
+	border:0px ;
+	color:white ;
+	padding:8px ;
+}
+#espaceTravail .erreur  {
+	font-size:16px ;
+	font-weight:bold ;
+	padding:4px ;
+}
+.titreConnexion {
+	font-size:30px ;
+	font-weight:bold ;
+	color:white ;
+	padding:12px ;
+	margin-top:8px ;
+}
+.titreBienvenue {
+	margin-bottom:56px ;
+	padding:0px ;
+}
+.titreBienvenue .arrpl {
+	color:white ;
+	background:rgba(0, 0, 0, 0.5) ;
+	padding:24px ;
+}
+.titreBienvenue .texte {
+	color:white ;
+	font-weight:bold ;
+	font-size:30px ;
+	font-family:arial ;
+}
+.champSaisie {
+	margin-bottom:12px ;
+}
+#pseudo, #motDePasse {
+	width:355px ;
+	height:69px ;
+	font-size:18px ;
+	color:black ;
+	border:0px ;
+	padding-left: 50px ;
+}
+#pseudo {
+	background :url(images/new-home-login-fld.png) no-repeat ;
+}
+#motDePasse {
+	background :url(images/new-home-pwd-fld.png) no-repeat ;
+}
+.boutonLogin {
+	background:url(images/new-home-button-1.png) no-repeat ;
+	width:288px ;
+	height:74px ;
+	color:white ;
+	font-size:18px ;
+	border:0px ;
+}
+#pied {
+	padding:24px ;
+	color:white;
+	font-size:16px ;
+	text-align:center ;
 }' ;
 				return $ctn ;
 			}
@@ -909,45 +988,15 @@
 	#fenetreConnexion { margin-left:200px ; }' ;
 				return $ctn ;
 			}
-			protected function ObtientContenuJsNonConnecte1()
+
+			protected function ObtientContenuJsNonConnecte()
 			{
 				$ctn = '' ;
 				$ctn .= 'jQuery(function()
 {
-	ouvreFenetreConnexion() ;
 }) ;
 function ouvreFenetreConnexion()
 {
-	jQuery(\'#fenetreConnexion\').dialog({
-		modal : true,
-		width : 300,
-		height : 177,
-		resizable : false,
-		draggable : false,
-		position:{
-			of : jQuery("#logo-accueil"),
-			at : "left+8% center",
-			my : "left+8% center"
-		},
-		buttons : [{
-			text : "Annuler",
-			click : function() { jQuery(this).dialog("close") ; }
-		},
-		{
-			text : "Se Connecter",
-			click : function() {
-				jQuery(this).find("form").submit() ;
-				jQuery(this).dialog("close") ;
-			}
-		}]
-	});
-	jQuery(\'#fenetreConnexion\').find(":input").keypress(function(evt) {
-		if(evt.which == 13)
-		{
-			jQuery(this).closest("form").submit() ;
-			jQuery(\'#fenetreConnexion\').dialog("close") ;
-		}
-	}) ;
 }' ;
 				if($this->AutoriserInscription == 1)
 				{
@@ -972,8 +1021,7 @@ jQuery(function() {
 }) ;' ;
 				}
 				return $ctn ;
-			}
-			protected function RenduCorpsDocumentNonConnecte()
+			}			protected function RenduCorpsDocumentNonConnecte()
 			{
 				$ctn = '' ;
 				$ctn .= '<script type="text/javascript">
@@ -985,88 +1033,55 @@ jQuery(function() {
 	}) ;
 </script>' ;
 				$ctn .= '<body id="corps_document">' ;
-				$ctn .= '<div align="center"><img src="images/logo-accueil.png" width="375" /></div>'.PHP_EOL ;
+				$ctn .= '<table width="100%" cellspacing="0" cellpadding="16">
+<tr>
+<td width="50%">
+<img src="images/new-home-logo.png" />
+</td>
+<td width="*" align="right">
+<a href="?"><img src="images/new-home-facebook-icon.png" border="0" /></a>
+<a href="?"><img src="images/new-home-twitter-icon.png" border="0" /></a>
+<a href="?"><img src="images/new-home-ggp-icon.png" border="0" /></a>
+<a href="?"><img src="images/new-home-linkedln-icon.png" border="0" /></a>
+</tr>
+</table>'.PHP_EOL ;
+				$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
+<tr>
+<td align="center">'.PHP_EOL ;
+				$ctn .= '<p class="titreBienvenue"><span class="arrpl"><span class="texte">BIENVENUE SUR VOTRE PLATEFORME</span></span></p>'.PHP_EOL ;
 				if($this->ScriptPourRendu->NomElementZone == $this->NomScriptDeconnexion)
 				{
-					$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
-	<tr>
-	<td align="center">' ;
 					$ctn .= $this->RenduContenuCorpsDocument() ;
-					$ctn .= '</td>
-	</tr>
-</table>' ;
 				}
 				else
 				{
-					$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
-	<tr>
-	<td align="center">' ;
-					$ctn .= '<p><a href="javascript:ouvreFenetreConnexion() ;"><img src="images/btn-acces-platf.png" border="0" width="250" /></a></p>
-					<p><a href="javascript:ouvreFenetreInscription() ;"><img src="images/btn-inscription.png" border="0" width="140" alt="Inscription" /></a></p>
-	</td>
-	</tr>
-	</table>'.PHP_EOL ;
-					$ctn .= '<div id="fenetreConnexion" title="Authentification">
-		<form id="formulaireConnexion" action="'.$this->ScriptConnexion->ObtientUrl().'" method="post">' ;
 					if($this->ScriptConnexion->TentativeConnexionEnCours && $this->ScriptConnexion->TentativeConnexionValidee == 0)
 					{
 						$ctn .= '<div class="erreur ui-state-error">'.$this->ScriptConnexion->MessageConnexionEchouee.'</div>'.PHP_EOL ;
 					}
-					$ctn .= $this->ScriptConnexion->RenduTableauParametres().'
+					$ctn .= '<div id="fenetreConnexion" title="Authentification">
+		<form id="formulaireConnexion" action="'.$this->ScriptConnexion->ObtientUrl().'" method="post">' ;
+					$ctn .= '<div class="titreConnexion">TENTATIVE DE CONNEXION</div>'.PHP_EOL ;
+					$ctn .= '<div class="champSaisie"><input placeholder="Nom d\'utilisateur" type="text" name="pseudo" id="pseudo" value="" /></div>
+		<div class="champSaisie"><input placeholder="Mot de passe" type="password" name="motDePasse" id="motDePasse" value="" /></div>
+		<input type="hidden" name="tentativeConnexion" value="1" />
+		<div class="barreBoutons" align="center">
+			<button type="submit" class="boutonLogin">Connexion</button>
+		</div>
+		<br />
+		<table width="92%" cellspacing="0" cellpadding="0" align="center">
+		<tr>
+		<td width="33%">Se souvenir de moi <input type="checkbox" /></td>
+		<td width="33%" align="center"><input class="bouton2" type="button" onclick="ouvreFenetreInscription()" value="INSCRIPTION" /></td>
+		<td width="*" align="right">Mot de passe oubli&eacute; ?</td>
+		</tr>
+		</table>
 		</form>
 	</div>'.PHP_EOL ;
 				}
-				$ctn .= $this->RenduFenetreInscription() ;
-				$ctn .= '<div id="pied">'.$this->ContenuPiedDocument.'</div>'.PHP_EOL ;
-				$ctn .= '</body>' ;
-				return $ctn ;
-			}
-			protected function RenduCorpsDocumentNonConnecte1()
-			{
-				$ctn = '' ;
-				$ctn .= '<script type="text/javascript">
-	jQuery(function() {
-		if(window.top != window)
-		{
-			window.top.location.href = window.location ;
-		}
-	}) ;
-</script>' ;
-				$ctn .= '<body id="corps_document" align="center">' ;
-				$ctn .= '<div align="center" id="logo-accueil"><img src="images/logo-accueil.png" width="375" /></div>'.PHP_EOL ;
-				if($this->ScriptPourRendu->NomElementZone == $this->NomScriptDeconnexion)
-				{
-					$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
-	<tr>
-	<td align="center">' ;
-					$ctn .= $this->RenduContenuCorpsDocument() ;
 					$ctn .= '</td>
 	</tr>
 </table>' ;
-				}
-				else
-				{
-					$ctn .= '<div><a href="javascript:ouvreFenetreConnexion() ;"><img src="images/btn-acces-platf.png" border="0" width="215" height="46" /></a>
-					&nbsp;&nbsp;&nbsp;&nbsp;
-					<a href="javascript:ouvreFenetreInscription() ;"><img src="images/btn-inscription.png" border="0" width="130" alt="Inscription" /></a></div>'.PHP_EOL ;
-					$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
-	<tr>
-	<td align="center">' ;
-					$ctn .= '<p>&nbsp;</p>
-					<p>&nbsp;</p>
-					</td>
-	</tr>
-	</table>'.PHP_EOL ;
-					$ctn .= '<div id="fenetreConnexion" title="Authentification">
-		<form id="formulaireConnexion" action="'.$this->ScriptConnexion->ObtientUrl().'" method="post">' ;
-					if($this->ScriptConnexion->TentativeConnexionEnCours && $this->ScriptConnexion->TentativeConnexionValidee == 0)
-					{
-						$ctn .= '<div class="erreur ui-state-error">'.$this->ScriptConnexion->MessageConnexionEchouee.'</div>'.PHP_EOL ;
-					}
-					$ctn .= $this->ScriptConnexion->RenduTableauParametres().'
-		</form>
-	</div>'.PHP_EOL ;
-				}
 				$ctn .= $this->RenduFenetreInscription() ;
 				$ctn .= '<div id="pied">'.$this->ContenuPiedDocument.'</div>'.PHP_EOL ;
 				$ctn .= '</body>' ;
