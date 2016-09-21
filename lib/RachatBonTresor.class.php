@@ -136,8 +136,8 @@
 		
 		class ScriptPublierRachatBonTresorTradPlatf extends Script1RachatBonTresorTradPlatf
 		{
-			public $TitreDocument = "Rachat &eacute;mission Bon du Tr&eacute;sor" ;
-			public $Titre = "Rachat &eacute;mission Bon du Tr&eacute;sor" ;
+			public $TitreDocument = "Rachat Bon du Tr&eacute;sor" ;
+			public $Titre = "Rachat Bon du Tr&eacute;sor" ;
 			public $Privileges = array('post_doc_tresorier', 'post_op_change') ;
 			public $CmdAjout ;
 			public $LienModif ;
@@ -180,13 +180,13 @@
 FROM rachat_bon_tresor t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifRachatBonTresor&id=${id}', 'Modifier', 'modif_emiss_bon_tresor_${id}', 'Modifier Rachat &Eacute;mission Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifRachatBonTresor&id=${id}', 'Modifier', 'modif_emiss_bon_tresor_${id}', 'Modifier Rachat Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienModif->ClasseCSS = "lien-act-001" ;
 				$this->LienModif->DefinitScriptOnglActifSurFerm($this) ;
-				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprRachatBonTresor&id=${id}', 'Supprimer', 'suppr_emiss_bon_tresor_${id}', 'Supprimer Rachat &Eacute;mission Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprRachatBonTresor&id=${id}', 'Supprimer', 'suppr_emiss_bon_tresor_${id}', 'Supprimer Rachat Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->LienSuppr->DefinitScriptOnglActifSurFerm($this) ;
-				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutRachatBonTresor", '?appelleScript=ajoutRachatBonTresor', 'Ajouter', 'ajoutRachatBonTresor', "Rachat  &Eacute;mission Bon du Tr&eacute;sor", $this->OptsFenetreEdit) ;
+				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutRachatBonTresor", '?appelleScript=ajoutRachatBonTresor', 'Ajouter', 'ajoutRachatBonTresor', "Rachat Bon du Tr&eacute;sor", $this->OptsFenetreEdit) ;
 				$this->CmdAjout->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
@@ -196,8 +196,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		}
 		class ScriptConsultRachatBonTresorTradPlatf extends Script1RachatBonTresorTradPlatf
 		{
-			public $TitreDocument = "Consulter rachat &eacute;mission Bon du Tr&eacute;sor" ;
-			public $Titre = "Consulter rachat &eacute; Bon du Tr&eacute;sor" ;
+			public $TitreDocument = "Consulter rachat Bon du Tr&eacute;sor" ;
+			public $Titre = "Consulter rachat Bon du Tr&eacute;sor" ;
 			public $Privileges = array('post_op_change') ;
 			public $LienDetail ;
 			public $FournDonneesPrinc ;
@@ -250,7 +250,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		class ScriptLgn1RachatBonTresorTradPlatf extends ScriptEditRachatBonTresorTradPlatf
 		{
 			public $InclureTitreFormPrinc = 1 ;
-			public $TitreFormPrinc = "Caract&eacute;ristiques Rachat &eacute;mission bon du tr&eacute;sor par Adjudication" ;
+			public $TitreFormPrinc = "Caract&eacute;ristiques Rachat bon du tr&eacute;sor par Adjudication" ;
 			public $Privileges = array('post_doc_tresorier', 'post_op_change') ;
 			public $FltId ;
 			public $FltEmetteur ;
@@ -405,7 +405,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				}
 				else
 				{
-					$ctn .= '<div class="ui-widget ui-state-error">Cette &Eacute;mission a &eacute;t&eacute; r&eacute;serv&eacute;e au moins une fois</div>' ;
+					$ctn .= '<div class="ui-widget ui-state-error">Ce rachat a &eacute;t&eacute; r&eacute;serv&eacute;e au moins une fois</div>' ;
 				}
 				return $ctn ;
 			}

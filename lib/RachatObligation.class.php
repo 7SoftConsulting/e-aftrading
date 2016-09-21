@@ -136,7 +136,7 @@
 		
 		class ScriptPublierRachatObligationTradPlatf extends Script1RachatObligationTradPlatf
 		{
-			public $Titre = "Rachat &Eacute;mission d'Obligations" ;
+			public $Titre = "Rachat d'Obligations" ;
 			public $Privileges = array('post_doc_tresorier', 'post_op_change') ;
 			public $CmdAjout ;
 			public $LienModif ;
@@ -181,13 +181,13 @@
 FROM rachat_obligation t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifRachatObligation&id=${id}', 'Modifier', 'modif_emiss_obligation_${id}', 'Modifier Rachat &eacute;mission obligation #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifRachatObligation&id=${id}', 'Modifier', 'modif_emiss_obligation_${id}', 'Modifier Rachat obligation #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienModif->ClasseCSS = "lien-act-001" ;
 				$this->LienModif->DefinitScriptOnglActifSurFerm($this) ;
-				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprRachatObligation&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer Rachat &eacute;mission obligation #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprRachatObligation&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer Rachat obligation #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->LienSuppr->DefinitScriptOnglActifSurFerm($this) ;
-				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutRachatObligation", '?appelleScript=ajoutRachatObligation', 'Ajouter', 'ajoutRachatObligation', "Rachat &eacute;mission obligation", $this->OptsFenetreEdit) ;
+				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutRachatObligation", '?appelleScript=ajoutRachatObligation', 'Ajouter', 'ajoutRachatObligation', "Rachat obligation", $this->OptsFenetreEdit) ;
 				$this->CmdAjout->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
@@ -197,8 +197,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		}
 		class ScriptConsultRachatObligationTradPlatf extends Script1RachatObligationTradPlatf
 		{
-			public $Titre = "Consulter Rachat &Eacute;mission d'Obligations" ;
-			public $TitreDocument = "Consulter Rachat &Eacute;mission d'Obligations" ;
+			public $Titre = "Consulter Rachat d'Obligations" ;
+			public $TitreDocument = "Consulter Rachat d'Obligations" ;
 			public $Privileges = array('post_op_change') ;
 			public $LienDetail ;
 			public $FournDonneesPrinc ;
@@ -415,7 +415,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				}
 				else
 				{
-					$ctn .= '<div class="ui-widget ui-state-error">Cette &Eacute;mission a &eacute;t&eacute; r&eacute;serv&eacute;e au moins une fois</div>' ;
+					$ctn .= '<div class="ui-widget ui-state-error">Cette a &eacute;t&eacute; r&eacute;serv&eacute;e au moins une fois</div>' ;
 				}
 				return $ctn ;
 			}

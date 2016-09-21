@@ -12,6 +12,9 @@
 				return $script->ZoneParent->RemplisseurConfig->AppliqueFormBonTresor($script, $composant) ;
 			}
 		}
+		class SommaireFltsBonTresorTradPlatf extends PvDessinateurRenduHtmlFiltresDonnees
+		{
+		}
 		
 		class DessinFltsBonTresorMarchSecTradPlatf extends PvDessinateurRenduHtmlFiltresDonnees
 		{
@@ -24,8 +27,9 @@
 		
 		class ScriptBaseEmissBonTresorTradPlatf extends ScriptTransactBaseTradPlatf
 		{
-			public $OptsFenetreEdit = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
-			public $OptsFenetreDetail = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
+			public $OptsFenetreEdit = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0, "Redimensionnable" => false) ;
+			public $OptsFenetreDetail = array("Largeur" => 875, 'Hauteur' => 261, 'Modal' => 1, "BoutonFermer" => 0, "Redimensionnable" => false) ;
+			public $OptsFenetreReserv = array("Largeur" => 875, 'Hauteur' => 750, 'Modal' => 1, "BoutonFermer" => 0, "Redimensionnable" => false) ;
 			public function AdopteZone($nom, & $zone)
 			{
 				parent::AdopteZone($nom, $zone) ;
@@ -109,6 +113,7 @@
 			public $SousMenuPublier ;
 			public $SousMenuConsult ;
 			public $SousMenuPropos ;
+			public $SousMenuLstValide ;
 			public function DetermineEnvironnement()
 			{
 				parent::DetermineEnvironnement() ;
@@ -137,6 +142,12 @@
 					$this->SousMenuPropos = $this->BarreMenu->MenuRacine->InscritSousMenuScript('proposEmissBonTresor') ;
 					$this->SousMenuPropos->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
 					$this->SousMenuPropos->Titre = "Visuel des souscriptions" ;
+				}
+				if($this->ZoneParent->PossedePrivilege('post_op_change'))
+				{
+					$this->SousMenuLstValide = $this->BarreMenu->MenuRacine->InscritSousMenuScript('lstEmissBonTresorValide') ;
+					$this->SousMenuLstValide->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
+					$this->SousMenuLstValide->Titre = "Souscriptions valid&eacute;es" ;
 				}
 			}
 			protected function RenduDispositifBrut()
@@ -254,9 +265,9 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 FROM emission_bon_tresor t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienDetail = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=detailEmissBonTresor&id=${id}', 'd&eacute;tails', 'detail_emiss_bon_tresor_${id}', 'D&eacute;tails Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienDetail = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=detailEmissBonTresor&id=${id}', 'D&eacute;tails', 'detail_emiss_bon_tresor_${id}', 'D&eacute;tails Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienDetail->ClasseCSS = "lien-act-003" ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissBonTresor&id_emission=${id}', 'souscription', 'detail_emiss_bon_tresor_${id}', 'D&eacute;tails Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissBonTresor&id_emission=${id}', 'Souscriptions', 'detail_emiss_bon_tresor_${id}', 'D&eacute;tails Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
@@ -285,7 +296,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				parent::ChargeTablPrinc() ;
 				$bd = $this->BDPrinc() ;
 				$this->FltDateDebut = $this->TablPrinc->InsereFltSelectHttpGet("dateDebut", "date_emission >= <self>") ;
-				$this->FltDateDebut->ValeurParDefaut = date("Y-m-d", date("u") - 86400 * 90) ;
+				$this->FltDateDebut->ValeurParDefaut = date("Y-m-d", date("U") - 86400 * 90) ;
 				$this->FltDateFin = $this->TablPrinc->InsereFltSelectHttpGet("dateFin", "date_emission <= <self>") ;
 				$this->FltNumOpPubl = $this->TablPrinc->InsereFltSelectFixe("numOpPublieur", $this->ZoneParent->IdMembreConnecte(), "numop_publieur = <self>") ;
 				$this->FltDateDebut->Libelle = "Periode du" ;
@@ -307,13 +318,28 @@ inner join (select id_emission, count(0) total from reserv_bon_tresor group by i
 on t1.id = t2.id_emission
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservEmissBonTresor&id=${id}', 'Souscriptions', 'list_reserv_emiss_bon_tresor_${id}', 'Liste souscriptions &Eacute;mission Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservEmissBonTresor&id=${id}', 'D&eacute;tails', 'list_reserv_emiss_bon_tresor_${id}', 'D&eacute;tails &Eacute;mission Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreReserv) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
 			{
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenProposEmissBonTresor ;
+			}
+		}
+		class ScriptLstEmissBonTresorValideTradPlatf extends ScriptProposEmissBonTresorTradPlatf
+		{
+			public $Privileges = array('post_op_change') ;
+			protected function ChargeTablPrinc()
+			{
+				parent::ChargeTablPrinc() ;
+				$this->FltNumOpPubl->ExpressionDonnees = "numop_demandeur = <self>" ;
+				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.numop_demandeur, t2.total total_reserv, d1.code_devise from emission_bon_tresor t1
+inner join (select id_emission, numop_demandeur, count(0) total from reserv_bon_tresor where est_valide=1 group by id_emission, numop_demandeur) t2
+on t1.id = t2.id_emission
+left join devise d1 on t1.id_devise = d1.id_devise)' ;
+				$this->LienReserv->ClasseCSS = "lien-act-001" ;
+				$this->LienReserv->FormatURL = '?appelleScript=lstReservEmissBonTresorValide&id=${id}' ;
 			}
 		}
 		
@@ -440,6 +466,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltDateDepotSoumiss->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltHeureDepotSoumiss = $this->FormPrinc->InsereFltEditHttpPost('heure_depot_soumiss', 'heure_depot_soumiss') ;
 				$this->FltHeureDepotSoumiss->Libelle = "Heure depot soumission" ;
+				$this->FltHeureDepotSoumiss->ValeurParDefaut = "00:00:00" ;
 				$this->CompHeureDepotSoumiss = $this->FltHeureDepotSoumiss->DeclareComposant("PvTimeInput") ;
 				$this->FltIdAppSoumiss = $this->FormPrinc->InsereFltEditHttpPost('id_app_depot_soumiss', 'id_app_depot_soumiss') ;
 				$this->FltIdAppSoumiss->Libelle = "Application soumission" ;
@@ -620,6 +647,11 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FormPrinc->CacherBlocCommandes = 1 ;
 				$this->DetermineTableSecond() ;
 			}
+			protected function InitFormPrinc()
+			{
+				parent::InitFormPrinc() ;
+				// $this->FormPrinc->DessinateurFiltresEdition = new SommaireFltsBonTresorTradPlatf() ; 
+			}
 			protected function CreeTablSecond()
 			{
 				return new TableauDonneesOperationTradPlatf() ;
@@ -677,6 +709,23 @@ group by t2.login, t1.id_emission)' ;
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenListReservEmissBonTresor ;
 			}
 		}
+		class ScriptLstReservEmissBonTresorValideTradPlatf extends ScriptListReservEmissBonTresorTradPlatf
+		{
+			protected function ChargeTablSecond()
+			{
+				parent::ChargeTablSecond() ;
+				$this->LienDetailsTablSecond->FormatURL = '?appelleScript=dtlReservEmissBonTresorValide&id=${id_emission}&numop=${numop}' ;
+				$this->LienDetailsTablSecond->FormatIdOnglet = 'dtls_reserv_emiss_bon_tresor_${id}_${numop}_valide';
+				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
+from reserv_bon_tresor t1
+left join operateur t2
+on t1.numop_demandeur = t2.numop
+left join entite t3
+on t2.id_entite = t3.id_entite
+where t1.est_valide = 1
+group by t2.login, t1.id_emission)' ;
+			}
+		}
 		class ScriptDetailReservEmissBonTresorTradPlatf extends ScriptListEmissBonTresorTradPlatf
 		{
 			public $DefColLogin ;
@@ -685,6 +734,18 @@ group by t2.login, t1.id_emission)' ;
 			public $DefColTaux ;
 			public $FltId ;
 			public $FltNumOp ;
+			public $ActMajStatut ;
+			public $DefColActs ;
+			public function DetermineEnvironnement()
+			{
+				$this->DetermineActMajStatut() ;
+				parent::DetermineEnvironnement() ;
+			}
+			protected function DetermineActMajStatut()
+			{
+				$this->ActMajStatut = $this->InsereActionAvantRendu("MajStatut", new ActValidReservEmissBonTresorTradPlatf()) ;
+				$this->ActMajStatut->ChargeConfig() ;
+			}
 			protected function DetermineTablPrinc()
 			{
 				parent::DetermineTablPrinc() ;
@@ -695,16 +756,53 @@ group by t2.login, t1.id_emission)' ;
 				$this->TablPrinc->CacherFormulaireFiltres = 1 ;
 				$this->TablPrinc->CacherBlocCommandes = 1 ;
 				$this->TablPrinc->ToujoursAfficher = 1 ;
+				$this->DefColId = $this->TablPrinc->InsereDefColCachee('id') ;
 				$this->DefColEntite = $this->TablPrinc->InsereDefCol('nom_entite', 'Entit&eacute;') ;
 				$this->DefColLogin = $this->TablPrinc->InsereDefCol('login', 'Login') ;
 				$this->DefColMontant = $this->TablPrinc->InsereDefColMoney('montant', 'Montant') ;
 				$this->DefColTaux = $this->TablPrinc->InsereDefCol('taux', 'Taux') ;
+				$this->DefColStatut = $this->TablPrinc->InsereDefColChoix('est_valide', 'Statut', '', array("<span style='color:blue'>N/A</span>", "<span style='color:green'>Accept&eacute;</span>", "<span style='color:red'>Refus&eacute;</span>")) ;
+				$this->DefColStatut->AlignElement = "center" ;
 				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
 from reserv_bon_tresor t1
 left join operateur t2
 on t1.numop_demandeur = t2.numop
 left join entite t3
 on t2.id_entite = t3.id_entite)' ;
+				$this->DefColStatut->StyleCSS = "" ;
+				$this->DefColActs = $this->TablPrinc->InsereDefColActions('Actions') ;
+				$this->LienAccepter = $this->TablPrinc->InsereLienAction($this->DefColActs, $this->ActMajStatut->ObtientUrlFmt(array("idReserv" => '${id}'), array("id" => $this->FltId->Lie(), "numop" => $this->FltNumOp->Lie(), "estValide" => 1)), "Accepter") ;
+				$this->LienAccepter->ClasseCSS = "lien-act-003" ;
+				$this->LienRefuser = $this->TablPrinc->InsereLienAction($this->DefColActs, $this->ActMajStatut->ObtientUrlFmt(array("idReserv" => '${id}'), array("id" => $this->FltId->Lie(), "numop" => $this->FltNumOp->Lie(), "estValide" => 2)), "Refuser") ;
+				$this->LienRefuser->ClasseCSS = "lien-act-002" ;
+			}
+			protected function RenduDispositifBrut()
+			{
+				$ctn = '' ;
+				if($this->ActMajStatut->MsgResultat != '')
+				{	
+					$ctn .= '<div class="ui-widget ui-widget-content ui-state-highlight">'.$this->ActMajStatut->MsgResultat.'</div>'.PHP_EOL ;
+					$ctn .= '<div>&nbsp;</div>'.PHP_EOL ;
+				}
+				$ctn .= parent::RenduDispositifBrut() ;
+				return $ctn ;
+			}
+		}
+		class ScriptDtlReservEmissBonTresorValideTradPlatf extends ScriptDetailReservEmissBonTresorTradPlatf
+		{
+			protected function DetermineTablPrinc()
+			{
+				parent::DetermineTablPrinc() ;
+				$this->DefColEntite->Visible = 0 ;
+				$this->DefColLogin->Visible = 0 ;
+				$this->DefColActs->Visible = 0 ;
+				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
+from reserv_bon_tresor t1
+left join operateur t2
+on t1.numop_demandeur = t2.numop
+left join entite t3
+on t2.id_entite = t3.id_entite
+where est_valide=1)' ;
 			}
 		}
 		
@@ -841,6 +939,31 @@ on t2.id_entite = t3.id_entite)' ;
 				$this->FltTaux4->Libelle = 'Taux 4' ;
 				$this->FltMontant5->Libelle = 'Montant 5' ;
 				$this->FltTaux5->Libelle = 'Taux 5' ;
+				if($this->LgnsReserv[0]["est_valide"] != 0)
+				{
+					$this->FltMontant1->LectureSeule = 1 ;
+					$this->FltTaux1->LectureSeule = 1 ;
+				}
+				if($this->LgnsReserv[1]["est_valide"] != 0)
+				{
+					$this->FltMontant2->LectureSeule = 1 ;
+					$this->FltTaux2->LectureSeule = 1 ;
+				}
+				if($this->LgnsReserv[2]["est_valide"] != 0)
+				{
+					$this->FltMontant3->LectureSeule = 1 ;
+					$this->FltTaux3->LectureSeule = 1 ;
+				}
+				if($this->LgnsReserv[3]["est_valide"] != 0)
+				{
+					$this->FltMontant4->LectureSeule = 1 ;
+					$this->FltTaux4->LectureSeule = 1 ;
+				}
+				if($this->LgnsReserv[4]["est_valide"] != 0)
+				{
+					$this->FltMontant5->LectureSeule = 1 ;
+					$this->FltTaux5->LectureSeule = 1 ;
+				}
 				$this->CritrValidReserv = $this->FormPrinc->CommandeExecuter->InsereNouvCritere(new CritrValidReservEmissBonTresorTradPlatf()) ;
 			}
 		}
@@ -860,6 +983,49 @@ on t2.id_entite = t3.id_entite)' ;
 			protected function DefinitExprs()
 			{
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenSupprReservEmissBonTresor ;
+			}
+		}
+		
+		class ActValidReservEmissBonTresorTradPlatf extends PvActionBaseZoneWebSimple
+		{
+			protected $LgnDetail ;
+			protected $ValParamId ;
+			protected $ValParamNumOp ;
+			protected $ValParamIdReserv ;
+			public $MsgResultat ;
+			public function Execute()
+			{
+				$this->TraiteLgnDetail() ;
+			}
+			protected function TraiteLgnDetail()
+			{
+				$this->ValParamId = _GET_def("id") ;
+				$this->ValParamNumOp = _GET_def("numop") ;
+				$this->ValParamIdReserv = _GET_def("idReserv") ;
+				$this->ValParamEstValide = intval(_GET_def("estValide")) ;
+				// print_r($_GET) ;
+				$bd = $this->ScriptParent->ApplicationParent->BDPrincipale ;
+				$this->LgnDetail = $bd->FetchSqlRow('select t1.* from reserv_bon_tresor t1
+inner join emission_bon_tresor t2 on t1.id_emission = t2.id
+where t1.id=:idReserv and t1.numop_demandeur=:numop and t1.id_emission=:idEmiss and t2.numop_publieur=:idMembre',
+array("idReserv" => $this->ValParamIdReserv, "numop" => $this->ValParamNumOp, "idEmiss" => $this->ValParamId, "idMembre" => $this->ZoneParent->IdMembreConnecte())) ;
+				// print_r($bd) ;
+				if(is_array($this->LgnDetail) && count($this->LgnDetail) > 0)
+				{
+					$ok = $bd->UpdateRow("reserv_bon_tresor", array("est_valide" => $this->ValParamEstValide), 'id = :id', array("id" => $this->LgnDetail["id"])) ;
+					if($ok)
+					{
+						$this->MsgResultat = "D&eacute;tail mis &agrave; jour." ;
+					}
+					else
+					{
+						$this->MsgResultat = "Exception lors de la mise &grave; jour" ;
+					}
+				}
+				else
+				{
+					$this->MsgResultat = "Vous n'avez pas acc&egrave;s &agrave; ce d&eacute;tail" ;
+				}
 			}
 		}
 		

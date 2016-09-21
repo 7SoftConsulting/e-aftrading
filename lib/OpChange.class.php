@@ -126,6 +126,7 @@
 				$this->DefColTaux->Largeur = "12%" ;
 				$this->DefColTaux->Visible = "0" ;
 				$this->DefColTaux->AlignElement = "center" ;
+				$this->DefColStatutNegoc = $this->InsereDefCol("statut_negoc", "Negoc.") ;
 				$this->DefinitionsColonnes[] = & $this->DefColTaux ;
 				$this->DefColActions = new PvDefinitionColonneDonnees() ;
 				$this->DefColActions->Libelle = "Actions" ;
@@ -240,7 +241,7 @@
 			}
 			protected function ObtientRequeteSelection(& $bd)
 			{
-				return "(select t1.*, case when t1.commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end taux_transact, ".$bd->SqlConcat(array('t2.code_devise', "' / '", 't3.code_devise'))." devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
+				return "(select t1.*, case when t8.num_op_change_dem > 0 and t8.bool_confirme = 0 then 'En cours' when t8.num_op_change_dem > 0 and t8.bool_confirme = 1 then 'Confirme' else ' ' end statut_negoc, case when t1.commiss_ou_taux = 0 then t1.mtt_commiss when t1.type_taux = 0 then t1.taux_change else t1.ecran_taux end taux_transact, ".$bd->SqlConcat(array('t2.code_devise', "' / '", 't3.code_devise'))." devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
 case when t1.num_op_change_dem = 0 then 'demande' else 'reponse' end type_message
 from op_change t1
 left join devise t2
@@ -255,6 +256,8 @@ left join entite t7
 on t5.id_entite_source=t7.id_entite
 left join operateur t6
 on t5.id_entite_dest=t6.id_entite
+left join op_change t8
+on t8.num_op_change_dem=t1.num_op_change
 where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is not null and t4.active_op = 1)" ;
 			}
 			public function ChargeConfigSuppl()
@@ -313,6 +316,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				parent::ChargeConfig() ;
 				$this->DefColEmetteur->Visible = 0 ;
 				$this->DefColBanque->Visible = 0 ;
+				$this->DefColStatutNegoc->Visible = 0 ;
 				if($this->EstPasNul($this->FltPourAutres))
 				{
 					$this->FltPourAutres->NePasIntegrerParametre = 1 ;
@@ -534,6 +538,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			}
 			protected function ChargeFournDonnees()
 			{
+				$idMembre = intval($this->ZoneParent->IdMembreConnecte()) ;
 				$bd = $this->ApplicationParent->BDPrincipale ;
 				$this->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$this->FournisseurDonnees->BaseDonnees = $bd ;
@@ -565,10 +570,10 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 		t1.ecran_taux,
 		t1.bool_valide,
 		t1.bool_confirme,
-		case when t1.numop = t2.numop then t1.montant_change else t1.montant_soumis end montant_operateur,
-		case when t1.numop = t2.numop then t2.numop else e1.numop end id_operateur,
-		case when t1.numop = t2.numop then t3.login else e1.login end login_operateur,
-		case when t1.numop = t2.numop then t4.name else e2.name end nom_entite_operateur
+		case when t1.numop = ".$idMembre." then t1.montant_change else t1.montant_soumis end montant_operateur,
+		case when t1.numop = ".$idMembre." then t2.numop else e1.numop end id_operateur,
+		case when t1.numop = ".$idMembre." then t3.login else e1.login end login_operateur,
+		case when t1.numop = ".$idMembre." then t4.name else e2.name end nom_entite_operateur
 	from op_change t1
 	inner join op_change t2 ON t2.num_op_change = t1.num_op_change_dem
 	inner join operateur t3 ON t3.numop = t2.numop
@@ -707,7 +712,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltMontant = $this->ScriptParent->CreeFiltreHttpPost("montant") ;
 				$this->FltMontant->DefinitColLiee("montant_change") ;
 				$this->FltMontant->Libelle = "Montant" ;
-				$this->FltMontant->DeclareComposant("PvPriceFormatJQuery") ;
+				$this->FltMontant->DeclareComposant("ZoneMonnaieTradPlatf") ;
 				$this->FltMontant->ObtientComposant()->ClassesCSS[] = "nombre" ;
 				$this->FltMontant->FormatteurEtiquette = new FmtMonnaieEtiqTradPlatf() ;
 				$this->FiltresEdition[] = & $this->FltMontant ;
@@ -754,7 +759,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				// Montant soumis
 				$this->FltMttSoumis = $this->InsereFltEditHttpPost('montant_soumis', 'montant_soumis') ;
 				$this->FltMttSoumis->NePasIntegrerParametre = 1 ;
-				$this->FltMttSoumis->DeclareComposant("PvPriceFormatJQuery") ;
+				$this->FltMttSoumis->DeclareComposant("ZoneMonnaieTradPlatf") ;
 				// Taux soumis
 				$this->FltTauxSoumis = $this->InsereFltEditHttpPost('taux_soumis', 'taux_soumis') ;
 				$this->FltTauxSoumis->NePasIntegrerParametre = 1 ;
@@ -1582,6 +1587,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$this->FltNomEntiteSoumis->Libelle = "Nom banque emettrice" ;
 				$this->FltNomEntiteSoumis->EstEtiquette = 1 ;
 				$this->FltMontantDem = $this->InsereFltEditHttpPost("montant_dem", "montant_change") ;
+				$this->FltMontantDem->DeclareComposant("ZoneMonnaieTradPlatf") ;
 				$this->FltMontantDem->Libelle = "Montant" ;
 				$this->FltMontantDem->ClassesCSS[] = "nombre" ;
 				$this->FltTauxDem = $this->InsereFltEditHttpPost("taux_dem", "taux_change") ;
@@ -1589,16 +1595,18 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$this->FltTauxDem->ClassesCSS[] = "nombre" ;
 				$this->FltMontantSoumis = $this->InsereFltEditHttpPost("montant_soumis", "montant_soumis") ;
 				$this->FltMontantSoumis->Libelle = "Montant" ;
-				$this->FltMontantSoumis->DeclareComposant("PvPriceFormatJQuery") ;
+				$this->FltMontantSoumis->DeclareComposant("ZoneMonnaieTradPlatf") ;
 				$this->FltTauxSoumis = $this->InsereFltEditHttpPost("taux_soumis", "taux_soumis") ;
 				$this->FltTauxSoumis->Libelle = "Taux de change" ;
 				$this->FltTauxSoumis->ClassesCSS[] = "nombre" ;
 				$this->FltMttCommiss = $this->InsereFltEditHttpPost("mtt_commiss", "mtt_commiss") ;
 				$this->FltMttCommiss->Libelle = "Commission (%)" ;
 				$this->FltMttCommiss->ValeurParDefaut = 0 ;
+				$this->FltMttCommiss->DeclareComposant("ZoneMonnaieTradPlatf") ;
 				$this->FltMttCommiss->ClassesCSS[] = "nombre" ;
 				$this->FltMttCommissSoumis = $this->InsereFltEditHttpPost("mtt_commiss_soumis", "mtt_commiss_soumis") ;
 				$this->FltMttCommissSoumis->Libelle = "Commission (%)" ;
+				$this->FltMttCommissSoumis->DeclareComposant("ZoneMonnaieTradPlatf") ;
 				$this->FltMttCommissSoumis->ClassesCSS[] = "nombre" ;
 				$this->FltRefChange = $this->InsereFltEditHttpPost("refChange", "ref_change") ;
 				$this->FltRefChange->Libelle = "Ref. Change" ;

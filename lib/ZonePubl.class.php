@@ -242,8 +242,11 @@
 			public $ScriptModifOpInterSoumis ;
 			public $ScriptConsultEmissBonTresor ;
 			public $ScriptPublierEmissBonTresor ;
+			public $ScriptLstEmissBonTresorValide ;
 			public $ScriptAjoutEmissBonTresor ;
 			public $ScriptDetailEmissBonTresor ;
+			public $ScriptDtlEmissBonTresorValide ;
+			public $ScriptDtlReservEmissBonTresorValide ;
 			public $ScriptModifEmissBonTresor ;
 			public $ScriptSupprEmissBonTresor ;
 			public $ScriptProposEmissBonTresor ;
@@ -437,16 +440,16 @@
 				$this->MenuAchatTitre = $this->MenuMarcheSecondaire->InscritSousMenuFige('AchatTitre') ;
 				$this->MenuAchatTitre->Titre = "Achat Titre" ;
 				$this->MenuRachatBonTresor = $this->MenuAchatTitre->InscritSousMenuScript(($this->PossedePrivilege('post_doc_tresorier')) ? "publierRachatBonTresor" : "consultRachatBonTresor") ;
-				$this->MenuRachatBonTresor->Titre = "Bon de Tr&eacute;sor" ;
-				$this->MenuRachatBonTresor->TitreOnglet = "Rachat Bon de Tr&eacute;sor" ;
+				$this->MenuRachatBonTresor->Titre = "Bon du Tr&eacute;sor" ;
+				$this->MenuRachatBonTresor->TitreOnglet = "Rachat Bon du Tr&eacute;sor" ;
 				$this->MenuRachatObligation = $this->MenuAchatTitre->InscritSousMenuScript(($this->PossedePrivilege('post_doc_tresorier')) ? "publierRachatObligation" : "consultRachatObligation") ;
 				$this->MenuRachatObligation->Titre = "Obligation" ;
 				$this->MenuRachatObligation->TitreOnglet = "Rachat Obligation" ;
 				$this->MenuVenteTitre = $this->MenuMarcheSecondaire->InscritSousMenuFige('VenteTitre') ;
 				$this->MenuVenteTitre->Titre = "Vente Titre" ;
 				$this->MenuReventeBonTresor = $this->MenuVenteTitre->InscritSousMenuScript(($this->PossedePrivilege('post_doc_tresorier')) ? "publierReventeBonTresor" : "consultReventeBonTresor") ;
-				$this->MenuReventeBonTresor->Titre = "Bon de Tr&eacute;sor" ;
-				$this->MenuReventeBonTresor->TitreOnglet = "Revente Bon de Tr&eacute;sor" ;
+				$this->MenuReventeBonTresor->Titre = "Bon du Tr&eacute;sor" ;
+				$this->MenuReventeBonTresor->TitreOnglet = "Revente Bon du Tr&eacute;sor" ;
 				$this->MenuReventeObligation = $this->MenuVenteTitre->InscritSousMenuScript(($this->PossedePrivilege('post_doc_tresorier')) ? "publierReventeObligation" : "consultReventeObligation") ;
 				$this->MenuReventeObligation->Titre = "Obligation" ;
 				$this->MenuReventeObligation->TitreOnglet = "Revente Obligation" ;
@@ -761,25 +764,31 @@
 				$this->ScriptPublierEmissBonTresor = $this->InsereScript('publierEmissBonTresor', new ScriptPublierEmissBonTresorTradPlatf()) ;
 				$this->ScriptConsultEmissBonTresor = $this->InsereScript('consultEmissBonTresor', new ScriptConsultEmissBonTresorTradPlatf()) ;
 				$this->ScriptProposEmissBonTresor = $this->InsereScript('proposEmissBonTresor', new ScriptProposEmissBonTresorTradPlatf()) ;
+				$this->ScriptLstEmissBonTresorValide = $this->InsereScript('lstEmissBonTresorValide', new ScriptLstEmissBonTresorValideTradPlatf()) ;
 				$this->ScriptAjoutEmissBonTresor = $this->InsereScript('ajoutEmissBonTresor', new ScriptAjoutEmissBonTresorTradPlatf()) ;
 				$this->ScriptModifEmissBonTresor = $this->InsereScript('modifEmissBonTresor', new ScriptModifEmissBonTresorTradPlatf()) ;
 				$this->ScriptDetailEmissBonTresor = $this->InsereScript('detailEmissBonTresor', new ScriptDetailEmissBonTresorTradPlatf()) ;
 				$this->ScriptSupprEmissBonTresor = $this->InsereScript('supprEmissBonTresor', new ScriptSupprEmissBonTresorTradPlatf()) ;
 				$this->ScriptDetailProposEmissBonTresor = $this->InsereScript('detailProposEmissBonTresor', new ScriptDetailProposEmissBonTresorTradPlatf()) ;
 				$this->ScriptListReservEmissBonTresor = $this->InsereScript('listReservEmissBonTresor', new ScriptListReservEmissBonTresorTradPlatf()) ;
+				$this->ScriptLstReservEmissBonTresorValide = $this->InsereScript('lstReservEmissBonTresorValide', new ScriptLstReservEmissBonTresorValideTradPlatf()) ;
 				$this->ScriptAjoutReservEmissBonTresor = $this->InsereScript('ajoutReservEmissBonTresor', new ScriptAjoutReservEmissBonTresorTradPlatf()) ;
 				$this->ScriptModifReservEmissBonTresor = $this->InsereScript('modifReservEmissBonTresor', new ScriptModifReservEmissBonTresorTradPlatf()) ;
 				$this->ScriptSupprReservEmissBonTresor = $this->InsereScript('supprReservEmissBonTresor', new ScriptSupprReservEmissBonTresorTradPlatf()) ;
 				$this->ScriptDetailReservEmissBonTresor = $this->InsereScript('detailReservEmissBonTresor', new ScriptDetailReservEmissBonTresorTradPlatf()) ;
+				$this->ScriptDtlReservEmissBonTresorValide = $this->InsereScript('dtlReservEmissBonTresorValide', new ScriptDtlReservEmissBonTresorValideTradPlatf()) ;
 				$this->ScriptPublierEmissObligation = $this->InsereScript('publierEmissObligation', new ScriptPublierEmissObligationTradPlatf()) ;
 				$this->ScriptConsultEmissObligation = $this->InsereScript('consultEmissObligation', new ScriptConsultEmissObligationTradPlatf()) ;
 				$this->ScriptProposEmissObligation = $this->InsereScript('proposEmissObligation', new ScriptProposEmissObligationTradPlatf()) ;
+				$this->ScriptLstEmissObligationValide = $this->InsereScript('lstEmissObligationValide', new ScriptLstEmissObligationValideTradPlatf()) ;
 				$this->ScriptAjoutEmissObligation = $this->InsereScript('ajoutEmissObligation', new ScriptAjoutEmissObligationTradPlatf()) ;
 				$this->ScriptModifEmissObligation = $this->InsereScript('modifEmissObligation', new ScriptModifEmissObligationTradPlatf()) ;
 				$this->ScriptDetailEmissObligation = $this->InsereScript('detailEmissObligation', new ScriptDetailEmissObligationTradPlatf()) ;
 				$this->ScriptSupprEmissObligation = $this->InsereScript('supprEmissObligation', new ScriptSupprEmissObligationTradPlatf()) ;
+				$this->ScriptDtlReservEmissObligationValide = $this->InsereScript('dtlReservEmissObligationValide', new ScriptDtlReservEmissObligationValideTradPlatf()) ;
 				$this->ScriptDetailProposEmissObligation = $this->InsereScript('detailProposEmissObligation', new ScriptDetailProposEmissObligationTradPlatf()) ;
 				$this->ScriptListReservEmissObligation = $this->InsereScript('listReservEmissObligation', new ScriptListReservEmissObligationTradPlatf()) ;
+				$this->ScriptLstReservEmissObligationValide = $this->InsereScript('lstReservEmissObligationValide', new ScriptLstReservEmissObligationValideTradPlatf()) ;
 				$this->ScriptAjoutReservEmissObligation = $this->InsereScript('ajoutReservEmissObligation', new ScriptAjoutReservEmissObligationTradPlatf()) ;
 				$this->ScriptModifReservEmissObligation = $this->InsereScript('modifReservEmissObligation', new ScriptModifReservEmissObligationTradPlatf()) ;
 				$this->ScriptSupprReservEmissObligation = $this->InsereScript('supprReservEmissObligation', new ScriptSupprReservEmissObligationTradPlatf()) ;
@@ -895,15 +904,14 @@
 #espaceTravail {
 	background-image:url(images/new-home-bg2.png) ;
 	background-position : center middle ;
-	background-repeat : center no-repeat ;
-	height:672px ;
-	width:100%;
-	border-top:12px solid white ;
-	border-bottom:12px solid white ;
+	background-repeat : no-repeat ;
+	/* height:636px ; */
+	height:482px ;
+	width:1001px;
 }
 #fenetreConnexion {
-	width:638px ;
-	height:379px ;
+	width:389px ;
+	height:242px ;
 	background:url(images/new-home-bg3.png) ;
 	color:#F0F0F0 ;
 }
@@ -918,14 +926,14 @@
 	font-weight:bold ;
 	padding:4px ;
 }
-.titreConnexion {
-	font-size:30px ;
-	font-weight:bold ;
+.textePrincipal {
+	background:rgba(0, 0, 0, 0.5) ;
+	padding:8px ;
+	margin:16px ;
 	color:white ;
-	padding:12px ;
-	margin-top:8px ;
 }
 .titreBienvenue {
+	margin-top:20px ;
 	margin-bottom:56px ;
 	padding:0px ;
 }
@@ -937,19 +945,22 @@
 .titreBienvenue .texte {
 	color:white ;
 	font-weight:bold ;
-	font-size:30px ;
+	font-size:24px ;
 	font-family:arial ;
 }
 .champSaisie {
-	margin-bottom:12px ;
+	margin-bottom:8px ;
 }
 #pseudo, #motDePasse {
-	width:355px ;
-	height:69px ;
-	font-size:18px ;
+	width:208px ;
+	height:37px ;
+	font-size:14px ;
 	color:black ;
 	border:0px ;
-	padding-left: 50px ;
+	padding-left: 30px ;
+}
+.barreBoutons {
+	margin-bottom:12px ;
 }
 #pseudo {
 	background :url(images/new-home-login-fld.png) no-repeat ;
@@ -959,10 +970,10 @@
 }
 .boutonLogin {
 	background:url(images/new-home-button-1.png) no-repeat ;
-	width:288px ;
-	height:74px ;
+	width:166px ;
+	height:41px ;
 	color:white ;
-	font-size:18px ;
+	font-size:16px ;
 	border:0px ;
 }
 #pied {
@@ -970,6 +981,22 @@
 	color:white;
 	font-size:16px ;
 	text-align:center ;
+}
+.titreConnexion {
+	font-size:16px ;
+	font-weight:bold ;
+	color:white ;
+	padding:8px ;
+	padding-top:24px ;
+}
+#formulaireConnexion .barreInscription td {
+	font-size:12px ;
+}
+#entete {
+	border-bottom:12px solid white ;
+}
+#pied {
+	border-top:12px solid white ;
 }' ;
 				return $ctn ;
 			}
@@ -988,7 +1015,6 @@
 	#fenetreConnexion { margin-left:200px ; }' ;
 				return $ctn ;
 			}
-
 			protected function ObtientContenuJsNonConnecte()
 			{
 				$ctn = '' ;
@@ -1021,7 +1047,8 @@ jQuery(function() {
 }) ;' ;
 				}
 				return $ctn ;
-			}			protected function RenduCorpsDocumentNonConnecte()
+			}
+			protected function RenduCorpsDocumentNonConnecte()
 			{
 				$ctn = '' ;
 				$ctn .= '<script type="text/javascript">
@@ -1033,25 +1060,24 @@ jQuery(function() {
 	}) ;
 </script>' ;
 				$ctn .= '<body id="corps_document">' ;
-				$ctn .= '<table width="100%" cellspacing="0" cellpadding="16">
+				$ctn .= '<table width="100%" id="entete" cellspacing="0" cellpadding="12">
 <tr>
 <td width="50%">
 <img src="images/new-home-logo.png" />
 </td>
 <td width="*" align="right">
-<a href="?"><img src="images/new-home-facebook-icon.png" border="0" /></a>
-<a href="?"><img src="images/new-home-twitter-icon.png" border="0" /></a>
-<a href="?"><img src="images/new-home-ggp-icon.png" border="0" /></a>
-<a href="?"><img src="images/new-home-linkedln-icon.png" border="0" /></a>
+&nbsp;
+</td>
 </tr>
 </table>'.PHP_EOL ;
 				$ctn .= '<table id="espaceTravail" cellspacing="0" cellpadding="0" align="center">
 <tr>
-<td align="center">'.PHP_EOL ;
-				$ctn .= '<p class="titreBienvenue"><span class="arrpl"><span class="texte">BIENVENUE SUR VOTRE PLATEFORME</span></span></p>'.PHP_EOL ;
+<td align="center" valign="top">
+<p>&nbsp;</p>'.PHP_EOL ;
+				$ctn .= '<p class="titreBienvenue"><span class="arrpl"><span class="texte">BIENVENUE SUR LA PLATEFORME e-AFTrading</span></span></p>'.PHP_EOL ;
 				if($this->ScriptPourRendu->NomElementZone == $this->NomScriptDeconnexion)
 				{
-					$ctn .= $this->RenduContenuCorpsDocument() ;
+					$ctn .= '<div class="textePrincipal">'.$this->RenduContenuCorpsDocument().'</div>' ;
 				}
 				else
 				{
@@ -1061,19 +1087,18 @@ jQuery(function() {
 					}
 					$ctn .= '<div id="fenetreConnexion" title="Authentification">
 		<form id="formulaireConnexion" action="'.$this->ScriptConnexion->ObtientUrl().'" method="post">' ;
-					$ctn .= '<div class="titreConnexion">TENTATIVE DE CONNEXION</div>'.PHP_EOL ;
-					$ctn .= '<div class="champSaisie"><input placeholder="Nom d\'utilisateur" type="text" name="pseudo" id="pseudo" value="" /></div>
-		<div class="champSaisie"><input placeholder="Mot de passe" type="password" name="motDePasse" id="motDePasse" value="" /></div>
+					$ctn .= '<div class="titreConnexion">INTERFACE DE CONNEXION</div>'.PHP_EOL ;
+					$ctn .= '<div class="champSaisie" align="center"><input placeholder="Nom d\'utilisateur" type="text" name="pseudo" id="pseudo" value="" /></div>
+		<div class="champSaisie" align="center"><input placeholder="Mot de passe" type="password" name="motDePasse" id="motDePasse" value="" /></div>
 		<input type="hidden" name="tentativeConnexion" value="1" />
 		<div class="barreBoutons" align="center">
 			<button type="submit" class="boutonLogin">Connexion</button>
 		</div>
-		<br />
-		<table width="92%" cellspacing="0" cellpadding="0" align="center">
+		<table class="barreInscription" width="92%" cellspacing="0" cellpadding="0" align="center">
 		<tr>
-		<td width="33%">Se souvenir de moi <input type="checkbox" /></td>
-		<td width="33%" align="center"><input class="bouton2" type="button" onclick="ouvreFenetreInscription()" value="INSCRIPTION" /></td>
-		<td width="*" align="right">Mot de passe oubli&eacute; ?</td>
+		<td width="45%">Se souvenir de moi <input type="checkbox" /></td>
+		<td width="*%" align="center"><input class="bouton2" type="button" onclick="ouvreFenetreInscription()" value="INSCRIPTION" /></td>
+		<td width="40%" align="right">Mot de passe oubli&eacute; ?</td>
 		</tr>
 		</table>
 		</form>
@@ -1111,20 +1136,25 @@ jQuery(function() {
 				$sql = array() ;
 				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
 				$condArch2 = '('.$bd->SqlDatePart('date_creation').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
-				$sqls[] = 'insert into arch_op_change select null, op_change.*, '.$bd->SqlNow().' from op_change where '.$condArch ;
+				$sqls[] = 'insert into arch_op_change select op_change.*, '.$bd->SqlNow().', null from op_change where '.$condArch ;
 				$sqls[] = 'delete from op_change where '.$condArch ;
 				$sqls[] = 'ALTER TABLE op_change auto_increment = 1' ;
 				$condArch = '('.$bd->SqlDatePart('date_change').' < '.$bd->SqlDatePart($bd->SqlNow()).')' ;
-				$sqls[] = 'insert into arch_op_inter select null, op_inter.*, '.$bd->SqlNow().' from op_inter where '.$condArch ;
+				$sqls[] = 'insert into arch_op_inter select op_inter.*, '.$bd->SqlNow().', null from op_inter where '.$condArch ;
 				$sqls[] = 'delete from op_inter where '.$condArch ;
 				$sqls[] = 'ALTER TABLE op_inter auto_increment = 1' ;
 				$sqls[] = 'delete from accuse_op_change where '.$condArch2 ;
 				$sqls[] = 'ALTER TABLE accuse_op_change auto_increment = 1' ;
 				$sqls[] = 'delete from accuse_op_inter where '.$condArch2 ;
 				$sqls[] = 'ALTER TABLE accuse_op_inter auto_increment = 1' ;
+				// echo "Aerch***" ;
 				foreach($sqls as $i => $sql)
 				{
-					$bd->RunSql($sql) ;
+					$ok = $bd->RunSql($sql) ;
+					/*
+					if(! $ok)
+						echo "Err : ".$bd->ConnectionException."<br>" ;
+					*/
 				}
 				$this->VideDossiersChat() ;
 			}
@@ -1900,7 +1930,7 @@ jQuery(function() {
 				$ctn = '' ;
 				$ctn .= '<table width="100%" cellspacing="0" cellpadding="0">
 <tr>
-<td width="50%" align="left"><img src="images/logo.png" width="200" /></td>
+<td width="50%" align="left"><img src="images/new-home-logo.png" width="200" /></td>
 <td width="*" align="right"><img src="images/logo-3.png" /></td>
 </tr>
 </table>'.PHP_EOL ;
@@ -1969,7 +1999,7 @@ jQuery(function() {
 				if($membreConnecte == null)
 					return '' ;
 				$ctn = '' ;
-				$ctn .= '<div id="'.$this->IDInstanceCalc.'" class="ui-wigdet ui-widget-content ui-state-active" style="margin:2px">'.PHP_EOL ;
+				$ctn .= '<div id="'.$this->IDInstanceCalc.'" class="ui-wigdet ui-widget-content" style="margin:2px; background:#93eaed">'.PHP_EOL ;
 				$ctn .= '<table width="100%" cellspacing="0" cellpadding=4>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td width="50%">Utilisateur : '.htmlentities($membreConnecte->FirstName.' '.$membreConnecte->LastName).' ('.htmlentities($membreConnecte->Login).') / '.htmlentities($membreConnecte->Profile->Title).PHP_EOL ;

@@ -37,6 +37,9 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 		{
 			public $MaxDecimals = 0 ;
 		}
+		class ZoneMonnaieTradPlatf extends PvZoneTexteHtml
+		{
+		}
 		
 		class ActDicussChatTransactTradPlatf extends PvActionRenduPageWeb
 		{
@@ -346,7 +349,8 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 			protected function EstPeriodeTransact()
 			{
 				// echo "Heure : ".gmdate("G") ;
-				return gmdate("G") >= 6 && gmdate("G") <= 23 ;
+				return true ;
+				// return gmdate("G") >= 6 && gmdate("G") <= 23 ;
 			}
 			public function RenduPeriodeIndisponible()
 			{

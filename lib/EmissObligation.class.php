@@ -12,6 +12,9 @@
 				return $script->ZoneParent->RemplisseurConfig->AppliqueFormObligation($script, $composant) ;
 			}
 		}
+		class SommaireFltsObligationTradPlatf extends PvDessinateurRenduHtmlFiltresDonnees
+		{
+		}
 		
 		class DessinFltsObligationMarchSecTradPlatf extends PvDessinateurRenduHtmlFiltresDonnees
 		{
@@ -73,6 +76,7 @@
 			{
 				$ctn = '' ;
 				$ctn .= $this->TablPrinc->RenduDispositif() ;
+				// print_r($this->TablPrinc->FournisseurDonnees->BaseDonnees) ;
 				return $ctn ;
 			}
 		}
@@ -118,6 +122,7 @@
 			public $SousMenuPublier ;
 			public $SousMenuConsult ;
 			public $SousMenuPropos ;
+			public $SousMenuLstValide ;
 			public function DetermineEnvironnement()
 			{
 				parent::DetermineEnvironnement() ;
@@ -145,7 +150,13 @@
 					// Propositions
 					$this->SousMenuPropos = $this->BarreMenu->MenuRacine->InscritSousMenuScript('proposEmissObligation') ;
 					$this->SousMenuPropos->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
-					$this->SousMenuPropos->Titre = "R&eacute;servations" ;
+					$this->SousMenuPropos->Titre = "Visuel des souscriptions" ;
+				}
+				if($this->ZoneParent->PossedePrivilege('post_op_change'))
+				{
+					$this->SousMenuLstValide = $this->BarreMenu->MenuRacine->InscritSousMenuScript('lstEmissObligationValide') ;
+					$this->SousMenuLstValide->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
+					$this->SousMenuLstValide->Titre = "Souscriptions valid&eacute;es" ;
 				}
 			}
 			protected function RenduDispositifBrut()
@@ -268,7 +279,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienDetail = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=detailEmissObligation&id=${id}', 'detail', 'detail_emiss_obligation_${id}', 'D&eacute;tails obligation #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienDetail->ClasseCSS = "lien-act-003" ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissObligation&id=${id}', 'souscription', 'souscription_emiss_obligation_${id}', 'D&eacute;tails obligation #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservEmissObligation&id=${id}', 'Souscriptions', 'souscription_emiss_obligation_${id}', 'Souscriptions obligation #${ref_transact}', $this->OptsFenetreDetail) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
@@ -298,7 +309,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				parent::ChargeTablPrinc() ;
 				$bd = $this->BDPrinc() ;
 				$this->FltDateDebut = $this->TablPrinc->InsereFltSelectHttpGet("dateDebut", "date_emission >= <self>") ;
-				$this->FltDateDebut->ValeurParDefaut = date("Y-m-d", date("u") - 86400 * 90) ;
+				$this->FltDateDebut->ValeurParDefaut = date("Y-m-d", date("U") - 86400 * 90) ;
 				$this->FltDateFin = $this->TablPrinc->InsereFltSelectHttpGet("dateFin", "date_emission <= <self>") ;
 				$this->FltNumOpPubl = $this->TablPrinc->InsereFltSelectFixe("numOpPublieur", $this->ZoneParent->IdMembreConnecte(), "numop_publieur = <self>") ;
 				$this->FltDateDebut->Libelle = "Periode du" ;
@@ -321,13 +332,37 @@ inner join (select id_emission, count(0) total from reserv_obligation group by i
 on t1.id = t2.id_emission
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservEmissObligation&id=${id}', 'R&eacute;servations', 'list_reserv_emiss_obligation_${id}', 'Liste r&eacute;servations &eacute;mission obligation #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservEmissObligation&id=${id}', 'D&eacute;tails', 'list_reserv_emiss_obligation_${id}', 'D&eacute;tails &eacute;mission obligation #${ref_transact}', $this->OptsFenetreDetail) ;
 				$this->LienReserv->ClasseCSS = "lien-act-001" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
 			{
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenProposEmissObligation ;
+			}
+		}
+		class ScriptLstEmissObligationValideTradPlatf extends ScriptProposEmissObligationTradPlatf
+		{
+			public $Privileges = array('post_op_change') ;
+			protected function ChargeTablPrinc()
+			{
+				parent::ChargeTablPrinc() ;
+				$this->FltNumOpPubl->ExpressionDonnees = "numop_demandeur = <self>" ;
+				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.montant montant_demandeur, t2.numop_demandeur, t2.est_valide, d1.code_devise from emission_obligation t1
+inner join reserv_obligation t2
+on t1.id = t2.id_emission
+left join devise d1 on t1.id_devise = d1.id_devise
+where t2.est_valide=1)' ;
+				/*
+				$this->LienReserv->ClasseCSS = "lien-act-001" ;
+				$this->LienReserv->FormatURL = '?appelleScript=lstReservEmissObligationValide&id=${id}' ;
+				*/
+				$this->DefColActs->Visible = false ;
+				$this->DefColMontantDem = $this->TablPrinc->InsereDefColMoney("montant_demandeur", "Montant Souscrit") ;
+				$this->DefColMontant->AlignElement = "right" ;
+				$this->DefColMontantDem->AlignElement = "right" ;
+				$this->DefColValide = $this->TablPrinc->InsereDefColBool("est_valide", "Valid&eacute;") ;
+				$this->DefColValide->AlignElement = "center" ;
 			}
 		}
 		
@@ -634,12 +669,20 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $DefColMontantTablSecond ;
 			public $DefColActsTablSecond ;
 			public $LienDetailsTablSecond ;
+			public $ActMajStatut ;
+			public $DefColActs ;
 			public function DetermineEnvironnement()
 			{
 				parent::DetermineEnvironnement() ;
 				$this->FormPrinc->Editable = 0 ;
 				$this->FormPrinc->CacherBlocCommandes = 1 ;
+				$this->DetermineActMajStatut() ;
 				$this->DetermineTableSecond() ;
+			}
+			protected function DetermineActMajStatut()
+			{
+				$this->ActMajStatut = $this->InsereActionAvantRendu("MajStatut", new ActValidReservEmissObligationTradPlatf()) ;
+				$this->ActMajStatut->ChargeConfig() ;
 			}
 			protected function CreeTablSecond()
 			{
@@ -657,6 +700,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltIdTablSecond = $this->TablSecond->InsereFltSelectHttpGet('id', 'id_emission = <self>') ;
 				$this->TablSecond->CacherFormulaireFiltres = 1 ;
 				$this->DefColIdTablSecond = $this->TablSecond->InsereDefColCachee('id') ;
+				$this->DefColNumOpTablSecond = $this->TablSecond->InsereDefColCachee('id') ;
 				$this->DefColIdEmissTablSecond = $this->TablSecond->InsereDefColCachee('id_emission') ;
 				$this->DefColNumOpTablSecond = $this->TablSecond->InsereDefColCachee('numop') ;
 				$this->DefColLoginTablSecond = $this->TablSecond->InsereDefCol('login', "Login") ;
@@ -666,6 +710,14 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite', "Entit&eacute;") ;
 				$this->DefColMontantTablSecond = $this->TablSecond->InsereDefColMoney('montant', "Montant") ;
 				$this->DefColMontantTablSecond->AlignElement = "right" ;
+				$this->DefColStatut = $this->TablSecond->InsereDefColChoix('est_valide', 'Statut', '', array("<span style='color:blue'>N/A</span>", "<span style='color:green'>Accept&eacute;</span>", "<span style='color:red'>Refus&eacute;</span>")) ;
+				$this->DefColStatut->AlignElement = "center" ;
+				$this->DefColStatut->StyleCSS = "" ;
+				$this->DefColActs = $this->TablSecond->InsereDefColActions('Actions') ;
+				$this->LienAccepter = $this->TablSecond->InsereLienAction($this->DefColActs, $this->ActMajStatut->ObtientUrlFmt(array("idReserv" => '${id}'), array("id" => $this->FltId->Lie(), "estValide" => 1)), "Accepter") ;
+				$this->LienAccepter->ClasseCSS = "lien-act-003" ;
+				$this->LienRefuser = $this->TablSecond->InsereLienAction($this->DefColActs, $this->ActMajStatut->ObtientUrlFmt(array("idReserv" => '${id}'), array("id" => $this->FltId->Lie(), "estValide" => 2)), "Refuser") ;
+				$this->LienRefuser->ClasseCSS = "lien-act-002" ;
 				/*
 				$this->DefColActsTablSecond = $this->TablSecond->InsereDefColActions("Actions") ;
 				$this->LienDetailsTablSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=detailReservEmissObligation&id=${id_emission}&numop=${numop}', 'D&eacute;tails', 'details_reserv_emiss_obligation_${id}_${numop}', 'Details &eacute;mission obligation #${login}', $this->OptsFenetreDetail) ;
@@ -684,6 +736,11 @@ on t2.id_entite = t3.id_entite)' ;
 				$ctn = parent::RenduDispositifBrut() ;
 				if($this->FormPrinc->ElementEnCoursTrouve == 1)
 				{
+					if($this->ActMajStatut->MsgResultat != '')
+					{	
+						$ctn .= '<div class="ui-widget ui-widget-content ui-state-highlight">'.$this->ActMajStatut->MsgResultat.'</div>'.PHP_EOL ;
+						$ctn .= '<div>&nbsp;</div>'.PHP_EOL ;
+					}
 					$ctn .= '<div class="ui-widget ui-widget-content">' ;
 					$ctn .= $this->TablSecond->RenduDispositif() ;
 					// print_r($this->TablSecond->FournisseurDonnees) ;
@@ -727,6 +784,40 @@ on t2.id_entite = t3.id_entite)' ;
 			}
 		}
 		
+		class ScriptLstReservEmissObligationValideTradPlatf extends ScriptListReservEmissObligationTradPlatf
+		{
+			protected function ChargeTablSecond()
+			{
+				parent::ChargeTablSecond() ;
+				$this->LienDetailsTablSecond->FormatURL = '?appelleScript=dtlReservEmissObligationValide&id=${id_emission}&numop=${numop}' ;
+				$this->LienDetailsTablSecond->FormatIdOnglet = 'dtls_reserv_emiss_obligation_${id}_${numop}_valide';
+				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
+from reserv_obligation t1
+left join operateur t2
+on t1.numop_demandeur = t2.numop
+left join entite t3
+on t2.id_entite = t3.id_entite
+where t1.est_valide = 1
+group by t2.login, t1.id_emission)' ;
+			}
+		}
+		class ScriptDtlReservEmissObligationValideTradPlatf extends ScriptDetailReservEmissObligationTradPlatf
+		{
+			protected function DetermineTablPrinc()
+			{
+				parent::DetermineTablPrinc() ;
+				$this->DefColEntite->Visible = 0 ;
+				$this->DefColLogin->Visible = 0 ;
+				$this->DefColActs->Visible = 0 ;
+				$this->FournDonneesPrinc->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite
+from reserv_obligation t1
+left join operateur t2
+on t1.numop_demandeur = t2.numop
+left join entite t3
+on t2.id_entite = t3.id_entite
+where est_valide=1)' ;
+			}
+		}
 		class ScriptLng1ReservEmissObligationTradPlatf extends ScriptEditEmissObligationTradPlatf
 		{
 			public $FltId ;
@@ -847,7 +938,14 @@ on t2.id_entite = t3.id_entite)' ;
 			protected function RenduDispositifBrut()
 			{
 				$ctn = parent::RenduDispositifBrut() ;
-				$ctn .= $this->FormSecond->RenduDispositif() ;
+				if(count($this->LgnsReserv) == 0 || $this->LgnsReserv[0]["est_valide"] == 0)
+				{
+					$ctn .= $this->FormSecond->RenduDispositif() ;
+				}
+				else
+				{
+					$ctn .= '<div class="ui-widget ui-widget-content ui-state-error">Vous ne pouvez plus modifier le montant propos&eacute; : '.format_money($this->LgnsReserv[0]["montant"]).'</div>' ;
+				}
 				return $ctn ;
 			}
 		}
@@ -867,6 +965,47 @@ on t2.id_entite = t3.id_entite)' ;
 			protected function DefinitExprs()
 			{
 				$this->Titre = $this->ZoneParent->FournExprs->TitrFenSupprReservEmissObligation ;
+			}
+		}
+		
+		class ActValidReservEmissObligationTradPlatf extends PvActionBaseZoneWebSimple
+		{
+			protected $LgnDetail ;
+			protected $ValParamId ;
+			protected $ValParamIdReserv ;
+			public $MsgResultat ;
+			public function Execute()
+			{
+				$this->TraiteLgnDetail() ;
+			}
+			protected function TraiteLgnDetail()
+			{
+				$this->ValParamId = _GET_def("id") ;
+				$this->ValParamIdReserv = _GET_def("idReserv") ;
+				$this->ValParamEstValide = intval(_GET_def("estValide")) ;
+				// print_r($_GET) ;
+				$bd = $this->ScriptParent->ApplicationParent->BDPrincipale ;
+				$this->LgnDetail = $bd->FetchSqlRow('select t1.* from reserv_obligation t1
+inner join emission_obligation t2 on t1.id_emission = t2.id
+where t1.id=:idReserv and t1.id_emission=:idEmiss and t2.numop_publieur=:idMembre',
+array("idReserv" => $this->ValParamIdReserv, "idEmiss" => $this->ValParamId, "idMembre" => $this->ZoneParent->IdMembreConnecte())) ;
+				// print_r($bd) ;
+				if(is_array($this->LgnDetail) && count($this->LgnDetail) > 0)
+				{
+					$ok = $bd->UpdateRow("reserv_obligation", array("est_valide" => $this->ValParamEstValide), 'id = :id', array("id" => $this->LgnDetail["id"])) ;
+					if($ok)
+					{
+						$this->MsgResultat = "D&eacute;tail mis &agrave; jour." ;
+					}
+					else
+					{
+						$this->MsgResultat = "Exception lors de la mise &grave; jour" ;
+					}
+				}
+				else
+				{
+					$this->MsgResultat = "Vous n'avez pas acc&egrave;s &agrave; ce d&eacute;tail" ;
+				}
 			}
 		}
 		

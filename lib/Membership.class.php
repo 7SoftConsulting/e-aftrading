@@ -90,7 +90,7 @@
 				{
 					$this->FiltreEntiteOp = $form->ScriptParent->CreeFiltreHttpPost("entiteOp") ;
 					$this->FiltreEntiteOp->Libelle = "Entit&eacute;" ;
-					$this->FiltreEntiteOp->DeclareComposant("PvZoneBoiteSelectHtml") ;
+					$this->FiltreEntiteOp->DeclareComposant("PvSelect2") ;
 					$this->FiltreEntiteOp->Composant->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 					$this->FiltreEntiteOp->Composant->FournisseurDonnees->BaseDonnees = $form->ApplicationParent->BDPrincipale ;
 					$this->FiltreEntiteOp->Composant->Largeur = "250px" ;
@@ -107,7 +107,7 @@
 				$form->CommandeAnnuler->Libelle = "Fermer" ;
 				$critrTemp = new PvCritereNonVide() ;
 				$form->CommandeExecuter->InscritCritere($critrTemp) ;
-				$critrTemp->FiltresCibles = array(&$this->FiltreFonctionOp, &$this->FiltreTelBureauOp)  ;
+				$critrTemp->FiltresCibles = array(&$this->FiltreFonctionOp, &$this->FiltreTelBureauOp, & $this->FiltreEntiteOp)  ;
 			}
 			public function SqlTousLesMembres(& $table)
 			{

@@ -246,7 +246,7 @@ left join operateur o1 on t1.numop_publieur = o1.numop
 left join rel_entreprise t3 on o1.id_entite = t3.id_entite_source
 left join operateur t4 on t3.id_entite_dest = t4.id_entite)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationDepotTerme&id_cotation=${id}', 'R&eacute;ponse', 'reserv_cotation_depot_terme_${id}', 'Cotation D&eacute;p&ocirc;t &agrave; terme #${id}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationDepotTerme&id_cotation=${id}', 'R&eacute;ponse', 'reserv_cotation_depot_terme_${id}', 'Cotation D&eacute;p&ocirc;t &agrave; terme', $this->OptsFenetreDetail) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
@@ -296,7 +296,7 @@ inner join (select id_cotation, count(0) total from reserv_cotation_depot_terme 
 on t1.id = t2.id_cotation
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservCotationDepotTerme&id=${id}', 'Consultation', 'list_reserv_cotation_depot_terme_${id}', 'Liste r&eacute;servations cotation depot de terme #${ref_transact}', $this->OptsFenetreDetail) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=listReservCotationDepotTerme&id=${id}', 'Consultation', 'list_reserv_cotation_depot_terme_${id}', 'Liste r&eacute;servations cotation depot de terme', $this->OptsFenetreDetail) ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 			}

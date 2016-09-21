@@ -586,7 +586,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->FltMontant = $this->ScriptParent->CreeFiltreHttpPost("montant") ;
 				$this->FltMontant->DefinitColLiee("montant_change") ;
 				$this->FltMontant->Libelle = "Montant" ;
-				$this->FltMontant->DeclareComposant("PvPriceFormatJQuery") ;
+				$this->FltMontant->DeclareComposant("ZoneMonnaieTradPlatf") ;
 				$this->FiltresEdition[] = & $this->FltMontant ;
 				// Taux / Commission
 				$this->FltMttTaux = $this->ScriptParent->CreeFiltreHttpPost("taux_change") ;
@@ -1238,6 +1238,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			public $MaxFiltresEditionParLigne = 1 ;
 			public $LigneOpInterDem = array() ;
 			public $MsgReponseInterdit = '<div class="ui-state-error">Vous avez d&eacute;j&agrave; r&eacute;pondu &agrave; cette offre.</div>' ;
+			public $MsgNegocAttente = '<div class="ui-state-error">Vous &ecirc;tes d&eacute;j&agrave; en n&eacute;gociation avec ce membre.</div>' ;
 			protected function CreeDessinFltsEdit()
 			{
 				return new DessinFiltresAjustOpInter() ;
@@ -1274,7 +1275,8 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				{
 					$ligne = $this->LigneOpInterDem ;
 				}
-				$ok = (is_array($ligne) && count($ligne) > 0) ;
+				if((is_array($ligne) && count($ligne) > 0) && ($ligne["num_op_inter"] == $idMembre || $ligne["bool_valide"] == 1))
+					$ok = 1 ;
 				if($ok)
 				{
 					$ligne["commiss_ou_taux"] = $ligne["id_devise1"] == ID_EURO_TRAD_PLATF ? 0 : 1 ;
@@ -1311,6 +1313,28 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 					}
 				}
 				return $ok ;
+			}
+			protected function NegociationEnAttente()
+			{
+				if($this->InclureElementEnCours)
+				{
+					return 0 ;
+				}
+				$idMembre = $this->ZoneParent->IdMembreConnecte() ;
+				$idEnCours = $this->FltIdEnCours->Lie() ;
+				$bd = & $this->ApplicationParent->BDPrincipale ;
+				$ligne = $bd->FetchSqlRow(
+					'select t1.* from op_inter t1
+	inner join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter
+	where t1.num_op_inter <> '.$bd->ParamPrefix.'idEnCours and ((t1.numop = '.$bd->ParamPrefix.'idMembre and t2.numop = '.$bd->ParamPrefix.'idPartie) or (t1.numop = '.$bd->ParamPrefix.'idPartie and t2.numop = '.$bd->ParamPrefix.'idMembre)) and t1.bool_confirme=0',
+					array('idEnCours' => $idEnCours, 'idMembre' => $idMembre, 'idPartie' => ($this->LigneOpInterDem["numop"]))
+				) ;
+				// print_r($bd) ;
+				if(! is_array($ligne) || count($ligne) > 0)
+				{
+					return 1 ;
+				}
+				return 0 ;
 			}
 			public function ChargeConfig()
 			{
@@ -1424,6 +1448,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$this->FltNomEntiteSoumis->Libelle = "Nom banque emettrice" ;
 				$this->FltNomEntiteSoumis->EstEtiquette = 1 ;
 				$this->FltMontantDem = $this->InsereFltEditHttpPost("montant_dem", "montant_change") ;
+				$this->FltMontantDem->DeclareComposant("ZoneMonnaieTradPlatf") ;
 				$this->FltMontantDem->Libelle = "Montant" ;
 				$this->FltMontantDem->ObtientComposant()->ClassesCSS[] = "nombre" ;
 				$this->FltTauxDem = $this->InsereFltEditHttpPost("taux_dem", "taux_change") ;
@@ -1431,7 +1456,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				$this->FltTauxDem->Libelle = "Taux (%)" ;
 				$this->FltMontantSoumis = $this->InsereFltEditHttpPost("montant_soumis", "montant_soumis") ;
 				$this->FltMontantSoumis->Libelle = "Montant" ;
-				$this->FltMontantSoumis->DeclareComposant("PvPriceFormatJQuery") ;
+				$this->FltMontantSoumis->DeclareComposant("ZoneMonnaieTradPlatf") ;
 				$this->FltTauxSoumis = $this->InsereFltEditHttpPost("taux_soumis", "taux_soumis") ;
 				$this->FltTauxSoumis->Libelle = "Taux (%)" ;
 				$this->FltTauxSoumis->ObtientComposant()->ClassesCSS[] = "nombre" ;
@@ -1467,11 +1492,14 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 				{
 					$ctn .= $this->MsgReponseInterdit ;
 				}
+				elseif($this->InclureElementEnCours == 0 && $this->NegociationEnAttente())
+				{
+					$ctn .= $this->MsgNegocAttente ;
+				}
 				else
 				{
 					$ctn .= parent::RenduDispositif() ;
 				}
-				// print_r($this->FournisseurDonnees->BaseDonnees) ;
 				return $ctn ;
 			}
 		}
@@ -2092,7 +2120,7 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 				)) ;
 				if(count($this->LgnOpInterSelect) > 0)
 				{
-					if($this->LgnOpChangeSelect["taux_soumis"] == 0)
+					if($this->LgnOpInterSelect["taux_soumis"] == 0)
 					{
 						$this->MsgExec = $this->MsgNonTermine ;
 					}
@@ -2247,6 +2275,7 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 			}
 			protected function ChargeFournDonnees()
 			{
+				$idMembre = intval($this->ZoneParent->IdMembreConnecte()) ;
 				$bd = $this->ApplicationParent->BDPrincipale ;
 				$this->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$this->FournisseurDonnees->BaseDonnees = $bd ;
@@ -2279,10 +2308,10 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 		t1.ecran_taux,
 		t1.bool_valide,
 		t1.bool_confirme,
-		case when t1.numop = t2.numop then t1.montant_change else t1.montant_soumis end montant_operateur,
-		case when t1.numop = t2.numop then t2.numop else e1.numop end id_operateur,
-		case when t1.numop = t2.numop then t3.login else e1.login end login_operateur,
-		case when t1.numop = t2.numop then t4.name else e2.name end nom_entite_operateur
+		case when t1.numop = ".$idMembre." then t1.montant_change else t1.montant_soumis end montant_operateur,
+		case when t1.numop = ".$idMembre." then t2.numop else e1.numop end id_operateur,
+		case when t1.numop = ".$idMembre." then t3.login else e1.login end login_operateur,
+		case when t1.numop = ".$idMembre." then t4.name else e2.name end nom_entite_operateur
 	from op_inter t1
 	inner join op_inter t2 ON t2.num_op_inter = t1.num_op_inter_dem
 	inner join operateur t3 ON t3.numop = t2.numop
