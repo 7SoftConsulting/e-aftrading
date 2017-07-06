@@ -8,6 +8,7 @@
 		define('USER_BD_PRINC_TRAD_PLATF', 'root') ;
 		define('PWD_BD_PRINC_TRAD_PLATF', '') ;
 		define('SCHEMA_BD_PRINC_TRAD_PLATF', 'trading_platform_v2') ;
+		define('EMAIL_INFOS_TRAD_PLATF', 'infos@e-aftrading.com') ;
 	}
 	
 ?>

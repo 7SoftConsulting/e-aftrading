@@ -4,6 +4,15 @@
 	{
 		define('REVENTE_BON_TRESOR_TRAD_PLATF', 1) ;
 		
+		class DessinFltsBonTresor2MarchSecTradPlatf extends PvDessinateurRenduHtmlFiltresDonnees
+		{
+			public function Execute(& $script, & $composant, $parametres)
+			{
+				$composant->LieTousLesFiltres() ;
+				return $script->ZoneParent->RemplisseurConfig->AppliqueFormBonTresor2MarchSec($script, $composant) ;
+			}
+		}
+		
 		class ScriptBaseReventeBonTresorTradPlatf extends ScriptTransactBaseTradPlatf
 		{
 			public $OptsFenetreEdit = array("Largeur" => 875, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
@@ -294,7 +303,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FormPrinc->InclureTotalElements = ($this->PourAjout) ? 0 : 1 ;
 				$this->FormPrinc->Editable = $this->FormPrincEditable ;
 				$this->FormPrinc->InscrireCommandeExecuter = $this->InscrireCmdExecFormPrinc ;
-				$this->FormPrinc->DessinateurFiltresEdition = new DessinFltsBonTresorMarchSecTradPlatf() ;
+				$this->FormPrinc->DessinateurFiltresEdition = new DessinFltsBonTresor2MarchSecTradPlatf() ;
 			}
 			protected function ChargeFormPrinc()
 			{

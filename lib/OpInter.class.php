@@ -137,6 +137,7 @@
 				$this->DefColTaux->Visible = "0" ;
 				$this->DefColTaux->AlignElement = "center" ;
 				$this->DefinitionsColonnes[] = & $this->DefColTaux ;
+				$this->DefColStatutNegoc = $this->InsereDefCol("statut_negoc", "Negoc.") ;
 				$this->DefColActions = new PvDefinitionColonneDonnees() ;
 				$this->DefColActions->Libelle = "Actions" ;
 				$this->DefColActions->TriPossible = 0 ;
@@ -189,7 +190,8 @@
 				$this->FmtPostuls->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtPostuls ;
 				$this->FmtRepondre = new PvConfigFormatteurColonneOuvreFenetre() ;
-				$this->FmtRepondre->NomDonneesValid = "peut_repondre" ;
+				$this->FmtRepondre->NomDonneesValid = "statut_negoc" ;
+				$this->FmtRepondre->ValeurVraiValid = ' ' ;
 				$this->FmtRepondre->ClasseCSS = "lien-act-003" ;
 				$this->FmtRepondre->FormatLibelle = $this->ZoneParent->FournExprs->LibLienDemarrNegoc ;
 				$this->FmtRepondre->OptionsOnglet["Modal"] = 1 ;
@@ -253,7 +255,7 @@
 			}
 			protected function ObtientRequeteSelection(& $bd)
 			{
-				return "(select t1.*, case when t1.commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end taux_transact, t2.code_devise devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
+				return "(select t1.*, case when t8.num_op_inter_dem > 0 and t8.bool_confirme = 0 then 'En cours' when t8.num_op_inter_dem > 0 and t8.bool_confirme = 1 then 'Confirme' when t4.numop = t6.numop then 'Proprietaire' else ' ' end statut_negoc, case when t1.commiss_ou_taux = 0 then t1.mtt_commiss when t1.type_taux = 0 then t1.taux_change else t1.ecran_taux end taux_transact, t2.code_devise devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
 case when t1.num_op_inter_dem = 0 then 'demande' else 'reponse' end type_message
 from op_inter t1
 left join devise t2
@@ -268,6 +270,8 @@ left join entite t7
 on t5.id_entite_source=t7.id_entite
 left join operateur t6
 on t5.id_entite_dest=t6.id_entite
+left join op_inter t8
+on t8.num_op_inter_dem=t1.num_op_inter
 where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is not null and t4.active_op = 1)" ;
 			}
 			public function ChargeConfigSuppl()
@@ -417,11 +421,13 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->DefColId = $this->InsereDefColCachee("num_op_inter") ;
 				$this->DefColPeutAjust = $this->InsereDefColCachee("peut_ajuster") ;
 				$this->DefColDatePubl = $this->InsereDefCol("date_change", 'Date publication', $bd->SqlDateToStrFr('date_change')) ;
-				$this->DefColLoginDem = $this->InsereDefCol("login_dem", 'Demandeur') ;
-				$this->DefColBanqueDem = $this->InsereDefCol("nom_entite_dem", 'Banque') ;
-				$this->DefColMontantDem = $this->InsereDefColMoney("montant_change", 'Montant') ;
-				$this->DefColMontantSoumis = $this->InsereDefColMoney("montant_soumis", 'Montant') ;
+				$this->DefColDatePubl->Largeur = "8%" ;
+				$this->DefColLoginDem = $this->InsereDefCol("login_interlocuteur", 'Contrepartie') ;
+				$this->DefColBanqueDem = $this->InsereDefCol("entite_interlocuteur", 'Banque') ;
+				$this->DefColMontantDem = $this->InsereDefColMoney("montant_change", 'Montant post&eacute;') ;
+				$this->DefColMontantSoumis = $this->InsereDefColMoney("montant_soumis", 'Montant valid&eacute;') ;
 				$this->DefColTauxSoumis = $this->InsereDefCol("taux_soumis", 'Taux (%)') ;
+				$this->DefColMttCommiss = $this->InsereDefColMoney("mtt_commiss", 'Commission (%)') ;
 				// $this->DefColTauxDem = $this->InsereDefCol("taux_dem", 'Taux', 'case when commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end') ;
 				// $this->DefColConfirm = $this->InsereDefColBool("bool_confirme", 'Confirme') ;
 			}
@@ -443,7 +449,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			}
 			protected function ChargeFlts()
 			{
-				$this->FltNumOpSoumis = $this->InsereFltSelectFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop = <self>') ;
+				$this->FltNumOpSoumis = $this->InsereFltSelectFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop = <self> or numop_dem = <self>') ;
 				$this->FltEstSoumis = $this->InsereFltSelectFixe('num_op_inter_dem', 0, 'num_op_inter_dem <> <self>') ;
 				$this->FltEstConfirme = $this->InsereFltSelectFixe('bool_confirme', $this->ValeurConfirme, 'bool_confirme = <self>') ;
 				$this->FltTypeChange = $this->InsereFltSelectFixe('type_change_dem', $this->ScriptParent->TypeOpInterOppose(), 'type_change = <self>') ;
@@ -452,8 +458,18 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			{
 				$bd = & $this->ApplicationParent->BDPrincipale ;
 				$this->FournisseurDonnees = new PvFournisseurDonneesSql() ;
+				$idMembre = intval($this->ZoneParent->IdMembreConnecte()) ;
 				$this->FournisseurDonnees->BaseDonnees = & $bd ;
-				$this->FournisseurDonnees->RequeteSelection = '(select t1.*, case when t1.bool_confirme = 0 then 1 else 0 end peut_ajuster, t3.login login_dem, t4.name nom_entite_dem from op_inter t1 inner join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter left join operateur t3 on t2.numop = t3.numop left join entite t4 on t3.id_entite = t4.id_entite where t1.bool_valide=1)' ;
+				$this->FournisseurDonnees->RequeteSelection = '(select t1.*, case when t1.bool_confirme = 0 then 1 else 0 end peut_ajuster, t3.numop numop_dem, t3.login login_dem, t4.name nom_entite_dem, t5.login login_rep, t6.name nom_entite_rep,
+				case when t3.numop = '.$idMembre.' then t5.login else t3.login end login_interlocuteur,
+				case when t3.numop = '.$idMembre.' then t6.name else t4.name end entite_interlocuteur
+				from op_inter t1
+				inner join op_inter t2 on t1.num_op_inter_dem = t2.num_op_inter
+				left join operateur t3 on t2.numop = t3.numop
+				left join entite t4 on t3.id_entite = t4.id_entite
+				left join operateur t5 on t1.numop = t5.numop
+				left join entite t6 on t5.id_entite = t6.id_entite
+				where t1.bool_valide=1)' ;
 			}
 		}
 		class TablNegocEnvoyOpInterTradPlatf extends TablReservOpInterTradPlatf
@@ -1246,7 +1262,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			protected function ReponsePossible()
 			{
 				$bd = & $this->ApplicationParent->BDPrincipale ;
-				$sql = 'select * from op_inter where num_op_inter_dem='.$bd->ParamPrefix.'numOpInterDem and numop='.$bd->ParamPrefix.'login' ;
+				$sql = 'select * from op_inter where num_op_inter_dem='.$bd->ParamPrefix.'numOpInterDem and numop='.$bd->ParamPrefix.'login and bool_valide=1 and bool_confirme=0' ;
 				$row = $bd->FetchSqlRow(
 					$sql,
 					array(
@@ -1485,14 +1501,15 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			public function RenduDispositif()
 			{
 				$ok = 1 ;
-				if($this->InclureElementEnCours == 0)
+				$this->DetecteCommandeSelectionnee() ;
+				if($this->InclureElementEnCours == 0 && $this->ValeurParamIdCommande != 'annuler')
 					$ok = $this->ReponsePossible() ;
 				$ctn = '' ;
 				if(! $ok)
 				{
 					$ctn .= $this->MsgReponseInterdit ;
 				}
-				elseif($this->InclureElementEnCours == 0 && $this->NegociationEnAttente())
+				elseif($this->InclureElementEnCours == 0 && $this->NegociationEnAttente() && $this->ValeurParamIdCommande != 'annuler')
 				{
 					$ctn .= $this->MsgNegocAttente ;
 				}
@@ -1508,6 +1525,7 @@ WHERE num_op_inter = '.$bd->ParamPrefix.'numOpInter', array('numOperateur' => $t
 			public $InclureElementEnCours = 0 ;
 			public $InclureTotalElements = 0 ;
 			public $NomClasseCommandeExecuter = "CmdNegocOpInterTradPlatf" ;
+			public $NomClasseCommandeAnnuler = "PvCmdFermeFenetreActiveAdminDirecte" ;
 			public $FltTypeTaux ;
 			public $FltValeurTaux ;
 			public $FltEcranTaux ;
@@ -2147,8 +2165,8 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 			{
 				$msg = _parse_pattern($this->CorpsMsgEmail(), $this->LgnOpInterSelect) ;
 				$sujet = _parse_pattern($this->SujetMsgEmail(), $this->LgnOpInterSelect) ;
-				@send_plain_mail($this->LgnOpInterSelect["email_dem"], $sujet, $msg, $this->LgnOpInterSelect["email_dem"]) ;
-				@send_plain_mail($this->LgnOpInterSelect["email_soumis"], $sujet, $msg, $this->LgnOpInterSelect["email_dem"]) ;
+				@send_plain_mail($this->LgnOpInterSelect["email_dem"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
+				@send_plain_mail($this->LgnOpInterSelect["email_soumis"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
 				// echo "<pre>$msg</pre>" ;
 				return $msg ;
 			}
@@ -2192,6 +2210,7 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 		
 		class TablNegocOpInterTradPlatf extends TableauDonneesOperationTradPlatf
 		{
+			public $InclureCmdRafraich = 1 ;
 			public $DefColTypeTransact ;
 			public $DefColId ;
 			public $DefColDevise ;

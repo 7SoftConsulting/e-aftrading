@@ -18,6 +18,10 @@
 		{
 			include dirname(__FILE__)."/ScriptPubl.class.php" ;
 		}
+		if(! defined('SCRIPT_STATS_TRAD_PLATF'))
+		{
+			include dirname(__FILE__)."/ScriptStats.class.php" ;
+		}
 		if(! defined('OP_CHANGE_TRAD_PLATF'))
 		{
 			include dirname(__FILE__)."/OpChange.class.php" ;
@@ -495,6 +499,8 @@
 				}
 				$this->MenuStats = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('stats') ;
 				$this->MenuStats->Titre = "Statistiques" ;
+				$this->MenuStats1 = $this->MenuStats->InscritSousMenuScript('stats1') ;
+				$this->MenuStats1->Titre = "Operations de change" ;
 				$this->MenuRappAnnuels = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('rapports_annuels') ;
 				$this->MenuRappAnnuels->Titre = "Rapports annuels" ;
 			}
@@ -864,6 +870,7 @@
 				$this->ScriptModifCfgBonTresor = $this->InsereScript('modifCfgBonTresor', new ScriptModifCfgBonTresorTradPlatf()) ;
 				$this->ScriptListeCfgObligation = $this->InsereScript('listeCfgObligation', new ScriptListeCfgObligationTradPlatf()) ;
 				$this->ScriptModifCfgObligation = $this->InsereScript('modifCfgObligation', new ScriptModifCfgObligationTradPlatf()) ;
+				$this->ScriptStats1 = $this->InsereScript('stats1', new ScriptStats1TradPlatf()) ;
 				// $this->ScriptBienvenue->Titre = "Trading Platform" ;
 				$this->ScriptAccueil->TitreDocument = "Trading Platform" ;
 				// $this->ChargeScriptsMembershipSuppl() ;
@@ -894,6 +901,7 @@
 			}
 			protected function ObtientContenuCSSNonConnecte()
 			{
+				$ctn = '' ;
 				$ctn .= 'body, p, div, form, table, tr, td, th {
 	font-size:14px;
 	font-family:arial ;
@@ -1352,9 +1360,25 @@ jQuery(function() {
 				$ctn = $dessin->RenduFormBonTresor($script, $composant) ;
 				return $ctn ;
 			}
+			public function AppliqueFormBonTresor2MarchSec(& $script, & $composant)
+			{
+				$dessin = new DessinEditMarchSec2TradPlatf() ;
+				$bd = $script->ApplicationParent->BDPrincipale ;
+				$this->LgnEmetteurSelect = $bd->FetchSqlRow("select * from config_obligation t1 where idpays=8") ;
+				$ctn = $dessin->RenduFormBonTresor($script, $composant) ;
+				return $ctn ;
+			}
 			public function AppliqueFormObligationMarchSec(& $script, & $composant)
 			{
 				$dessin = new DessinEditMarchSecTradPlatf() ;
+				$bd = $script->ApplicationParent->BDPrincipale ;
+				$this->LgnEmetteurSelect = $bd->FetchSqlRow("select * from config_obligation t1 where idpays=8") ;
+				$ctn = $dessin->RenduFormObligation($script, $composant) ;
+				return $ctn ;
+			}
+			public function AppliqueFormObligation2MarchSec(& $script, & $composant)
+			{
+				$dessin = new DessinEditMarchSec2TradPlatf() ;
 				$bd = $script->ApplicationParent->BDPrincipale ;
 				$this->LgnEmetteurSelect = $bd->FetchSqlRow("select * from config_obligation t1 where idpays=8") ;
 				$ctn = $dessin->RenduFormObligation($script, $composant) ;
@@ -1978,7 +2002,7 @@ jQuery(function() {
 			public $LibelleLienChMP = "Changer mot de passe" ;
 			public $CheminIconeLienDecnx = "images/miniatures/deconnexion.png" ;
 			public $LibelleLienDecnx = "Deconnexion" ;
-			public $DelaiRafraichAlertes = 60 ;
+			public $DelaiRafraichAlertes = 5 ;
 			public $LienNouvAchatDevise ;
 			public function ChargeConfig()
 			{
@@ -2023,7 +2047,7 @@ jQuery(function() {
 				$ctn .= '<div align="center" style="float:right; padding-right:16px; display:none" id="lien_alertes"><a href="javascript:ouvreFenetreCadre(\'alerteTransacts\', \'\',\'Alertes\', '.htmlentities(svc_json_encode($this->ZoneParent->ObtientUrlScript('listeAlerteTransacts'))).', { Hauteur : 225, Largeur : 450, Modal : 1, BoutonFermer : 0}) ;">' ;
 				if($this->InclureIconeLiens)
 				{
-					$ctn .= '<div><img src="'.$this->CheminIconeLienAlerts.'" border="0" /></div>' ;
+					$ctn .= '<div class="lien-alerte"><img src="'.$this->CheminIconeLienAlerts.'" border="0" /></div>' ;
 				}
 				$ctn .= '<div class="btn-princ">'.$this->LibelleLienAlerts.'</div>' ;
 				$ctn .= '</a></div>' ;
@@ -2069,9 +2093,17 @@ jQuery(function() {
 			}
 			// alert(affichLien) ;
 			if(affichLien)
+			{
 				jQuery("#lien_alertes").show() ;
+				(function blink() { 
+				  jQuery("#lien_alertes").fadeOut(500).fadeIn(500, blink); 
+				})() ;
+			}
 			else
+			{
+				jQuery("#lien_alertes").stop(true) ;
 				jQuery("#lien_alertes").hide() ;
+			}
 		}
 	}
 	jQuery(function() {

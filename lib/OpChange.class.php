@@ -179,7 +179,8 @@
 				$this->FmtPostuls->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.(($this->ScriptParent->TypeOpChange == 1) ? 'reservAchatsDevise' : 'reservVentesDevise') ;
 				$this->DefColActions->Formatteur->Liens[] = & $this->FmtPostuls ;
 				$this->FmtRepondre = new PvConfigFormatteurColonneOuvreFenetre() ;
-				$this->FmtRepondre->NomDonneesValid = "peut_repondre" ;
+				$this->FmtRepondre->NomDonneesValid = "statut_negoc" ;
+				$this->FmtRepondre->ValeurVraiValid = ' ' ;
 				$this->FmtRepondre->ClasseCSS = "lien-act-003" ;
 				$this->FmtRepondre->FormatLibelle = $this->ZoneParent->FournExprs->LibLienDemarrNegoc ;
 				$this->FmtRepondre->OptionsOnglet["Modal"] = 1 ;
@@ -241,7 +242,7 @@
 			}
 			protected function ObtientRequeteSelection(& $bd)
 			{
-				return "(select t1.*, case when t8.num_op_change_dem > 0 and t8.bool_confirme = 0 then 'En cours' when t8.num_op_change_dem > 0 and t8.bool_confirme = 1 then 'Confirme' else ' ' end statut_negoc, case when t1.commiss_ou_taux = 0 then t1.mtt_commiss when t1.type_taux = 0 then t1.taux_change else t1.ecran_taux end taux_transact, ".$bd->SqlConcat(array('t2.code_devise', "' / '", 't3.code_devise'))." devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
+				return "(select t1.*, case when t8.num_op_change_dem > 0 and t8.bool_confirme = 0 then 'En cours' when t8.num_op_change_dem > 0 and t8.bool_confirme = 1 then 'Confirme' when t4.numop = t6.numop then 'Proprietaire' else ' ' end statut_negoc, case when t1.commiss_ou_taux = 0 then t1.mtt_commiss when t1.type_taux = 0 then t1.taux_change else t1.ecran_taux end taux_transact, ".$bd->SqlConcat(array('t2.code_devise', "' / '", 't3.code_devise'))." devise_change, t7.shortname nom_court_entite, t7.name nom_entite, t2.code_devise lib_devise1, t3.code_devise lib_devise2, t4.login loginop, t4.nomop nomop, t4.prenomop prenomop, t5.id_entite_source, t5.id_entite_dest, t5.top_active, t6.numop numrep, t6.login loginrep, case when t4.numop = t6.numop then 1 else 0 end peut_modif, case when t4.numop <> t6.numop then 1 else 0 end peut_repondre,
 case when t1.num_op_change_dem = 0 then 'demande' else 'reponse' end type_message
 from op_change t1
 left join devise t2
@@ -410,12 +411,14 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->DefColId = $this->InsereDefColCachee("num_op_change") ;
 				$this->DefColPeutAjust = $this->InsereDefColCachee("peut_ajuster") ;
 				$this->DefColDatePubl = $this->InsereDefCol("date_change", 'Date publication', $bd->SqlDateToStrFr('date_change')) ;
+				$this->DefColDatePubl->Largeur = "8%" ;
 				$this->DefColRefChange = $this->InsereDefCol("ref_change", 'Ref.') ;
-				$this->DefColLoginDem = $this->InsereDefCol("login_dem", 'Demandeur') ;
-				$this->DefColBanqueDem = $this->InsereDefCol("nom_entite_dem", 'Banque') ;
-				$this->DefColMontantDem = $this->InsereDefColMoney("montant_change", 'Montant') ;
-				$this->DefColMontantSoumis = $this->InsereDefColMoney("montant_soumis", 'Montant') ;
-				$this->DefColTauxSoumis = $this->InsereDefCol("taux_soumis", 'Taux de change') ;
+				$this->DefColLoginDem = $this->InsereDefCol("login_interlocuteur", 'Contrepartie') ;
+				$this->DefColBanqueDem = $this->InsereDefCol("entite_interlocuteur", 'Banque') ;
+				$this->DefColMontantDem = $this->InsereDefColMoney("montant_change", 'Montant post&eacute;') ;
+				$this->DefColMontantSoumis = $this->InsereDefColMoney("montant_soumis", 'Montant valid&eacute;') ;
+				$this->DefColTauxSoumis = $this->InsereDefCol("taux_soumis", 'Taux') ;
+				$this->DefColMttCommiss = $this->InsereDefColMoney("mtt_commiss", 'Commission (%)') ;
 				// $this->DefColTauxDem = $this->InsereDefCol("taux_dem", 'Taux', 'case when commiss_ou_taux = 0 then mtt_commiss when type_taux = 0 then taux_change else ecran_taux end') ;
 				// $this->DefColConfirm = $this->InsereDefColBool("bool_confirme", 'Confirme') ;
 			}
@@ -438,7 +441,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			}
 			protected function ChargeFlts()
 			{
-				$this->FltNumOpSoumis = $this->InsereFltSelectFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop = <self>') ;
+				$this->FltNumOpSoumis = $this->InsereFltSelectFixe('numop', $this->ZoneParent->IdMembreConnecte(), 'numop = <self> or numop_dem = <self>') ;
 				$this->FltEstSoumis = $this->InsereFltSelectFixe('num_op_change_dem', 0, 'num_op_change_dem <> <self>') ;
 				$this->FltEstConfirme = $this->InsereFltSelectFixe('bool_confirme', $this->ValeurConfirme, 'bool_confirme = <self>') ;
 				$this->FltTypeChange = $this->InsereFltSelectFixe('type_change_dem', $this->ScriptParent->TypeOpChangeOppose(), 'type_change = <self>') ;
@@ -448,7 +451,18 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$bd = & $this->ApplicationParent->BDPrincipale ;
 				$this->FournisseurDonnees = new PvFournisseurDonneesSql() ;
 				$this->FournisseurDonnees->BaseDonnees = & $bd ;
-				$this->FournisseurDonnees->RequeteSelection = '(select t1.*, case when t1.bool_confirme = 0 then 1 else 0 end peut_ajuster, t3.login login_dem, t4.name nom_entite_dem from op_change t1 inner join op_change t2 on t1.num_op_change_dem = t2.num_op_change left join operateur t3 on t2.numop = t3.numop left join entite t4 on t3.id_entite = t4.id_entite where t1.bool_valide=1)' ;
+				$idMembre = intval($this->ZoneParent->IdMembreConnecte()) ;
+				$this->FournisseurDonnees->RequeteSelection = '(select t1.*, case when t1.bool_confirme = 0 then 1 else 0 end peut_ajuster, t3.numop numop_dem, t3.login login_dem, t4.name nom_entite_dem, t5.login login_rep, t6.name nom_entite_rep,
+				case when t3.numop = '.$idMembre.' then t5.login else t3.login end login_interlocuteur,
+				case when t3.numop = '.$idMembre.' then t6.name else t4.name end entite_interlocuteur
+				from op_change t1
+				inner join op_change t2 on t1.num_op_change_dem = t2.num_op_change
+				left join operateur t3 on t2.numop = t3.numop
+				left join entite t4 on t3.id_entite = t4.id_entite
+				left join operateur t5 on t1.numop = t5.numop
+				left join entite t6 on t5.id_entite = t6.id_entite
+				where t1.bool_valide=1
+)' ;
 			}
 		}
 		class TablNegocEnvoyOpChangeTradPlatf extends TablReservOpChangeTradPlatf
@@ -457,6 +471,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 		}
 		class TablNegocOpChangeTradPlatf extends TableauDonneesOperationTradPlatf
 		{
+			public $InclureCmdRafraich = 1 ;
 			public $DefColTypeTransact ;
 			public $DefColId ;
 			public $DefColDevise ;
@@ -890,6 +905,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$refChange = (($this->FormulaireDonneesParent->TypeOpChange == 1) ? 'A' : 'V').date('dmy').str_repeat('0', 4 - strlen(strval($lgn["num_op_change"]))).$lgn["num_op_change"] ;
 				$sql = 'update op_change set ref_change = '.$bd->ParamPrefix.'refChange where id_ctrl='.$bd->ParamPrefix.'idCtrl' ;
 				$ok = $bd->RunSql($sql, array('refChange' => $refChange, 'idCtrl' => $idCtrl)) ;
+				$this->FormulaireDonneesParent->AnnuleLiaisonParametres() ;
 			}
 		}
 		
@@ -1380,7 +1396,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			protected function ReponsePossible()
 			{
 				$bd = & $this->ApplicationParent->BDPrincipale ;
-				$sql = 'select * from op_change where num_op_change_dem='.$bd->ParamPrefix.'numOpChangeDem and numop='.$bd->ParamPrefix.'login' ;
+				$sql = 'select * from op_change where num_op_change_dem='.$bd->ParamPrefix.'numOpChangeDem and numop='.$bd->ParamPrefix.'login and bool_valide=1 and bool_confirme=0' ;
 				$row = $bd->FetchSqlRow(
 					$sql,
 					array(
@@ -1636,14 +1652,17 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			public function RenduDispositif()
 			{
 				$ok = 1 ;
-				if($this->InclureElementEnCours == 0)
+				$this->DetecteCommandeSelectionnee() ;
+				if($this->InclureElementEnCours == 0 && $this->ValeurParamIdCommande != 'annuler')
+				{
 					$ok = $this->ReponsePossible() ;
+				}
 				$ctn = '' ;
 				if(! $ok)
 				{
 					$ctn .= $this->MsgReponseInterdit ;
 				}
-				elseif($this->InclureElementEnCours == 0 && $this->NegociationEnAttente())
+				elseif($this->InclureElementEnCours == 0 && $this->NegociationEnAttente() && $this->ValeurParamIdCommande != 'annuler')
 				{
 					$ctn .= $this->MsgNegocAttente ;
 				}
@@ -1659,6 +1678,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			public $InclureElementEnCours = 0 ;
 			public $InclureTotalElements = 0 ;
 			public $NomClasseCommandeExecuter = "CmdNegocOpChangeTradPlatf" ;
+			public $NomClasseCommandeAnnuler = "PvCmdFermeFenetreActiveAdminDirecte" ;
 			public $FltTypeTaux ;
 			public $FltValeurTaux ;
 			public $FltEcranTaux ;
@@ -2298,25 +2318,28 @@ Devise : ${code_devise1} / ${code_devise2}
 Date valeur : ${date_valeur_dem}
 Montant : ${montant_dem}
 Taux de change : ${taux_dem}
+Commission : ${mtt_commiss_dem}
 ------------------------------
 Negociateur
 ------------------------------
 Login : ${login_soumis}
 Code Banque : ${code_entite_soumis} 
-Nom Banque : ${nom_entite_soumis} 
+Nom Banque : ${nom_entite_soumis}
+Date valeur : ${date_valeur_soumis} 
 Montant : ${montant_soumis}
 Taux de change : ${taux_soumis}
-Date valeur : ${date_valeur_soumis}'."\r\n" ;
+Commission : ${mtt_commiss_soumis}'."\r\n" ;
 				return $ctn ;
 			}
 			public function DetermineEnvironnement()
 			{
 				$bd = $this->ApplicationParent->BDPrincipale ;
 				$id = (isset($_GET["id"])) ? $_GET["id"] : 0 ;
-				$this->LgnOpChangeSelect = $bd->FetchSqlRow('select t2.ref_change, t2.numop numop_dem, t2.type_change type_change_dem,
+				$this->LgnOpChangeSelect = $bd->FetchSqlRow('select t2.ref_change, t2.mtt_commiss mtt_commiss_dem, t2.numop numop_dem, t2.type_change type_change_dem,
 t2.id_devise1 id_devise1_dem, t2.id_devise2 id_devise2_dem,
 t1.montant_change montant_dem, t1.taux_change taux_dem,
-t1.date_operation date_operation_dem, '.$bd->SqlDateToStrFr('t1.date_valeur').' date_valeur_dem, '.$bd->SqlDateToStrFr('t1.date_valeur_soumis').' date_valeur_soumis, t1.montant_soumis,
+t1.mtt_commiss mtt_commiss_soumis, t1.num_op_change_dem,
+t2.date_operation date_operation_dem, '.$bd->SqlDateToStrFr('t2.date_valeur').' date_valeur_dem, '.$bd->SqlDateToStrFr('t1.date_valeur').' date_valeur_soumis, t1.montant_soumis,
 t1.taux_soumis
 , op1.login login_soumis, op1.email_op email_soumis, ent1.name nom_entite_soumis, ent1.code code_entite_soumis
 , op2.login login_dem, op2.email_op email_dem, ent2.name nom_entite_dem, ent2.code code_entite_dem,
@@ -2343,6 +2366,8 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 					else
 					{
 						$succes = $bd->RunSql('update op_change set bool_valide=1, bool_confirme=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $id)) ;
+						$succes = $bd->RunSql('update op_change set bool_valide=1, bool_confirme=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $this->LgnOpChangeSelect["num_op_change_dem"])) ;
+						$succes = $bd->RunSql('update op_change set bool_valide=0, bool_confirme=0 where num_op_change_dem='.$bd->ParamPrefix.'id and num_op_change <> :id2', array('id1' => $this->LgnOpChangeSelect["num_op_change_dem"], 'id2' => $id)) ;
 						// $succes = 1 ;
 						if($succes)
 						{
@@ -2364,8 +2389,8 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 			{
 				$msg = _parse_pattern($this->CorpsMsgEmail(), $this->LgnOpChangeSelect) ;
 				$sujet = _parse_pattern($this->SujetMsgEmail(), $this->LgnOpChangeSelect) ;
-				@send_plain_mail($this->LgnOpChangeSelect["email_dem"], $sujet, $msg, $this->LgnOpChangeSelect["email_dem"]) ;
-				@send_plain_mail($this->LgnOpChangeSelect["email_soumis"], $sujet, $msg, $this->LgnOpChangeSelect["email_dem"]) ;
+				@send_plain_mail($this->LgnOpChangeSelect["email_dem"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
+				@send_plain_mail($this->LgnOpChangeSelect["email_soumis"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
 				// echo "<pre>$msg</pre>" ;
 				return $msg ;
 			}
@@ -2398,11 +2423,21 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 				$montant = $this->FormulaireDonneesParent->FltMontant->Lie() ;
 				$id_devise1 = $this->FormulaireDonneesParent->FltDevise1->Lie() ;
 				$id_devise2 = $this->FormulaireDonneesParent->FltDevise2->Lie() ;
-				$montant = $this->FormulaireDonneesParent->FltMontant->Lie() ;
+				if($id_devise1 == $id_devise2)
+				{
+					$this->MessageErreur = "Vous ne pouvez pas poster de transaction avec 2 devises identiques" ;
+					return 0 ;
+				}
+				if($montant <= 0)
+				{
+					$this->MessageErreur = "Le montant ne doit pas &ecirc;tre inf&eacute;rieur &agrave; 0" ;
+					return 0 ;
+				}
+				// $montant = $this->FormulaireDonneesParent->FltMontant->Lie() ;
 				$numOp = $this->ZoneParent->Membership->MemberLogged->Id ;
 				$bd = & $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
-				$sql = 'select * from op_change where numop='.$bd->ParamPrefix.'numOp and montant_change='.$bd->ParamPrefix.'montant and '.$bd->SqlDatePart($bd->SqlNow()).' = '.$bd->SqlDatePart('date_change').' and id_devise1 = '.$bd->ParamPrefix.'id_devise1 and id_devise2 = '.$bd->ParamPrefix.'id_devise2' ;
-				$lgn = $bd->FetchSqlRow($sql, array('montant' => $montant, 'id_devise1' => $id_devise1, 'id_devise2' => $id_devise2, 'numOp' => $numOp)) ;
+				$sql = 'select * from op_change where numop='.$bd->ParamPrefix.'numOp and '.$bd->SqlDatePart($bd->SqlNow()).' = '.$bd->SqlDatePart('date_change').' and id_devise1 = '.$bd->ParamPrefix.'id_devise1 and id_devise2 = '.$bd->ParamPrefix.'id_devise2' ;
+				$lgn = $bd->FetchSqlRow($sql, array('id_devise1' => $id_devise1, 'id_devise2' => $id_devise2, 'numOp' => $numOp)) ;
 				if(! is_array($lgn) || count($lgn) > 0)
 				{
 					$this->MessageErreur = $this->FormatMessageErreur ;

@@ -39,6 +39,7 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 		}
 		class ZoneMonnaieTradPlatf extends PvZoneTexteHtml
 		{
+			public $AttrsSupplHtml = array('autocomplete' => 'off') ;
 		}
 		
 		class ActDicussChatTransactTradPlatf extends PvActionRenduPageWeb
@@ -129,12 +130,12 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				{
 					foreach($this->Discuss->Messages as $i => $msg)
 					{
-						echo '<p><b>'.$msg->Emetteur.'</b> : '.htmlentities($msg->Contenu).'</p>' ;
+						echo '<p><b>'.htmlentities($msg->Emetteur).'</b> : '.htmlentities($msg->Contenu).'</p>' ;
 					}
 				}
 				else
 				{
-					echo "(Aucun message post&eacute;)" ;
+					echo "<p>(Aucun message post&eacute;)</p>" ;
 				}
 				echo '</body></html>' ;
 			}
@@ -460,27 +461,34 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 <table width=100% cellspacing="0" cellpadding="0">
 <tr>
 <td>
-<textarea name="msg" value="" cols="45" rows="2"></textarea>
+<textarea name="msg" value="" cols="45" rows="4"></textarea>
 </td>
 <td>
 <input id="btn-soumet-chat" class="ui-widget ui-widget-content ui-state-active" type="button" value="poster" onclick="posteMsgDiscuss(this)" />
+<p></p>
+<input id="btn-rafraich-chat" class="ui-widget ui-widget-content ui-state-active" type="button" value="actualiser" onclick="rafraichitDiscuss(this)" />
 </td>
 </tr>
 </table>
 </form>' ;
-				$ctn .= '</td>'.PHP_EOL ;
+				$ctn .= '<br/></td>'.PHP_EOL ;
 				$ctn .= '</tr>'.PHP_EOL ;
 				$ctn .= '<tr>'.PHP_EOL ;
 				$ctn .= '<td class="ui-widget ui-widget-content">' ;
 				// echo $urlChat ;
 				$delaiRafraichDiscuss = $this->DelaiRafraichDiscuss * 1000 ;
-				$ctn .= '<iframe name="discuss_chat" src="'.$urlChat.'" style="width:99%; height:240px" frameborder="0"></iframe>'.PHP_EOL ;
+				$ctn .= '<iframe name="discuss_chat" src="'.$urlChat.'" style="width:99%; height:270px" frameborder="0"></iframe>'.PHP_EOL ;
 				$ctn .= '<script type="text/javascript">
+	var idRafraich ;
 	function rafraichitDiscuss()
 	{
+		if(idRafraich > 0)
+		{
+			clearTimeout(idRafraich) ;
+		}
 		var frame = document.getElementsByName("discuss_chat")[0] ;
-		frame.src = "'.$urlChat.'&tid=" + new Date().getTime() + "" ;
-		setTimeout("rafraichitDiscuss()", '.$delaiRafraichDiscuss.') ;
+		frame.src = "'.$urlChat.'&tid=" + (new Date().getTime()) + "" ;
+		idRafraich = setTimeout("rafraichitDiscuss()", '.$delaiRafraichDiscuss.') ;
 	}
 	function posteMsgDiscuss(btn)
 	{
@@ -1181,6 +1189,24 @@ Email : '.htmlentities($remplCfg->LgnEmetteurSelect["email"]).' / Tel : '.htmlen
 			public $CheminImgPiedObligation = "images/marches/marchesec-pied-obligation.png" ;
 			public $CheminImgEnteteFormBonTresor = "images/marches/marchesec-entete1-bon-tresor.png" ;
 			public $CheminImgEnteteFormObligation = "images/marches/marchesec-entete1-obligation.png" ;
+			protected $Texte1 = "L'AGENCE UEMOA" ;
+			protected $Texte1Pluriel = 0 ;
+			protected $CouleurBg1 = "#1c88ae" ;
+			protected $CouleurBg2 = "#ffda00" ;
+			protected $CouleurBg3 = "#1c88ae" ;
+			protected $CouleurBg4 = "#1c88ae" ;
+			protected $CouleurBg5 = "#1c88ae" ;
+		}
+		class DessinEditMarchSec2TradPlatf extends DessinEditUEMOABaseTradPlatf
+		{
+			public $CheminImgEnteteBonTresor = "images/marches/marchesec-entete-bon-tresor.png" ;
+			public $CheminImgCorpsBonTresor = "images/marches/marchesec-form-bon-tresor.png" ;
+			public $CheminImgPiedBonTresor = "images/marches/marchesec-pied-bon-tresor.png" ;
+			public $CheminImgEnteteObligation = "images/marches/marchesec-entete-obligation.png" ;
+			public $CheminImgCorpsObligation = "images/marches/marchesec-form-obligation.png" ;
+			public $CheminImgPiedObligation = "images/marches/marchesec-pied-obligation.png" ;
+			public $CheminImgEnteteFormBonTresor = "images/marches/marchesec-entete2-bon-tresor.png" ;
+			public $CheminImgEnteteFormObligation = "images/marches/marchesec-entete2-obligation.png" ;
 			protected $Texte1 = "L'AGENCE UEMOA" ;
 			protected $Texte1Pluriel = 0 ;
 			protected $CouleurBg1 = "#1c88ae" ;
