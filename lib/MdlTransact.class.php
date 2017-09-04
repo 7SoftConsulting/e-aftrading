@@ -765,9 +765,6 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 				$ctn = '' ;
 				$ctn .= '<div align="center"><table width="'.$this->LargeurDoc.'" cellspacing="0" cellpadding="2" align="center">'.PHP_EOL ;
 				$ctn .= '<tr>
-<td background="'.$this->CheminImgEnteteFormBonTresor.'" style="background-repeat:no-repeat; height:'.$this->LargeurEnteteDoc.'px">&nbsp;</td>
-</tr>'.PHP_EOL ;
-				$ctn .= '<tr>
 <td>
 <p><b style="font-size:14px">'.$this->Texte1.'</b><br />
 '.(($this->Texte1Pluriel) ? 'PORTENT' : 'PORTE').' A LA CONNAISSANCE DU PUBLIC QU\'ILS ORGANISENT UN APPEL D\'OFFRES POUR LA SESSION DE BONS DE TR&Eacute;SOR<br />DONT LES TERMES SONT LES SUIVANTS</p>
@@ -886,9 +883,6 @@ Email : '.htmlentities($remplCfg->LgnEmetteurSelect["email"]).' / Tel : '.htmlen
 				$ctn = '' ;
 				$ctn .= '<div align="center"><table width="'.$this->LargeurDoc.'" cellspacing="0" cellpadding="2" align="center">'.PHP_EOL ;
 				$ctn .= '<tr>
-<td background="'.$this->CheminImgEnteteFormObligation.'" style="background-repeat:no-repeat; height:'.$this->LargeurEnteteDoc.'px">&nbsp;</td>
-</tr>'.PHP_EOL ;
-				$ctn .= '<tr>
 <td>
 <p><b style="font-size:14px">'.$this->Texte1.'</b><br />
 '.(($this->Texte1Pluriel) ? 'PORTENT' : 'PORTE').' A LA CONNAISSANCE DU PUBLIC QU\'ILS ORGANISENT UN APPEL D\'OFFRES POUR LA CESSION D\'OBLIGATIONS DU TRESOR<br /> DONT LES TERMES SONT LES SUIVANTS</p>
@@ -999,46 +993,6 @@ Email : '.htmlentities($remplCfg->LgnEmetteurSelect["email"]).' / Tel : '.htmlen
 </td>
 </tr>'.PHP_EOL ;
 				$ctn .= '</table></div>'.PHP_EOL ;
-				return $ctn ;
-			}
-			protected function RenduEnteteScriptBonTresor(& $script)
-			{
-				$ctn = '<table width="800" class="doc-edit-marche" cellspacing="0" cellpadding="2">
-<tr>
-<td background="'.$this->CheminImgEnteteBonTresor.'" height="575" style="background-repeat:no-repeat">&nbsp;</td>
-</tr>
-<tr>
-<td background="'.$this->CheminImgCorpsBonTresor.'" height="217" style="background-repeat:no-repeat">' ;
-				return $ctn ;
-			}
-			protected function RenduPiedScriptBonTresor(& $script)
-			{
-				$ctn = '</td>
-</tr>
-<tr>
-<td background="'.$this->CheminImgPiedBonTresor.'" height="340" style="background-repeat:no-repeat">&nbsp;</td>
-</tr>
-</table>' ;
-				return $ctn ;
-			}
-			protected function RenduEnteteScriptObligation(& $script)
-			{
-				$ctn = '<table width="800" class="doc-edit-marche" cellspacing="0" cellpadding="2">
-<tr>
-<td background="'.$this->CheminImgEnteteObligation.'" height="575" style="background-repeat:no-repeat">&nbsp;</td>
-</tr>
-<tr>
-<td background="'.$this->CheminImgCorpsObligation.'" height="217" style="background-repeat:no-repeat">' ;
-				return $ctn ;
-			}
-			protected function RenduPiedScriptObligation(& $script)
-			{
-				$ctn = '</td>
-</tr>
-<tr>
-<td background="'.$this->CheminImgPiedObligation.'" height="340" style="background-repeat:no-repeat">&nbsp;</td>
-</tr>
-</table>' ;
 				return $ctn ;
 			}
 		}

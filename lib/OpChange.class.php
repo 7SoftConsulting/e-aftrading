@@ -2367,7 +2367,8 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 					{
 						$succes = $bd->RunSql('update op_change set bool_valide=1, bool_confirme=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $id)) ;
 						$succes = $bd->RunSql('update op_change set bool_valide=1, bool_confirme=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $this->LgnOpChangeSelect["num_op_change_dem"])) ;
-						$succes = $bd->RunSql('update op_change set bool_valide=0, bool_confirme=0 where num_op_change_dem='.$bd->ParamPrefix.'id and num_op_change <> :id2', array('id1' => $this->LgnOpChangeSelect["num_op_change_dem"], 'id2' => $id)) ;
+						$succes = $bd->RunSql('update op_change set bool_valide=0, bool_confirme=0 where num_op_change_dem='.$bd->ParamPrefix.'id1 and num_op_change <> :id2', array('id1' => $this->LgnOpChangeSelect["num_op_change_dem"], 'id2' => $id)) ;
+						// print_r($bd) ;
 						// $succes = 1 ;
 						if($succes)
 						{
@@ -2403,13 +2404,17 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 					$nomScript = ($typeChange == 1) ? "postulsAchatDevise" : "postulsVenteDevise" ;
 					$ctn .= '<script type="text/javascript">
 	jQuery(function() {
+		if(window.top.'.$this->ZoneParent->IDInstanceCalc.' !== undefined)
+		{
+			window.top.'.$this->ZoneParent->IDInstanceCalc.'.majAlertes() ;
+		}
 		if(window.parent.jQuery && window.parent.jQuery("#soumissOpChange iframe").length)
 		{
 			window.parent.jQuery("#soumissOpChange iframe")[0].contentWindow.location= window.parent.jQuery("#soumissOpChange iframe")[0].contentWindow.location ;
 		}
 	}) ;
 </script>' ;
-					$ctn .= '<p><a href="javascript:;" onclick="window.top.fermeFenetreActive();">Retour a la transaction</a></p>' ;
+					$ctn .= '<p><a href="javascript:;" onclick="window.top.fermeFenetreActive();">Fermer</a></p>' ;
 				}
 				return $ctn ;
 			}
@@ -2433,6 +2438,7 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 					$this->MessageErreur = "Le montant ne doit pas &ecirc;tre inf&eacute;rieur &agrave; 0" ;
 					return 0 ;
 				}
+				return 1 ;
 				// $montant = $this->FormulaireDonneesParent->FltMontant->Lie() ;
 				$numOp = $this->ZoneParent->Membership->MemberLogged->Id ;
 				$bd = & $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;

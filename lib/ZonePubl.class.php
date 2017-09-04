@@ -467,7 +467,8 @@
 				$this->MenuSoumissOpInter->Titre = "Op&eacute;rations interbancaires" ;
 				$this->MenuSoumissOpInter->Privileges[] = "post_op_change" ;
 				$this->MenuUMOATitres = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('UEMOATitres') ;
-				$this->MenuUMOATitres->Titre = "UMOA-Titres" ;
+				$this->MenuUMOATitres->Titre = "UEMOA-Titres" ;
+				/*
 				$this->MenuAvisAppelOffres = $this->MenuUMOATitres->InscritSousMenuFige('AvisAppelsOffreUMOA') ;
 				$this->MenuAvisAppelOffres->Titre = "Avis d'Appel d'Offre" ;
 				$this->MenuEmissBonTresor = $this->MenuAvisAppelOffres->InscritSousMenuScript(! $this->PossedePrivilege('post_doc_tresorier') ? 'consultEmissBonTresor' : 'publierEmissBonTresor') ;
@@ -490,6 +491,10 @@
 				if($this->PossedePrivilege('post_doc_entreprise'))
 				{
 					$this->MenuEmissObligation->Titre = "Obligations" ;
+				}
+				*/
+				if($this->PossedePrivilege('post_doc_entreprise'))
+				{
 					$this->MenuEntreprise = $this->BarreMenuSuperfish->MenuRacine->InscritSousMenuFige('entreprise') ;
 					$this->MenuEntreprise->Titre = "Entreprise" ;
 					$this->MenuCotationTransfDev = $this->MenuEntreprise->InscritSousMenuScript('publierCotationTransfDev') ;
@@ -802,7 +807,8 @@
 				// Cotation transf devise
 				$this->ScriptPublierCotationTransfDev = $this->InsereScript('publierCotationTransfDev', new ScriptPublierCotationTransfDevTradPlatf()) ;
 				$this->ScriptConsultCotationTransfDev = $this->InsereScript('consultCotationTransfDev', new ScriptConsultCotationTransfDevTradPlatf()) ;
-				$this->ScriptProposCotationTransfDev = $this->InsereScript('proposCotationTransfDev', new ScriptProposCotationTransfDevTradPlatf()) ;
+				$this->ScriptProposCotationTransfDev = $this->InsereScript('proposCotationTransfDev', new ScriptPropos2CotationTransfDevTradPlatf()) ;
+				// $this->ScriptProposCotationTransfDev = $this->InsereScript('proposCotationTransfDev', new ScriptProposCotationTransfDevTradPlatf()) ;
 				$this->ScriptAjoutCotationTransfDev = $this->InsereScript('ajoutCotationTransfDev', new ScriptAjoutCotationTransfDevTradPlatf()) ;
 				$this->ScriptModifCotationTransfDev = $this->InsereScript('modifCotationTransfDev', new ScriptModifCotationTransfDevTradPlatf()) ;
 				$this->ScriptSupprCotationTransfDev = $this->InsereScript('supprCotationTransfDev', new ScriptSupprCotationTransfDevTradPlatf()) ;
@@ -2068,6 +2074,7 @@ jQuery(function() {
 				$ctn .= '</div>'.PHP_EOL ;
 				$ctn .= '<script type="text/javascript">
 	var '.$this->IDInstanceCalc.' = {
+		idTimeout : 0,
 		actualiseAlertes : function() {
 			jQuery.ajax('.svc_json_encode($urlAction).', { success : function(data, textStatus, jqXHR) {
 					var infosAlerte = new Object() ;
@@ -2078,9 +2085,16 @@ jQuery(function() {
 					} ;
 					// alert(data) ;
 					'.$this->IDInstanceCalc.'.definitAlertes(infosAlerte) ;
-					setTimeout("'.$this->IDInstanceCalc.'.actualiseAlertes()", '.($this->DelaiRafraichAlertes * 1000).') ;
+					'.$this->IDInstanceCalc.'.idTimeout = setTimeout("'.$this->IDInstanceCalc.'.actualiseAlertes()", '.($this->DelaiRafraichAlertes * 1000).') ;
 				}
 			}) ;
+		},
+		majAlertes : function() {
+			if('.$this->IDInstanceCalc.'.idTimeout != 0)
+			{
+				clearTimeout('.$this->IDInstanceCalc.'.idTimeout) ;
+			}
+			'.$this->IDInstanceCalc.'.actualiseAlertes() ;
 		},
 		definitAlertes : function (infosAlerte) {
 			var affichLien = false ;

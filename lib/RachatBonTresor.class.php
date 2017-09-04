@@ -121,7 +121,7 @@
 					// Publication
 					$this->SousMenuPublier = $this->BarreMenu->MenuRacine->InscritSousMenuScript('publierRachatBonTresor') ;
 					$this->SousMenuPublier->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
-					$this->SousMenuPublier->Titre = "Publications" ;
+					$this->SousMenuPublier->Titre = "Publication" ;
 				}
 			}
 			protected function RenduDispositifBrut()

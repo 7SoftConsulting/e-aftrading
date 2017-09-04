@@ -124,7 +124,7 @@
 					// Publication
 					$this->SousMenuPublier = $this->BarreMenu->MenuRacine->InscritSousMenuScript('publierCotationTransfDev') ;
 					$this->SousMenuPublier->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
-					$this->SousMenuPublier->Titre = "Publications" ;
+					$this->SousMenuPublier->Titre = "Publication" ;
 					// Propositions
 					$this->SousMenuPropos = $this->BarreMenu->MenuRacine->InscritSousMenuScript('proposCotationTransfDev') ;
 					$this->SousMenuPropos->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
@@ -182,13 +182,13 @@
 FROM cotation_transf_devise t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifCotationTransfDev&id=${id}', 'Modifier', 'modif_emiss_obligation_${id}', 'Modifier cotation transfert de devise #${id}', $this->OptsFenetreEdit, "") ;
+				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifCotationTransfDev&id=${id}', 'Modifier', 'modif_emiss_obligation_${id}', 'Modifier cotation transfert de devises #${id}', $this->OptsFenetreEdit, "") ;
 				$this->LienModif->ClasseCSS = "lien-act-001" ;
 				$this->LienModif->DefinitScriptOnglActifSurFerm($this) ;
-				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprCotationTransfDev&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer cotation transfert de devise #${id}', $this->OptsFenetreEdit, "") ;
+				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprCotationTransfDev&id=${id}', 'Supprimer', 'suppr_emiss_obligation_${id}', 'Supprimer cotation transfert de devises #${id}', $this->OptsFenetreEdit, "") ;
 				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->LienModif->DefinitScriptOnglActifSurFerm($this) ;
-				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutCotationTransfDev", '?appelleScript=ajoutCotationTransfDev', 'Ajouter', 'ajoutCotationTransfDev', "Poster une cotation transfert de devise", $this->OptsFenetreEdit, "") ;
+				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutCotationTransfDev", '?appelleScript=ajoutCotationTransfDev', 'Ajouter', 'ajoutCotationTransfDev', "Poster une cotation transfert de devises", $this->OptsFenetreEdit, "") ;
 				$this->CmdAjout->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
@@ -233,19 +233,23 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->TablPrinc->SensColonneTri = "desc" ;
 				$this->DefColId = $this->TablPrinc->InsereDefColCachee('id') ;
 				$this->DefColNumOp = $this->TablPrinc->InsereDefColCachee('numop_publieur') ;
-				$this->DefColLogin = $this->TablPrinc->InsereDefCol('login', 'Entreprise') ;
+				$this->DefColLogin = $this->TablPrinc->InsereDefCol('login', 'Login') ;
+				$this->DefColEntrep = $this->TablPrinc->InsereDefCol('nom_entite', 'Entreprise') ;
 				$this->DefColMontant = $this->TablPrinc->InsereDefColMoney('montant', 'Montant') ;
 				$this->DefColDevise = $this->TablPrinc->InsereDefCol('code_devise', 'Devise') ;
 				$this->DefColDateValeur = $this->TablPrinc->InsereDefCol('date_valeur', 'Date valeur') ;
 				$this->DefColDateValeur->AliasDonnees = $bd->SqlDateToStrFr("date_valeur", 0) ;
-				$this->FournDonneesPrinc->RequeteSelection = '(SELECT distinct t1.*, d1.code_devise, o1.login, t4.numop numop_repondeur, t4.id_entite, t3.top_active
+				$this->DefColDateOper = $this->TablPrinc->InsereDefCol('date_operation', 'Date operation') ;
+				$this->DefColDateOper->AliasDonnees = $bd->SqlDateToStrFr("date_operation", 0) ;
+				$this->FournDonneesPrinc->RequeteSelection = '(SELECT distinct t1.*, d1.code_devise, o1.login, t5.name nom_entite, t4.numop numop_repondeur, t4.id_entite, t3.top_active
 FROM cotation_transf_devise t1
 left join devise d1 on t1.id_devise = d1.id_devise
 left join operateur o1 on t1.numop_publieur = o1.numop
 left join rel_entreprise t3 on o1.id_entite = t3.id_entite_source
-left join operateur t4 on t3.id_entite_dest = t4.id_entite)' ;
+left join operateur t4 on t3.id_entite_dest = t4.id_entite
+left join entite t5 on t5.id_entite = t4.id_entite)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationTransfDev&id_cotation=${id}', 'R&eacute;ponse', 'bordereau_decpte_transf_${id}', 'Bordereau d&eacute;compte transfert de devises #${id}', $this->OptsFenetrePropos) ;
+				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationTransfDev&id_cotation=${id}', 'R&eacute;pondre', 'bordereau_decpte_transf_${id}', 'Bordereau d&eacute;compte transfert de devises #${id}', $this->OptsFenetrePropos) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
 			}
@@ -296,6 +300,60 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=detailProposCotationTransfDev&id=${id}', 'Consultation', 'liste_reserv_transf_dev_${id}', 'Bordereaux de d&eacute;compte transfert #${id}', $this->OptsFenetrePropos) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;
 				$this->LienReserv->DefinitScriptOnglActifSurFerm($this) ;
+			}
+			protected function DefinitExprs()
+			{
+				$this->Titre = $this->ZoneParent->FournExprs->TitrFenProposCotationTransfDev ;
+			}
+		}
+		class ScriptPropos2CotationTransfDevTradPlatf extends Script1CotationTransfDevTradPlatf
+		{
+			public $Privileges = array('post_doc_entreprise') ;
+			public $LienReserv ;
+			public $FournDonneesPrinc ;
+			public $DefColId ;
+			public $DefColNumOp ;
+			public $DefColRefTransact ;
+			public $DefColDateValeur ;
+			public $DefColMontant ;
+			public $DefColTaux ;
+			public $DefColDevise ;
+			public $DefColDateEcheance ;
+			public $FltDateDebut ;
+			public $FltDateFin ;
+			public $FltNumOpPubl ;
+			protected function ChargeTablPrinc()
+			{
+				parent::ChargeTablPrinc() ;
+				$bd = $this->BDPrinc() ;
+				$this->FltDateDebut = $this->TablPrinc->InsereFltSelectHttpGet("dateDebut", "date_valeur >= <self>") ;
+				$this->FltDateDebut->ValeurParDefaut = date("Y-m-d", date("U") - 86400 * 90) ;
+				$this->FltDateFin = $this->TablPrinc->InsereFltSelectHttpGet("dateFin", "date_valeur <= <self>") ;
+				$this->FltDateFin->ValeurParDefaut = date("Y-m-d", date("U") + 86400) ;
+				$this->FltNumOpPubl = $this->TablPrinc->InsereFltSelectFixe("numOpPublieur", $this->ZoneParent->IdMembreConnecte(), "numop_publieur = <self>") ;
+				$this->FltDateDebut->Libelle = "Periode du" ;
+				$this->FltDateDebut->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateFin->Libelle = "au" ;
+				$this->FltDateFin->DeclareComposant("PvCalendarDateInput") ;
+				$this->DefColId = $this->TablPrinc->InsereDefColCachee('id') ;
+				$this->DefColNumOp = $this->TablPrinc->InsereDefColCachee('numop_publieur') ;
+				$this->DefColDateValeur = $this->TablPrinc->InsereDefCol('date_valeur', 'Date valeur') ;
+				$this->DefColDateValeur->AliasDonnees = $bd->SqlDateToStrFr("date_valeur", 0) ;
+				$this->DefColMontant = $this->TablPrinc->InsereDefColMoney('montant', 'Montant') ;
+				$this->DefColDevise1 = $this->TablPrinc->InsereDefCol('code_devise1', 'Devise soumise') ;
+				$this->DefColLoginDem = $this->TablPrinc->InsereDefCol('login_demandeur', 'Login') ;
+				$this->DefColEntiteDem = $this->TablPrinc->InsereDefCol('nom_entite_demandeur', 'Banque') ;
+				$this->DefColCommissTransf = $this->TablPrinc->InsereDefCol('commiss_transf', 'Commission Transfert') ;
+				$this->DefColDevise = $this->TablPrinc->InsereDefCol('code_devise2', 'Devise dem.') ;
+				$this->FournDonneesPrinc->RequeteSelection = '(select t1.date_valeur, t1.montant, d1.code_devise code_devise1, t1.numop_publieur, t2.numop_demandeur, t2.id, t2.id_cotation, t3.login login_demandeur, t4.name nom_entite_demandeur, d2.code_devise code_devise2, t2.commiss_transf commiss_transf
+from cotation_transf_devise t1
+left join bordereau_decpte_transf t2 on t1.id = t2.id_cotation
+left join operateur t3 on t3.numop = t2.numop_demandeur
+left join entite t4 on t3.id_entite = t4.id_entite
+left join devise d1 on t1.id_devise = d1.id_devise
+left join devise d2 on t2.id_devise = d2.id_devise)' ;
+				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
+				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifReservCotationTransfDev&id=${id}', 'Consultation', 'modif_reserv_emiss_obligation_${id}', 'D&eacute;tails bordereau de d&eacute;compte #${id}', $this->OptsFenetreDetail) ;
 			}
 			protected function DefinitExprs()
 			{
@@ -535,7 +593,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColMontantTablSecond->AlignElement = "right" ;
 				/*
 				$this->DefColActsTablSecond = $this->TablSecond->InsereDefColActions("Actions") ;
-				$this->LienDetailsTablSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=detailReservCotationTransfDev&id=${id_cotation}&numop=${numop}', 'D&eacute;tails', 'details_reserv_emiss_obligation_${id}_${numop}', 'Details cotation transfert de devise #${login}', $this->OptsFenetreDetail) ;
+				$this->LienDetailsTablSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=detailReservCotationTransfDev&id=${id_cotation}&numop=${numop}', 'D&eacute;tails', 'details_reserv_emiss_obligation_${id}_${numop}', 'Details cotation transfert de devises #${login}', $this->OptsFenetreDetail) ;
 				*/
 				$this->FournDonneesSecond = $this->CreeFournDonneesPrinc() ;
 				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite, t3.code code_entite
@@ -632,6 +690,7 @@ on t2.id_entite = t3.id_entite)' ;
 			protected function ChargeFormPrinc()
 			{
 				parent::ChargeFormPrinc() ;
+				$bd = $this->BDPrinc() ;
 				$this->FltId = $this->FormPrinc->InsereFltLgSelectHttpGet('id', 'id = <self>') ;
 				$this->FltIdCotation = $this->FormPrinc->InsereFltEditHttpGet('id_cotation', 'id_cotation') ;
 				$this->FltIdCotation->LectureSeule = 1 ;
@@ -640,7 +699,7 @@ on t2.id_entite = t3.id_entite)' ;
 				$this->FltContreValeurDev->Libelle = "Contrevaleur devise" ;
 				$this->FltTaxeTransf = $this->FormPrinc->InsereFltEditHttpPost('taxe_transf', 'taxe_transf') ;
 				$this->FltValDevise = $this->FormPrinc->InsereFltEditHttpPost('valeur_devise', 'valeur_devise') ;
-				$this->FltValDevise->ObtientComposant()->Largeur = "30px" ;
+				$this->FltValDevise->ObtientComposant()->Largeur = "60px" ;
 				$this->FltTaxeTransf->Libelle = "Taxe de transfert" ;
 				$this->FltCommissTransf = $this->FormPrinc->InsereFltEditHttpPost('commiss_transf', 'commiss_transf') ;
 				$this->FltCommissTransf->Libelle = "Commission de transfert" ;
@@ -671,6 +730,20 @@ on t2.id_entite = t3.id_entite)' ;
 				$this->FournDonneesPrinc->TableEdition = "bordereau_decpte_transf" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
 				$this->FormPrinc->DessinateurFiltresEdition = new DessinFltsBordereauDecpteTransf() ;
+				$this->FormPrinc->InstrsJSAvantSoumetForm = 'jQuery(form).find("input[type=text]").each(function(index) {
+var val = jQuery(this).maskMoney("unmasked")[0] ;
+jQuery(this).maskMoney("destroy") ;
+jQuery(this).val(val) ;
+}) ;' ;
+				if($this->PourAjout == 1)
+				{
+					$this->LgnCotation = $bd->FetchSqlRow("select * from cotation_transf_devise where id=:id", array("id" => $this->FltIdCotation->Lie())) ;
+					if(is_array($this->LgnCotation) && count($this->LgnCotation) > 0)
+					{
+						$this->FltContreValeurDev->ValeurParDefaut = $this->LgnCotation["montant"] ;
+						$this->FltDevise->ValeurParDefaut = $this->LgnCotation["id_devise"] ;
+					}
+				}
 			}
 			protected function AccesPossibleFormPrinc()
 			{
@@ -760,7 +833,7 @@ on t2.id_entite = t3.id_entite)' ;
 	}
 </style>'.PHP_EOL ;
 				$ctn .= '<input type="hidden" id="'.$script->FltIdCotation->ObtientIDComposant().'" name="'.$script->FltIdCotation->ObtientNomComposant().'" value="'.htmlentities($script->FltIdCotation->Lie()).'" />' ;
-				$ctn .= '<table width="100%" cellspacing="0" cellpadding="4">'.PHP_EOL ;
+				$ctn .= '<table width="100%" cellspacing="0" cellpadding="4" id="placeBordereau">'.PHP_EOL ;
 				$ctn .= '<tr>
 <td>'.$this->RenduLibelleFiltre($script->FltContreValeurDev).'</td>
 <td>'.$script->FltContreValeurDev->Rendu().'</td>
@@ -769,21 +842,21 @@ on t2.id_entite = t3.id_entite)' ;
 <td>'.$script->FltDevise->Rendu().'</td>
 <td>'.$script->FltValDevise->Rendu().'</td>
 <td>'.$this->RenduLibelleFiltre($script->FltTauxDevise).'</td>
-<td><div id="val_taux_devise" class="champ-calc"></div></td>
+<td><input id="val_taux_devise" value="0" size="16" readonly /></td>
 </tr>'.PHP_EOL ;
 				$ctn .= '<tr>
 <td>'.$this->RenduLibelleFiltre($script->FltTaxeTransf).'</td>
 <td>'.$script->FltTaxeTransf->Rendu().'</td>
 <td colspan="4">&nbsp;</td>
 <td>'.$this->RenduLibelleFiltre($script->FltTauxTaxeTransf).'</td>
-<td><div id="val_taux_taxe_transf" class="champ-calc"></div></td>
+<td><input id="val_taux_taxe_transf" value="0" size="16" readonly /></td>
 </tr>'.PHP_EOL ;
 				$ctn .= '<tr>
 <td>'.$this->RenduLibelleFiltre($script->FltCommissTransf).'</td>
 <td>'.$script->FltCommissTransf->Rendu().'</td>
 <td colspan="4">&nbsp;</td>
 <td>'.$this->RenduLibelleFiltre($script->FltTauxCommTransf).'</td>
-<td><div id="val_taux_commiss_transf" class="champ-calc"></div></td>
+<td><input id="val_taux_commiss_transf" size="16" value="0" readonly /></td>
 </tr>'.PHP_EOL ;
 				$ctn .= '<tr>
 <td>'.$this->RenduLibelleFiltre($script->FltFraisFixes).'</td>
@@ -812,24 +885,76 @@ on t2.id_entite = t3.id_entite)' ;
 </tr>'.PHP_EOL ;
 				$ctn .= '<tr>
 <td>Total commissions et frais</td>
-<td><div id="totalFraisCommiss" class="champ-calc">-</div></td>
+<td><input id="totalFraisCommiss" value="0" readonly /></td>
 <td colspan="6">&nbsp;</td>
 </tr>'.PHP_EOL ;
 				$ctn .= '<tr>
-<td>MONTANT NET a payer</td>
-<td><div id="mttNetPayer" class="champ-calc">-</div></td>
+<td>MONTANT TTC</td>
+<td><input id="mttNetPayer" value="0" readonly /></td>
 <td colspan="6">&nbsp;</td>
 </tr>'.PHP_EOL ;
 				$ctn .= '<tr>
 <td>Co&ucirc;t du transfert</td>
-<td><div id="coutTransf" class="champ-calc">-</div></td>
+<td><input id="coutTransf" value="0" readonly /></td>
 <td colspan="6">&nbsp;</td>
 </tr>'.PHP_EOL ;
 				$ctn .= '</table>' ;
+				$ctn .= '<script type="text/javascript" src="js/jquery.maskMoney.js"></script>'.PHP_EOL ;
 				$ctn .= '<script type="text/javascript">
+	jQuery(function() {
+		applyMaskMoney(jQuery("#placeBordereau").find("input[type=text]")) ;
+	}) ;
+	function applyMaskMoney(inputs)
+	{
+		inputs.maskMoney({thousands:" ", decimal:".", precision:3, suffix : ""}) ;
+	}
+	function setMasked(input, val)
+	{
+		if(input.is("[readonly]"))
+		{
+			input.removeAttr("readonly") ;
+			input.val(val) ;
+			applyMaskMoney(input) ;
+			input.maskMoney("mask") ;
+			var currVal = input.val() ;
+			input.maskMoney("destroy") ;
+			// alert(currVal) ;
+			input.val(currVal) ;
+			input.attr("readonly", "readonly") ;
+		}
+		else
+		{
+			input.maskMoney("mask", val) ;
+		}
+	}
+	function getUnmasked(input)
+	{
+		if(input.val().indexOf(".") == -1)
+		{
+			input.val(input.val() + ".000") ;
+		}
+		else
+		{
+			var ix = input.val().indexOf(".") ;
+			var maxDecim = input.val().length - 1 - ix ;
+			if(maxDecim < 3)
+			{
+				var zeros = "" ;
+				for(var j=maxDecim; j<3; j++)
+				{
+					zeros += "0" ;
+				}
+				input.val(input.val() + zeros) ;
+			}
+		}
+		var val = input.maskMoney("unmasked")[0] ;
+		input.maskMoney("mask") ;
+		return val ;
+	}
 	function calculeTauxDevise() {
-		var contreValDev = parseFloat(jQuery("#'.$script->FltContreValeurDev->ObtientIDComposant().'").val()) ;
-		var valDev = parseFloat(jQuery("#'.$script->FltValDevise->ObtientIDComposant().'").val()) ;
+		var contreValDev = parseFloat(getUnmasked(jQuery("#'.$script->FltContreValeurDev->ObtientIDComposant().'"))) ;
+		// alert(contreValDev) ;
+		var valDev = parseFloat(getUnmasked(jQuery("#'.$script->FltValDevise->ObtientIDComposant().'"))) ;
 		var tauxDevise = 0 ;
 		if(! isNaN(valDev) && ! isNaN(contreValDev))
 		{
@@ -837,31 +962,32 @@ on t2.id_entite = t3.id_entite)' ;
 			if(tauxDevise == NaN)
 				tauxDevise = 0 ;
 		}
-		jQuery("#val_taux_devise").text(roundTo(tauxDevise, 3)) ;
+		setMasked(jQuery("#val_taux_devise"), roundTo(tauxDevise, 3)) ;
 		calculeTauxTaxeTransf() ;
 		calculeTauxCommissTransf() ;
 		calculeTotaux() ;
 	}
 	function calculeTotaux()
 	{
-		var val1 = toNumber(jQuery("#val_taux_devise").text()) ;
-		var val2 = toNumber(jQuery("#val_taux_taxe_transf").text()) ;
-		var val3 = toNumber(jQuery("#val_taux_commiss_transf").text()) ;
-		var val4 = toNumber(jQuery("#'.$script->FltFraisFixes->ObtientIDComposant().'").val()) ;
-		var val5 = toNumber(jQuery("#'.$script->FltFraisDossier->ObtientIDComposant().'").val()) ;
-		var val6 = toNumber(jQuery("#'.$script->FltCommissFinex->ObtientIDComposant().'").val()) ;
-		var val7 = toNumber(jQuery("#'.$script->FltFraisTelex->ObtientIDComposant().'").val()) ;
-		// var val8 = toNumber(jQuery("#'.$script->FltTPS->ObtientIDComposant().'").val()) ;
+		var val1 = toNumber(getUnmasked(jQuery("#val_taux_devise"))) ;
+		var val2 = toNumber(getUnmasked(jQuery("#val_taux_taxe_transf"))) ;
+		var val3 = toNumber(getUnmasked(jQuery("#val_taux_commiss_transf"))) ;
+		var val4 = toNumber(getUnmasked(jQuery("#'.$script->FltFraisFixes->ObtientIDComposant().'"))) ;
+		var val5 = toNumber(getUnmasked(jQuery("#'.$script->FltFraisDossier->ObtientIDComposant().'"))) ;
+		var val6 = toNumber(getUnmasked(jQuery("#'.$script->FltCommissFinex->ObtientIDComposant().'"))) ;
+		var val7 = toNumber(getUnmasked(jQuery("#'.$script->FltFraisTelex->ObtientIDComposant().'"))) ;
+		// var val8 = toNumber(getUnmasked(jQuery("#'.$script->FltTPS->ObtientIDComposant().'"))) ;
 		// var
 		// alert((val3 + val4 + val5 + val6 + val7 * 0.1)) ;
 		var fraisTPS = roundTo((val3 + val4 + val5 + val6 + val7) * 0.1, 3) ;
 		// alert(val3) ;
-		jQuery("#'.$script->FltTPS->ObtientIDComposant().'").val(fraisTPS) ;
+		setMasked(jQuery("#'.$script->FltTPS->ObtientIDComposant().'"), fraisTPS) ;
 		var totalFraisCommiss = roundTo(val2 + val3 + val4 + val5 + val6 + val7 + fraisTPS, 3) ;
 		// alert(val4) ;
-		jQuery("#totalFraisCommiss").text(totalFraisCommiss) ;
-		jQuery("#mttNetPayer").text(roundTo(val1 + totalFraisCommiss, 3)) ;
-		jQuery("#coutTransf").text(roundTo((val1 + totalFraisCommiss) / ((val1 > 0) ? val1 : 1), 8)) ;
+		setMasked(jQuery("#totalFraisCommiss"), totalFraisCommiss) ;
+		setMasked(jQuery("#mttNetPayer"), roundTo(val1 + totalFraisCommiss, 3)) ;
+		// jQuery("#coutTransf").maskMoney("mask", roundTo((val1 + totalFraisCommiss) / ((val1 > 0) ? val1 : 1), 8) * 100) ;
+		setMasked(jQuery("#coutTransf"), roundTo(((val1 + totalFraisCommiss) / ((val1 > 0) ? val1 : 1) * 100), 3)) ;
 	}
 	function roundTo(val, decimalCount)
 	{
@@ -872,18 +998,18 @@ on t2.id_entite = t3.id_entite)' ;
 		return isNaN(parseFloat(val)) ? 0 : parseFloat(val) ;
 	}
 	function calculeTauxTaxeTransf() {
-		var tauxDevise = parseFloat(jQuery("#val_taux_devise").text()) ;
-		var valTaxeTransf = parseFloat(jQuery("#'.$script->FltTaxeTransf->ObtientIDComposant().'").val()) ;
+		var tauxDevise = parseFloat(getUnmasked(jQuery("#val_taux_devise"))) ;
+		var valTaxeTransf = parseFloat(getUnmasked(jQuery("#'.$script->FltTaxeTransf->ObtientIDComposant().'"))) ;
 		var valCalc = 0 ;
 		if(! isNaN(tauxDevise) && ! isNaN(valTaxeTransf))
 		{
 			valCalc = tauxDevise * valTaxeTransf / 100 ;
 		}
-		jQuery("#val_taux_taxe_transf").text(roundTo(valCalc, 3)) ;
+		setMasked(jQuery("#val_taux_taxe_transf"), roundTo(valCalc, 3)) ;
 	}
 	function calculeTauxCommissTransf() {
-		var tauxDevise = parseFloat(jQuery("#val_taux_devise").text()) ;
-		var valTauxCommTransf = parseFloat(jQuery("#'.$script->FltCommissTransf->ObtientIDComposant().'").val()) ;
+		var tauxDevise = parseFloat(getUnmasked(jQuery("#val_taux_devise"))) ;
+		var valTauxCommTransf = parseFloat(getUnmasked(jQuery("#'.$script->FltCommissTransf->ObtientIDComposant().'"))) ;
 		var valCalc = 0 ;
 		if(! isNaN(tauxDevise) && ! isNaN(valTauxCommTransf))
 		{
@@ -891,7 +1017,7 @@ on t2.id_entite = t3.id_entite)' ;
 			if(valCalc == NaN)
 				valCalc = 0 ;
 		}
-		jQuery("#val_taux_commiss_transf").text(roundTo(valCalc, 3)) ;
+		setMasked(jQuery("#val_taux_commiss_transf"), roundTo(valCalc, 3)) ;
 	}
 	jQuery(function() {
 		jQuery("#'.$script->FltContreValeurDev->ObtientIDComposant().'").change(function () {
@@ -913,7 +1039,7 @@ on t2.id_entite = t3.id_entite)' ;
 				if($script->PourAjout == 0)
 				{
 					$ctn .= '	allInputs.attr("readonly", true) ;
-		allInputs.attr("disabled", true) ;
+		// allInputs.attr("disabled", true) ;
 		jQuery("#'.$composant->IDInstanceCalc.' :button").attr("disabled", false) ;'.PHP_EOL ;
 				}
 				else

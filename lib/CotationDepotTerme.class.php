@@ -232,19 +232,21 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->TablPrinc->SensColonneTri = "desc" ;
 				$this->DefColId = $this->TablPrinc->InsereDefColCachee('id') ;
 				$this->DefColNumOp = $this->TablPrinc->InsereDefColCachee('numop_publieur') ;
-				$this->DefColLogin = $this->TablPrinc->InsereDefCol('login', 'Entreprise') ;
+				$this->DefColLogin = $this->TablPrinc->InsereDefCol('login', 'Login') ;
+				$this->DefColEntite = $this->TablPrinc->InsereDefCol('nom_entite', 'Entreprise') ;
 				$this->DefColMontant = $this->TablPrinc->InsereDefColMoney('montant', 'Montant') ;
 				$this->DefColDevise = $this->TablPrinc->InsereDefCol('code_devise', 'Devise') ;
 				$this->DefColDateMisePlace = $this->TablPrinc->InsereDefCol('date_mise_place', 'Date mise en place') ;
 				$this->DefColDateMisePlace->AliasDonnees = $bd->SqlDateToStrFr("date_mise_place", 0) ;
 				$this->DefColDateMaturite = $this->TablPrinc->InsereDefCol('date_maturite', 'Date maturit&eacute;') ;
 				$this->DefColDateMaturite->AliasDonnees = $bd->SqlDateToStrFr("date_maturite", 0) ;
-				$this->FournDonneesPrinc->RequeteSelection = '(SELECT distinct t1.*, d1.code_devise, o1.login, t4.numop numop_repondeur, t4.id_entite, t3.top_active
+				$this->FournDonneesPrinc->RequeteSelection = '(SELECT distinct t1.*, d1.code_devise, o1.login, t4.numop numop_repondeur, t4.id_entite, t5.name nom_entite, t3.top_active
 FROM cotation_depot_terme t1
 left join devise d1 on t1.id_devise = d1.id_devise
 left join operateur o1 on t1.numop_publieur = o1.numop
 left join rel_entreprise t3 on o1.id_entite = t3.id_entite_source
-left join operateur t4 on t3.id_entite_dest = t4.id_entite)' ;
+left join operateur t4 on t3.id_entite_dest = t4.id_entite
+left join entite t5 on t5.id_entite = t4.id_entite)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
 				$this->LienReserv = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=ajoutReservCotationDepotTerme&id_cotation=${id}', 'R&eacute;ponse', 'reserv_cotation_depot_terme_${id}', 'Cotation D&eacute;p&ocirc;t &agrave; terme', $this->OptsFenetreDetail) ;
 				$this->LienReserv->ClasseCSS = "lien-act-004" ;

@@ -2179,13 +2179,17 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 					$nomScript = ($typeChange == 1) ? "postulsPlacement" : "postulsEmprunt" ;
 					$ctn .= '<script type="text/javascript">
 	jQuery(function() {
+		if(window.top.'.$this->ZoneParent->IDInstanceCalc.' !== undefined)
+		{
+			window.top.'.$this->ZoneParent->IDInstanceCalc.'.majAlertes() ;
+		}
 		if(window.parent.jQuery && window.parent.jQuery("#soumissOpInter iframe").length)
 		{
 			window.parent.jQuery("#soumissOpInter iframe")[0].contentWindow.location= window.parent.jQuery("#soumissOpInter iframe")[0].contentWindow.location ;
 		}
 	}) ;
 </script>' ;
-					$ctn .= '<p><a href="javascript:;" onclick="window.top.fermeFenetreActive();">Retour a la transaction</a></p>' ;
+					$ctn .= '<p><a href="javascript:;" onclick="window.top.fermeFenetreActive();">Fermer</a></p>' ;
 				}
 				return $ctn ;
 			}
@@ -2399,6 +2403,7 @@ where t1.num_op_inter='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'nu
 				$id_devise2 = $this->FormulaireDonneesParent->FltDevise2->Lie() ;
 				$montant = $this->FormulaireDonneesParent->FltMontant->Lie() ;
 				$numOp = $this->ZoneParent->Membership->MemberLogged->Id ;
+				return 1 ;
 				$bd = & $this->FormulaireDonneesParent->FournisseurDonnees->BaseDonnees ;
 				$sql = 'select * from op_inter where numop='.$bd->ParamPrefix.'numOp and montant_change='.$bd->ParamPrefix.'montant and '.$bd->SqlDatePart($bd->SqlNow()).' = '.$bd->SqlDatePart('date_change').' and id_devise1 = '.$bd->ParamPrefix.'id_devise1 and id_devise2 = '.$bd->ParamPrefix.'id_devise2' ;
 				$lgn = $bd->FetchSqlRow($sql, array('montant' => $montant, 'id_devise1' => $id_devise1, 'id_devise2' => $id_devise2, 'numOp' => $numOp)) ;

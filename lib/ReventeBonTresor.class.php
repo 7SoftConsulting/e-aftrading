@@ -130,7 +130,7 @@
 					// Publication
 					$this->SousMenuPublier = $this->BarreMenu->MenuRacine->InscritSousMenuScript('publierReventeBonTresor') ;
 					$this->SousMenuPublier->CheminMiniature = "images/miniatures/consulte_achat_devise.png" ;
-					$this->SousMenuPublier->Titre = "Publications" ;
+					$this->SousMenuPublier->Titre = "Publication" ;
 				}
 			}
 			protected function RenduDispositifBrut()
@@ -145,8 +145,8 @@
 		
 		class ScriptPublierReventeBonTresorTradPlatf extends Script1ReventeBonTresorTradPlatf
 		{
-			public $TitreDocument = "Revente &eacute;mission Bon du Tr&eacute;sor" ;
-			public $Titre = "Revente &eacute;mission Bon du Tr&eacute;sor" ;
+			public $TitreDocument = "Revente Bon du Tr&eacute;sor" ;
+			public $Titre = "Revente Bon du Tr&eacute;sor" ;
 			public $Privileges = array('post_doc_tresorier', 'post_op_change') ;
 			public $CmdAjout ;
 			public $LienModif ;
@@ -189,13 +189,13 @@
 FROM revente_bon_tresor t1
 left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->DefColActs = $this->TablPrinc->InsereDefColActions("Actions") ;
-				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifReventeBonTresor&id=${id}', 'Modifier', 'modif_emiss_bon_tresor_${id}', 'Modifier Revente &Eacute;mission Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienModif = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=modifReventeBonTresor&id=${id}', 'Modifier', 'modif_emiss_bon_tresor_${id}', 'Modifier Revente Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienModif->ClasseCSS = "lien-act-001" ;
 				$this->LienModif->DefinitScriptOnglActifSurFerm($this) ;
-				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprReventeBonTresor&id=${id}', 'Supprimer', 'suppr_emiss_bon_tresor_${id}', 'Supprimer Revente &Eacute;mission Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
+				$this->LienSuppr = $this->TablPrinc->InsereLienOuvreFenetreAction($this->DefColActs, '?appelleScript=supprReventeBonTresor&id=${id}', 'Supprimer', 'suppr_emiss_bon_tresor_${id}', 'Supprimer Revente Bon du Tr&eacute;sor #${ref_transact}', $this->OptsFenetreEdit) ;
 				$this->LienSuppr->ClasseCSS = "lien-act-002" ;
 				$this->LienSuppr->DefinitScriptOnglActifSurFerm($this) ;
-				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutReventeBonTresor", '?appelleScript=ajoutReventeBonTresor', 'Ajouter', 'ajoutReventeBonTresor', "Revente &Eacute;mission Bon du Tr&eacute;sor", $this->OptsFenetreEdit) ;
+				$this->CmdAjout = $this->TablPrinc->InsereCmdOuvreFenetreScript("ajoutReventeBonTresor", '?appelleScript=ajoutReventeBonTresor', 'Ajouter', 'ajoutReventeBonTresor', "Revente Bon du Tr&eacute;sor", $this->OptsFenetreEdit) ;
 				$this->CmdAjout->DefinitScriptOnglActifSurFerm($this) ;
 			}
 			protected function DefinitExprs()
@@ -205,7 +205,7 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		}
 		class ScriptConsultReventeBonTresorTradPlatf extends Script1ReventeBonTresorTradPlatf
 		{
-			public $TitreDocument = "Consulter revente &eacute;mission Bon du Tr&eacute;sor" ;
+			public $TitreDocument = "Consulter revente Bon du Tr&eacute;sor" ;
 			public $Titre = "Consulter revente &eacute; Bon du Tr&eacute;sor" ;
 			public $Privileges = array('post_op_change') ;
 			public $LienDetail ;
@@ -259,7 +259,8 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 		class ScriptLgn1ReventeBonTresorTradPlatf extends ScriptEditReventeBonTresorTradPlatf
 		{
 			public $InclureTitreFormPrinc = 1 ;
-			public $TitreFormPrinc = "Caract&eacute;ristiques Revente &eacute;mission bon du tr&eacute;sor par Adjudication" ;
+			// public $TitreFormPrinc = "Caract&eacute;ristiques Revente &eacute;mission bon du tr&eacute;sor par Adjudication" ;
+			public $TitreFormPrinc = "CARACTERISQUES BON DU TRESOR" ;
 			public $FltId ;
 			public $Privileges = array('post_doc_tresorier', 'post_op_change') ;
 			public $FltEmetteur ;

@@ -73,11 +73,11 @@
 			public $TitrFenAjoutReservCotationDepotTerme = 'R&eacute;server cotation de dep&ocirc;t &agrave; terme' ;
 			public $TitrFenModifReservCotationDepotTerme = 'Modifier cotation de dep&ocirc;t &agrave; terme' ;
 			public $TitrFenSupprReservCotationDepotTerme = 'Supprimer cotation de dep&ocirc;t &agrave; terme' ;
-			public $TitrFenPublierReventeBonTresor = 'Publication Revente &Eacute;mission Bon du Tr&eacute;sor' ;
-			public $TitrFenConsultReventeBonTresor = 'Consultation Revente &Eacute;mission Bon du Tr&eacute;sor' ;
-			public $TitrFenAjoutReventeBonTresor = 'Ajout Revente &Eacute;mission Bon du Tr&eacute;sor' ;
-			public $TitrFenModifReventeBonTresor = 'Modification Revente &Eacute;mission Bon du Tr&eacute;sor' ;
-			public $TitrFenSupprReventeBonTresor = 'Suppression Revente &Eacute;mission Bon du Tr&eacute;sor' ;
+			public $TitrFenPublierReventeBonTresor = 'Publication Revente Bon du Tr&eacute;sor' ;
+			public $TitrFenConsultReventeBonTresor = 'Consultation Revente Bon du Tr&eacute;sor' ;
+			public $TitrFenAjoutReventeBonTresor = 'Ajout Revente Bon du Tr&eacute;sor' ;
+			public $TitrFenModifReventeBonTresor = 'Modification Revente Bon du Tr&eacute;sor' ;
+			public $TitrFenSupprReventeBonTresor = 'Suppression Revente Bon du Tr&eacute;sor' ;
 			public $TitrFenPublierRachatObligation = 'Publication Rachat &Eacute;mission Obligation' ;
 			public $TitrFenConsultRachatObligation = 'Consultation Rachat &Eacute;mission Obligation' ;
 			public $TitrFenAjoutRachatObligation = 'Ajout Rachat &Eacute;mission Obligation' ;
