@@ -322,6 +322,10 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			public $FltDateDebut ;
 			public $FltDateFin ;
 			public $FltNumOpPubl ;
+			protected function ChargeTablPropos(& $tabl)
+			{
+				// $tabl->InsereFltEditFixe("dateDebut".$tabl->IDInstanceCalc, )
+			}
 			protected function ChargeTablPrinc()
 			{
 				parent::ChargeTablPrinc() ;
@@ -584,7 +588,7 @@ left join devise d2 on t2.id_devise = d2.id_devise)' ;
 				$this->DefColIdTablSecond = $this->TablSecond->InsereDefColCachee('id') ;
 				$this->DefColIdEmissTablSecond = $this->TablSecond->InsereDefColCachee('id_cotation') ;
 				$this->DefColNumOpTablSecond = $this->TablSecond->InsereDefColCachee('numop') ;
-				$this->DefColLoginTablSecond = $this->TablSecond->InsereDefCol('login', "Login") ;
+				$this->DefColLoginTablSecond = $this->TablSecond->InsereDefCol('login', "Nom") ;
 				$this->DefColLoginTablSecond->AlignElement = "center" ;
 				$this->DefColCodeEntiteTablSecond = $this->TablSecond->InsereDefCol('code_entite', "Code entit&eacute;") ;
 				$this->DefColCodeEntiteTablSecond->AlignElement = "center" ;
@@ -730,11 +734,13 @@ on t2.id_entite = t3.id_entite)' ;
 				$this->FournDonneesPrinc->TableEdition = "bordereau_decpte_transf" ;
 				$this->FormPrinc->MaxFiltresEditionParLigne = 1 ;
 				$this->FormPrinc->DessinateurFiltresEdition = new DessinFltsBordereauDecpteTransf() ;
+				/*
 				$this->FormPrinc->InstrsJSAvantSoumetForm = 'jQuery(form).find("input[type=text]").each(function(index) {
 var val = jQuery(this).maskMoney("unmasked")[0] ;
 jQuery(this).maskMoney("destroy") ;
 jQuery(this).val(val) ;
 }) ;' ;
+				*/
 				if($this->PourAjout == 1)
 				{
 					$this->LgnCotation = $bd->FetchSqlRow("select * from cotation_transf_devise where id=:id", array("id" => $this->FltIdCotation->Lie())) ;
@@ -906,10 +912,12 @@ jQuery(this).val(val) ;
 	}) ;
 	function applyMaskMoney(inputs)
 	{
-		inputs.maskMoney({thousands:" ", decimal:".", precision:3, suffix : ""}) ;
+		// inputs.maskMoney({thousands:" ", decimal:".", precision:3, suffix : ""}) ;
 	}
 	function setMasked(input, val)
 	{
+		input.val(val) ;
+		return ;
 		if(input.is("[readonly]"))
 		{
 			input.removeAttr("readonly") ;
@@ -929,6 +937,7 @@ jQuery(this).val(val) ;
 	}
 	function getUnmasked(input)
 	{
+		return input.val() ;
 		if(input.val().indexOf(".") == -1)
 		{
 			input.val(input.val() + ".000") ;

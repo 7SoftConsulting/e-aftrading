@@ -9,6 +9,10 @@
 		define('PWD_BD_PRINC_TRAD_PLATF', '') ;
 		define('SCHEMA_BD_PRINC_TRAD_PLATF', 'trading_platform_v2') ;
 		define('EMAIL_INFOS_TRAD_PLATF', 'infos@e-aftrading.com') ;
+		
+		define('DELAI_RAFRAICH_CHAT_TRAD_PLATF', 10) ;
+		define('DELAI_RAFRAICH_NOTIF_TRAD_PLATF', 5) ;
+		define('DELAI_RAFRAICH_NEGOC_TRAD_PLATF', 20) ;
 	}
 	
 ?>

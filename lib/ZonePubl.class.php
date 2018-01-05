@@ -2008,7 +2008,7 @@ jQuery(function() {
 			public $LibelleLienChMP = "Changer mot de passe" ;
 			public $CheminIconeLienDecnx = "images/miniatures/deconnexion.png" ;
 			public $LibelleLienDecnx = "Deconnexion" ;
-			public $DelaiRafraichAlertes = 5 ;
+			public $DelaiRafraichAlertes = DELAI_RAFRAICH_NOTIF_TRAD_PLATF ;
 			public $LienNouvAchatDevise ;
 			public function ChargeConfig()
 			{

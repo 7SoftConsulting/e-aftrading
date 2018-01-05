@@ -401,7 +401,7 @@ where t5.id_entite_dest is not null and t6.login is not null and t1.num_op_chang
 		{
 			public $FormPrinc ;
 			protected $ActDicussChat ;
-			protected $DelaiRafraichDiscuss = 10 ;
+			protected $DelaiRafraichDiscuss = DELAI_RAFRAICH_CHAT_TRAD_PLATF ;
 			protected $NomColLoginEmetteur = "login_soumis" ;
 			protected $NomParamIdEnCours = "idEnCours" ;
 			protected function DetermineActDicussChat()

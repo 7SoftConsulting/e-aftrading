@@ -499,14 +499,12 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 			protected function ChargeFlts()
 			{
 				$bd = $this->ApplicationParent->BDPrincipale ;
-				$this->FltNumOp = $this->InsereFltSelectFixe('num_operateur', $this->ZoneParent->IdMembreConnecte(), '(id_emetteur=<self> or (id_repondeur=<self> and bool_valide=1))') ;
-				$this->FltConfirme = $this->InsereFltSelectFixe('est_confirme', 0, 'bool_confirme=<self>') ;
-				$this->FltConfirme->EstObligatoire = 1 ;
+				$this->FltNumOp = $this->InsereFltSelectFixe('num_operateur', $this->ZoneParent->IdMembreConnecte(), '((id_emetteur=<self> or (id_repondeur=<self> and bool_valide=1)) and (bool_confirme=0 or bool_confirme_soumis=0))') ;
 			}
 			protected function ChargeDefCols()
 			{
 				$bd = $this->ApplicationParent->BDPrincipale ;
-				$this->InsereDefsColCachee("date_change", "num_op_change", "id_emetteur", "id_devise1", "id_devise2", "lib_devise1", "lib_devise2", "bool_confirme", "bool_valide") ;
+				$this->InsereDefsColCachee("date_change", "num_op_change", "id_emetteur", "id_devise1", "id_devise2", "lib_devise1", "lib_devise2", "bool_confirme", "bool_valide", "peut_reagir") ;
 				$this->DefColConfirm = $this->InsereDefColCachee('bool_confirme') ;
 				$this->DefColRefChange = $this->InsereDefCol('ref_change', 'Ref change') ;
 				$this->DefColDevise = $this->InsereDefColHtml('${lib_devise2} / ${lib_devise1}', 'Devise') ;
@@ -516,6 +514,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				$this->DefColDateValeur = $this->InsereDefCol('date_valeur', 'Date Valeur', $bd->SqlDateToStrFr('date_valeur')) ;
 				$this->DefColMontant = $this->InsereDefColMoney('montant_operateur', 'Montant') ;
 				$this->DefColTaux = $this->InsereDefCol('taux_transact', 'Taux') ;
+				$this->DefColCommiss = $this->InsereDefCol('mtt_commiss', 'Commission') ;
 				$this->DefColActions = $this->InsereDefColActions('Actions') ;
 				$this->ChargeDefColActions() ;
 			}
@@ -530,6 +529,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				) ;
 				$this->LienNegocConsult->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
 				$this->LienNegocConsult->ClasseCSS = "lien-act-004" ;
+				$this->LienNegocConsult->DefinitValidite("peut_reagir", 1) ;
 				// Lien refus
 				$this->LienRefusConsult = $this->InsereLienOuvreFenetreAction(
 					$this->DefColActions, $this->ZoneParent->ScriptRefusPostulVenteDevise->ObtientUrl().'&id=${num_op_change}',
@@ -539,7 +539,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				) ;
 				$this->LienRefusConsult->ClasseCSS = "lien-act-002" ;
 				$this->LienRefusConsult->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
-				$this->LienRefusConsult->DefinitValidite("id_emetteur", $this->ZoneParent->IdMembreConnecte()) ;
+				$this->LienRefusConsult->DefinitValidite("peut_reagir", 1) ;
 				// Lien confirmation
 				$this->LienConfirmConsult = $this->InsereLienOuvreFenetreAction(
 					$this->DefColActions, $this->ZoneParent->ScriptValPostulVenteDevise->ObtientUrl().'&id=${num_op_change}',
@@ -549,7 +549,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 				) ;
 				$this->LienConfirmConsult->ClasseCSS = "lien-act-003" ;
 				$this->LienConfirmConsult->UrlOnglActifSurFerm = '?'.urlencode($this->ZoneParent->NomParamScriptAppele).'='.urlencode($this->ZoneParent->ValeurParamScriptAppele) ;
-				$this->LienConfirmConsult->DefinitValidite("id_emetteur", $this->ZoneParent->IdMembreConnecte()) ;
+				$this->LienConfirmConsult->DefinitValidite("peut_reagir", 1) ;
 			}
 			protected function ChargeFournDonnees()
 			{
@@ -580,15 +580,21 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 		t1.montant_soumis,
 		t1.date_change,
 		t1.commiss_ou_taux,
+		t1.mtt_commiss_soumis mtt_commiss,
 		t1.taux_change,
 		t1.taux_soumis,
 		t1.ecran_taux,
 		t1.bool_valide,
 		t1.bool_confirme,
+		t1.bool_confirme_soumis,
 		case when t1.numop = ".$idMembre." then t1.montant_change else t1.montant_soumis end montant_operateur,
 		case when t1.numop = ".$idMembre." then t2.numop else e1.numop end id_operateur,
 		case when t1.numop = ".$idMembre." then t3.login else e1.login end login_operateur,
-		case when t1.numop = ".$idMembre." then t4.name else e2.name end nom_entite_operateur
+		case when t1.numop = ".$idMembre." then t4.name else e2.name end nom_entite_operateur,
+		case when t1.numop <> ".$idMembre." and t1.bool_confirme = 0 then 1
+			when t1.numop = ".$idMembre." and t1.bool_confirme_soumis = 0 then 1
+			else 0 end
+		peut_reagir
 	from op_change t1
 	inner join op_change t2 ON t2.num_op_change = t1.num_op_change_dem
 	inner join operateur t3 ON t3.numop = t2.numop
@@ -598,6 +604,7 @@ where t5.id_entite_dest is not null and t7.id_entite is not null and t6.login is
 	left join devise d1 on d1.id_devise = t1.id_devise1
 	left join devise d2 on d2.id_devise = t1.id_devise2
 )" ;
+				// print $this->FournisseurDonnees->RequeteSelection ;
 			}
 		}
 		
@@ -1433,12 +1440,13 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 					$ligne["commiss_ou_taux"] = $ligne["id_devise1"] == ID_EURO_TRAD_PLATF ? 0 : 1 ;
 					$this->CommissOuTaux = $ligne["commiss_ou_taux"] ;
 					$this->ModeAccesMembre = ($ligne["numop"] == $idMembre) ? 1 : 0 ;
-					$this->ZoneParent->RemplisseurConfig->AppliqueCompComissOuTaux($this->FltTauxDem, $ligne, $this->InclureElementEnCours, 1) ;
-					$this->ZoneParent->RemplisseurConfig->AppliqueCompComissOuTaux($this->FltTauxSoumis, $ligne, 0) ;
+					// $this->ZoneParent->RemplisseurConfig->AppliqueCompComissOuTaux($this->FltTauxDem, $ligne, $this->InclureElementEnCours, 1) ;
+					// $this->ZoneParent->RemplisseurConfig->AppliqueCompComissOuTaux($this->FltTauxSoumis, $ligne, 0) ;
 					if($this->InclureElementEnCours)
 					{
 						if($this->ModeAccesMembre == 1)
 						{
+							// echo $this->FltTauxDem->NomColonneLiee ;
 							$this->FltTauxDem->EstEtiquette = 1 ;
 							$this->FltTauxDem->NePasLierColonne = 1 ;
 							$this->FltMontantDem->EstEtiquette = 1 ;
@@ -1479,12 +1487,15 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				$idMembre = $this->ZoneParent->IdMembreConnecte() ;
 				$idEnCours = $this->FltIdEnCours->Lie() ;
 				$bd = & $this->ApplicationParent->BDPrincipale ;
+				$lgnOpChange = $bd->FetchSqlRow("select * from op_change where num_op_change=".$bd->ParamPrefix."idEnCours", array('idEnCours' => $idEnCours)) ;
+				// echo 'Type change : '.$this->ScriptParent->TypeOpChangeOppose() ;
 				$ligne = $bd->FetchSqlRow(
 					'select t1.* from op_change t1
 	inner join op_change t2 on t1.num_op_change_dem = t2.num_op_change
-	where t1.num_op_change <> '.$bd->ParamPrefix.'idEnCours and ((t1.numop = '.$bd->ParamPrefix.'idMembre and t2.numop = '.$bd->ParamPrefix.'idPartie) or (t1.numop = '.$bd->ParamPrefix.'idPartie and t2.numop = '.$bd->ParamPrefix.'idMembre)) and t1.bool_confirme=0',
-					array('idEnCours' => $idEnCours, 'idMembre' => $idMembre, 'idPartie' => ($this->LigneOpChangeDem["numop"]))
+	where t1.num_op_change <> '.$bd->ParamPrefix.'idEnCours and ((t1.numop = '.$bd->ParamPrefix.'idMembre and t2.numop = '.$bd->ParamPrefix.'idPartie) or (t1.numop = '.$bd->ParamPrefix.'idPartie and t2.numop = '.$bd->ParamPrefix.'idMembre)) and (t1.id_devise1 = '.$bd->ParamPrefix.'idDevise2 and t1.id_devise2 = '.$bd->ParamPrefix.'idDevise1) and t1.bool_confirme=0 and t1.type_change='.$bd->ParamPrefix.'typeChange',
+					array('idEnCours' => $idEnCours, 'idMembre' => $idMembre, 'idDevise1' => $lgnOpChange['id_devise1'], 'idDevise2' => $lgnOpChange['id_devise2'], 'typeChange' => $this->ScriptParent->TypeOpChange == 1 ? 2 : 1, 'idPartie' => ($this->LigneOpChangeDem["numop"]))
 				) ;
+				print_r($bd) ;
 				if(! is_array($ligne) || count($ligne) > 0)
 				{
 					return 1 ;
@@ -1523,7 +1534,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 						$this->LigneOpChangeDem = $ligne ;
 						foreach($ligne as $nom => $val)
 						{
-							if(in_array($nom, array("num_op_change", "montant_soumis", "taux_soumis", "montant_change", "taux_change", "mtt_commiss", "mtt_commiss_soumis", "ecran_taux", "date_valeur_str", "date_operation_str", "date_valeur", "date_valeur_soumis")))
+							if(in_array($nom, array("num_op_change", "montant_soumis", "taux_soumis", "montant_change", "taux_change", "mtt_commiss", "mtt_commiss_soumis", "ecran_taux", "date_valeur_str", "date_operation_str", "date_valeur", "date_valeur_soumis", "date_commiss")))
 							{
 								continue ;
 							}
@@ -1648,6 +1659,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			{
 				parent::CalculeElementsRendu() ;
 				// print_r($this->FournisseurDonnees->BaseDonnees) ;
+				// print_r($this->ElementEnCours) ;
 			}
 			public function RenduDispositif()
 			{
@@ -1687,7 +1699,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				parent::ChargeFiltresEdition() ;
 				$this->FltTypeTaux = $this->InsereFltEditHttpPost("type_taux", "type_taux") ;
 				$this->FltTypeTaux->ValeurParDefaut = 0 ;
-				$this->FltValeurTaux = $this->InsereFltEditHttpPost("taux_change", "") ;
+				$this->FltValeurTaux = $this->InsereFltEditHttpPost("valeur_taux", "") ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueCompValeurTaux($this->FltValeurTaux) ;
 				$this->FltEcranTaux = $this->InsereFltEditHttpPost("ecran_taux", "") ;
 				$this->ZoneParent->RemplisseurConfig->AppliqueCompEcranTaux($this->FltEcranTaux) ;
@@ -1780,7 +1792,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 			public $Titre = "Negociations op&eacute;rations de change" ;
 			public $TitreDocument = "Negociations op&eacute;rations de change" ;
 			public $ActiverAutoRafraich = 1 ;
-			public $DelaiAutoRafraich = 60 ;
+			public $DelaiAutoRafraich = DELAI_RAFRAICH_NEGOC_TRAD_PLATF ;
 			protected function DetermineTablPrinc()
 			{
 				$this->TablPrinc = new TablNegocOpChangeTradPlatf() ;
@@ -1799,7 +1811,6 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 				// print_r($this->TablPrinc->FournisseurDonnees->BaseDonnees) ;
 				return $ctn ;
 			}
-
 		}
 		
 		class ScriptSoumissAchatDeviseTradPlatf extends ScriptListBaseOpChange
@@ -2236,7 +2247,7 @@ WHERE num_op_change = '.$bd->ParamPrefix.'numOpChange', array('numOperateur' => 
 t2.id_devise1 id_devise1_dem, t2.id_devise2 id_devise2_dem,
 t1.montant_change montant_dem, t1.taux_change taux_dem,
 t1.date_operation date_operation_dem, '.$bd->SqlDateToStrFr('t1.date_valeur').' date_valeur_dem, '.$bd->SqlDateToStrFr('t1.date_valeur_soumis').' date_valeur_soumis, t1.montant_soumis,
-t1.taux_soumis
+t1.taux_soumis, t1.mtt_commiss mtt_commiss_dem, t1.mtt_commiss_soumis mtt_commiss_soumis
 , op1.login login_soumis, op1.email_op email_soumis, ent1.name nom_entite_soumis, ent1.code code_entite_soumis
 , op2.login login_dem, op2.email_op email_dem, ent2.name nom_entite_dem, ent2.code code_entite_dem,
 d2.code_devise code_devise1, d1.code_devise code_devise2
@@ -2248,18 +2259,23 @@ left join operateur op2 on t2.numop=op2.numop
 left join entite ent2 on op2.id_entite=ent2.id_entite
 left join devise d1 on d1.id_devise = t1.id_devise1
 left join devise d2 on d2.id_devise = t1.id_devise2
-where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'numOp', array(
+where t1.num_op_change='.$bd->ParamPrefix.'id and (t2.numop='.$bd->ParamPrefix.'numOp or t1.numop='.$bd->ParamPrefix.'numOp)', array(
 					'id' => $id,
 					'numOp' => $this->ZoneParent->IdMembreConnecte()
 				)) ;
 				//print_r($bd) ;
 				if(count($this->LgnOpChangeSelect) > 0)
 				{
-					$succes = $bd->RunSql('update op_change set bool_valide=0, bool_confirme=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $id)) ;
+					$succes = $bd->RunSql('update op_change set
+bool_valide=0,
+bool_confirme=2,
+bool_confirme_soumis=2
+where num_op_change='.$bd->ParamPrefix.'id', array('id' => $id)) ;
 					// $succes = 1 ;
 					if($succes)
 					{
 						$this->MsgExec = $this->MsgSucces ;
+						$this->EnvoieMailRefus() ;
 					}
 					else
 					{
@@ -2270,6 +2286,48 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 				{
 					$this->MsgExec = $this->MsgNonAutorise ;
 				}
+			}
+			protected function SujetMsgEmail()
+			{
+				return 'Refus de l\'offre ${ref_change} de ${login_soumis}' ;
+			}
+			protected function CorpsMsgEmail()
+			{
+				$ctn = '' ;
+				$ctn .= 'L\'operation de change suivante vient d\'etre refusee par ${login_refus} :
+------------------------------
+Emetteur
+------------------------------
+Reference : ${ref_change} 
+Login : ${login_dem} 
+Code Banque : ${code_entite_dem} 
+Nom Banque : ${nom_entite_dem}
+Devise : ${code_devise1} / ${code_devise2}
+Date valeur : ${date_valeur_dem}
+Montant : ${montant_dem}
+Taux de change : ${taux_dem}
+Commission : ${mtt_commiss_dem}
+------------------------------
+Negociateur
+------------------------------
+Login : ${login_soumis}
+Code Banque : ${code_entite_soumis} 
+Nom Banque : ${nom_entite_soumis}
+Date valeur : ${date_valeur_soumis} 
+Montant : ${montant_soumis}
+Taux de change : ${taux_soumis}
+Commission : ${mtt_commiss_soumis}'."\r\n" ;
+				return $ctn ;
+			}
+			protected function EnvoieMailRefus()
+			{
+				$paramsMail = array_merge($this->LgnOpChangeSelect, array("login_refus" => $this->ZoneParent->LoginMembreConnecte())) ;
+				$msg = _parse_pattern($this->CorpsMsgEmail(), $paramsMail) ;
+				$sujet = _parse_pattern($this->SujetMsgEmail(), $paramsMail) ;
+				@send_plain_mail($this->LgnOpChangeSelect["email_dem"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
+				@send_plain_mail($this->LgnOpChangeSelect["email_soumis"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
+				// echo "<pre>$msg</pre>" ;
+				return $msg ;
 			}
 			public function RenduSpecifique()
 			{
@@ -2335,15 +2393,16 @@ Commission : ${mtt_commiss_soumis}'."\r\n" ;
 			{
 				$bd = $this->ApplicationParent->BDPrincipale ;
 				$id = (isset($_GET["id"])) ? $_GET["id"] : 0 ;
-				$this->LgnOpChangeSelect = $bd->FetchSqlRow('select t2.ref_change, t2.mtt_commiss mtt_commiss_dem, t2.numop numop_dem, t2.type_change type_change_dem,
+				$this->LgnOpChangeSelect = $bd->FetchSqlRow('select t2.ref_change, t2.mtt_commiss mtt_commiss_orig, t2.numop numop_dem, t2.type_change type_change_dem,
 t2.id_devise1 id_devise1_dem, t2.id_devise2 id_devise2_dem,
 t1.montant_change montant_dem, t1.taux_change taux_dem,
-t1.mtt_commiss mtt_commiss_soumis, t1.num_op_change_dem,
+t1.mtt_commiss mtt_commiss_dem, t1.num_op_change_dem,
 t2.date_operation date_operation_dem, '.$bd->SqlDateToStrFr('t2.date_valeur').' date_valeur_dem, '.$bd->SqlDateToStrFr('t1.date_valeur').' date_valeur_soumis, t1.montant_soumis,
-t1.taux_soumis
+t1.taux_soumis, t1.mtt_commiss_soumis mtt_commiss_soumis
 , op1.login login_soumis, op1.email_op email_soumis, ent1.name nom_entite_soumis, ent1.code code_entite_soumis
 , op2.login login_dem, op2.email_op email_dem, ent2.name nom_entite_dem, ent2.code code_entite_dem,
-d2.code_devise code_devise1, d1.code_devise code_devise2
+d2.code_devise code_devise1, d1.code_devise code_devise2,
+t1.bool_confirme_soumis, t1.bool_confirme
 from op_change t1
 inner join op_change t2 on t1.num_op_change_dem=t2.num_op_change
 left join operateur op1 on t1.numop=op1.numop
@@ -2352,7 +2411,7 @@ left join operateur op2 on t2.numop=op2.numop
 left join entite ent2 on op2.id_entite=ent2.id_entite
 left join devise d1 on d1.id_devise = t1.id_devise1
 left join devise d2 on d2.id_devise = t1.id_devise2
-where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'numOp', array(
+where t1.num_op_change='.$bd->ParamPrefix.'id and (t2.numop='.$bd->ParamPrefix.'numOp or t1.numop='.$bd->ParamPrefix.'numOp)', array(
 					'id' => $id,
 					'numOp' => $this->ZoneParent->IdMembreConnecte()
 				)) ;
@@ -2365,15 +2424,31 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 					}
 					else
 					{
-						$succes = $bd->RunSql('update op_change set bool_valide=1, bool_confirme=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $id)) ;
-						$succes = $bd->RunSql('update op_change set bool_valide=1, bool_confirme=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $this->LgnOpChangeSelect["num_op_change_dem"])) ;
-						$succes = $bd->RunSql('update op_change set bool_valide=0, bool_confirme=0 where num_op_change_dem='.$bd->ParamPrefix.'id1 and num_op_change <> :id2', array('id1' => $this->LgnOpChangeSelect["num_op_change_dem"], 'id2' => $id)) ;
+						$nomAttrConfirm = ($this->ZoneParent->IdMembreConnecte() == $this->LgnOpChangeSelect['numop_dem']) ? 'bool_confirme' : 'bool_confirme_soumis' ;
+						// echo "Attr : ".$nomAttrConfirm ;
+						$succes = $bd->RunSql('update op_change set bool_valide=1, '.$nomAttrConfirm.'=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $id)) ;
+						$succes = $bd->RunSql('update op_change set bool_valide=1, '.$nomAttrConfirm.'=1 where num_op_change='.$bd->ParamPrefix.'id', array('id' => $this->LgnOpChangeSelect["num_op_change_dem"])) ;
+						$terminerNegocs = (($nomAttrConfirm == "bool_confirme" && $this->LgnOpChangeSelect["bool_confirme_soumis"] == 1) || ($nomAttrConfirm == "bool_confirme_soumis" && $this->LgnOpChangeSelect["bool_confirme"] == 1)) ;
+						if($succes && $terminerNegocs)
+						{
+							$succes = $bd->RunSql('update op_change set bool_valide=0, bool_confirme=0, bool_confirme_soumis=0 where num_op_change_dem='.$bd->ParamPrefix.'id1 and num_op_change <> :id2', array('id1' => $this->LgnOpChangeSelect["num_op_change_dem"], 'id2' => $id)) ;
+							echo "mmmm" ;
+							if($succes)
+							{
+								$this->MsgExec = $this->MsgSucces ;
+								echo "ssss" ;
+								$this->EnvoieMailSucces() ;
+							}
+							else
+							{
+								$this->MsgExec = $this->MsgErreur.' '.htmlentities($bd->ConnectionException) ;
+							}
+						}
 						// print_r($bd) ;
 						// $succes = 1 ;
-						if($succes)
+						elseif($succes)
 						{
 							$this->MsgExec = $this->MsgSucces ;
-							$this->EnvoieMailSucces() ;
 						}
 						else
 						{
@@ -2390,8 +2465,8 @@ where t1.num_op_change='.$bd->ParamPrefix.'id and t2.numop='.$bd->ParamPrefix.'n
 			{
 				$msg = _parse_pattern($this->CorpsMsgEmail(), $this->LgnOpChangeSelect) ;
 				$sujet = _parse_pattern($this->SujetMsgEmail(), $this->LgnOpChangeSelect) ;
-				@send_plain_mail($this->LgnOpChangeSelect["email_dem"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
-				@send_plain_mail($this->LgnOpChangeSelect["email_soumis"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
+				send_plain_mail($this->LgnOpChangeSelect["email_dem"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
+				send_plain_mail($this->LgnOpChangeSelect["email_soumis"], $sujet, $msg, EMAIL_INFOS_TRAD_PLATF) ;
 				// echo "<pre>$msg</pre>" ;
 				return $msg ;
 			}

@@ -7,7 +7,7 @@
 		class ScriptBaseCotationDepotTermeTradPlatf extends ScriptTransactBaseTradPlatf
 		{
 			public $OptsFenetreEdit = array("Largeur" => 450, 'Hauteur' => 325, 'Modal' => 1, "BoutonFermer" => 0) ;
-			public $OptsFenetreDetail = array("Largeur" => 675, 'Hauteur' => 525, 'Modal' => 1, "BoutonFermer" => 0) ;
+			public $OptsFenetreDetail = array("Largeur" => 675, 'Hauteur' => 450, 'Modal' => 1, "BoutonFermer" => 0) ;
 			protected function BDPrinc()
 			{
 				return $this->ApplicationParent->BDPrincipale ;
@@ -349,9 +349,11 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 				$this->FltDateMisePlace = $this->FormPrinc->InsereFltEditHttpPost('date_mise_place', 'date_mise_place') ;
 				$this->FltDateMisePlace->Libelle = "Date mise en place" ;
 				$this->FltDateMisePlace->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateMisePlace->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltDateMaturite = $this->FormPrinc->InsereFltEditHttpPost('date_maturite', 'date_maturite') ;
 				$this->FltDateMaturite->Libelle = "Date maturit&eacute;" ;
 				$this->FltDateMaturite->DeclareComposant("PvCalendarDateInput") ;
+				$this->FltDateMaturite->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltDevise = $this->FormPrinc->InsereFltEditHttpPost('id_devise', 'id_devise') ;
 				$this->FltDevise->Libelle = "Devise" ;
 				$this->CompDevise = $this->FltDevise->DeclareComposant("PvZoneBoiteSelectHtml") ;
@@ -525,24 +527,28 @@ left join devise d1 on t1.id_devise = d1.id_devise)' ;
 			protected function ChargeTablSecond()
 			{
 				$this->FltIdTablSecond = $this->TablSecond->InsereFltSelectHttpGet('id', 'id_cotation = <self>') ;
+				$this->FltIdTablSecond->Obligatoire = 1 ;
 				$this->TablSecond->CacherFormulaireFiltres = 1 ;
+				$this->TablSecond->AccepterTriColonneInvisible = 1 ;
+				$this->TablSecond->SensColonneTri = "desc" ;
+				$this->TablSecond->InsereDefColCachee('taux_tri') ;
 				$this->DefColIdTablSecond = $this->TablSecond->InsereDefColCachee('id') ;
 				$this->DefColIdEmissTablSecond = $this->TablSecond->InsereDefColCachee('id_cotation') ;
 				$this->DefColNumOpTablSecond = $this->TablSecond->InsereDefColCachee('numop') ;
-				$this->DefColLoginTablSecond = $this->TablSecond->InsereDefCol('login', "Login") ;
+				$this->DefColLoginTablSecond = $this->TablSecond->InsereDefCol('login', "Contrepartie") ;
 				$this->DefColLoginTablSecond->AlignElement = "center" ;
-				$this->DefColCodeEntiteTablSecond = $this->TablSecond->InsereDefCol('code_entite', "Code entit&eacute;") ;
-				$this->DefColCodeEntiteTablSecond->AlignElement = "center" ;
-				$this->DefColEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite', "Entit&eacute;") ;
+				// $this->DefColCodeEntiteTablSecond = $this->TablSecond->InsereDefCol('code_entite', "Code entit&eacute;") ;
+				// $this->DefColCodeEntiteTablSecond->AlignElement = "center" ;
+				$this->DefColEntiteTablSecond = $this->TablSecond->InsereDefCol('nom_entite', "Banque") ;
 				$this->DefColTauxTablSecond = $this->TablSecond->InsereDefColMoney('taux', "Taux") ;
-				$this->DefColTaxeTransfTablSecond = $this->TablSecond->InsereDefColMoney('taxe_transfert', "Taxe transfert") ;
+				// $this->DefColTaxeTransfTablSecond = $this->TablSecond->InsereDefColMoney('taxe_transfert', "Taxe transfert") ;
 				/*
 				$this->DefColMontantTablSecond->AlignElement = "right" ;
 				$this->DefColActsTablSecond = $this->TablSecond->InsereDefColActions("Actions") ;
 				$this->LienDetailsTablSecond = $this->TablSecond->InsereLienOuvreFenetreAction($this->DefColActsTablSecond, '?appelleScript=detailReservCotationDepotTerme&id=${id_cotation}&numop=${numop}', 'D&eacute;tails', 'details_reserv_emiss_obligation_${id}_${numop}', 'Details cotation transfert de devise #${login}', $this->OptsFenetreDetail) ;
 				*/
 				$this->FournDonneesSecond = $this->CreeFournDonneesPrinc() ;
-				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t4.montant, t4.date_maturite, t4.date_mise_place, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite, t3.code code_entite
+				$this->FournDonneesSecond->RequeteSelection = '(select t1.*, t1.taux taux_tri, t4.montant, t4.date_maturite, t4.date_mise_place, t2.numop, t2.login, t2.nomop, t2.prenomop, t3.name nom_entite, t3.code code_entite
 from reserv_cotation_depot_terme t1
 left join operateur t2
 on t1.numop_demandeur = t2.numop
@@ -644,9 +650,11 @@ on t2.id_entite = t3.id_entite)' ;
 				$this->FltDateMisePlace = $this->FormPrinc->InsereFltEditHttpPost('date_mise_place', '') ;
 				$this->FltDateMisePlace->Libelle = "Date mise en place" ;
 				$this->FltDateMisePlace->EstEtiquette = 1 ;
+				$this->FltDateMisePlace->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltDateMaturite = $this->FormPrinc->InsereFltEditHttpPost('date_maturite', '') ;
 				$this->FltDateMaturite->Libelle = "Date maturit&eacute;" ;
 				$this->FltDateMaturite->EstEtiquette = 1 ;
+				$this->FltDateMaturite->DefinitFmtLbl(new PvFmtLblDateFr()) ;
 				$this->FltTaxeTransf = $this->FormPrinc->InsereFltEditHttpPost('taxe_transfert', 'taxe_transfert') ;
 				$this->FltTaxeTransf->Libelle = "Taxe de transfert" ;
 				$this->FltTaxeTransf->LectureSeule = 1 ;
@@ -679,11 +687,14 @@ left join reserv_cotation_depot_terme t3 on t1.id = t3.id_cotation)" ;
 				$this->FltDateMaturite->ValeurParDefaut = $lgn["date_maturite"] ;
 				$this->FltDateMisePlace->ValeurParDefaut = $lgn["date_mise_place"] ;
 				$this->FltTaux->ValeurParDefaut = $lgn["taux_reserv"] ;
-				$lgn = $bd->FetchSqlRow('select t1.* from reserv_cotation_depot_terme t1 where t1.id_cotation='.$bd->ParamPrefix.'id and numop_demandeur='.$bd->ParamPrefix.'numop', array('numop' => $this->ZoneParent->IdMembreConnecte())) ;
+				$lgn = $bd->FetchSqlRow('select t1.* from reserv_cotation_depot_terme t1 where t1.id_cotation='.$bd->ParamPrefix.'id and numop_demandeur='.$bd->ParamPrefix.'numop', array('id' => $idLgnEmiss, 'numop' => $this->ZoneParent->IdMembreConnecte())) ;
 				if(is_array($lgn) && count($lgn) > 0)
 				{
 					$this->FltTaux->ValeurParDefaut = $lgn["taux"] ;
 					$this->FltTaxeTransf->ValeurParDefaut = $lgn["taxe_transfert"] ;
+					$this->FltTaux->EstEtiquette = 1 ;
+					$this->FltTaxeTransf->EstEtiquette = 1 ;
+					$this->FormPrinc->CacherBlocCommandes = 1 ;
 				}
 			}
 			protected function RenduDispositifBrut()
